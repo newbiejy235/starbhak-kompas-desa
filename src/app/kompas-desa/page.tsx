@@ -10,7 +10,7 @@ export default function KompasDesaPage() {
 
       <DotPattern className="opacity-30" />
 
-      <div className="relative z-20">
+      <div className="relative z-50">
         <Navbar />
       </div>
 
@@ -37,9 +37,7 @@ export default function KompasDesaPage() {
             </div>
           </FadeAnimation>
 
-          <FadeAnimation direction='in'>
-            <AnimatedCrops />
-          </FadeAnimation>
+          <AnimatedCrops />
 
         </div>
       </main>
