@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.27.0",
+    "mysql2": "^3.23.1",
     "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4"
