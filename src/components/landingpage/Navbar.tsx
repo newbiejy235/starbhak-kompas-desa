@@ -1,7 +1,7 @@
 "use client"
 
 import { Menu, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Inter } from "next/font/google"
 
@@ -21,15 +21,29 @@ const navLinks = [
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activeLink, setActiveLink] = useState("#beranda")
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   return (
     <>
       <nav className={`${inter.className} fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] md:w-[90%] lg:w-[1112px]
-      bg-[#F6F6F6] px-8 py-5
-      flex items-center justify-between gap-6
-      rounded-full`}>
+      px-8 py-5 flex items-center justify-between gap-6 rounded-full transition-all duration-300
+      ${isScrolled ? "bg-[#F6F6F6]/85 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.12)]" : "bg-[#F6F6F6]"}
+      `}>
 
         <div className="flex items-center gap-6">
           <div className="font-bold text-2xl lg:text-[28px] tracking-tight whitespace-nowrap">
