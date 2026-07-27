@@ -7,30 +7,14 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const data = await req.json();
 
-  const existingEmail = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, data.email));
-  if (!existingEmail.length) {
-    return NextResponse.json(
-      { message: "Data tidak ditemukan" },
-      { status: 404 },
-    );
-  }
-
   try {
-    const succesRegister = await db.insert(usersTable).values(data)
-     return NextResponse.json(
-      { message: "Registrasi berhasil", succesRegister },
-      { status: 201 },
-    );
+    const register = await db.insert(usersTable).values(data);
+    console.log(register);
 
-    // Jika data berhasil ditemukan
+    return NextResponse.json({ message: "Succes" }, { status: 200 });
   } catch (error) {
-    // Jika terjadi kesalahan server
-    return NextResponse.json(
-      { message: "Terjadi kesalahan pada server", error },
-      { status: 500 },
-    );
+    console.log(error);
+
+    return NextResponse.json({ message: "Failed (error)" }, { status: 500 });
   }
 }

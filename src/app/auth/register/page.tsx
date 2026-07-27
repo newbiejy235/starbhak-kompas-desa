@@ -5,7 +5,7 @@ import { useState } from "react";
 type FormData = {
   firstName: string;
   lastName: string;
-  phone: string;
+  noTelp: string;
   email: string;
   password: string;
 };
@@ -16,7 +16,7 @@ export default function RegisterForm() {
   const [form, setForm] = useState<FormData>({
     firstName: "",
     lastName: "",
-    phone: "",
+    noTelp: "",
     email: "",
     password: "",
   });
@@ -40,10 +40,10 @@ export default function RegisterForm() {
     if (!form.firstName.trim()) newErrors.firstName = "Nama depan wajib diisi";
     if (!form.lastName.trim()) newErrors.lastName = "Nama belakang wajib diisi";
 
-    if (!form.phone.trim()) {
-      newErrors.phone = "No. telepon wajib diisi";
-    } else if (!/^[0-9+\s-]{8,15}$/.test(form.phone.trim())) {
-      newErrors.phone = "Format nomor telepon tidak valid";
+    if (!form.noTelp.trim()) {
+      newErrors.noTelp = "No. telepon wajib diisi";
+    } else if (!/^[0-9+\s-]{8,15}$/.test(form.noTelp.trim())) {
+      newErrors.noTelp = "Format nomor telepon tidak valid";
     }
 
     if (!form.email.trim()) {
@@ -73,7 +73,7 @@ export default function RegisterForm() {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch("http://localhost:3000/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export default function RegisterForm() {
       setForm({
         firstName: "",
         lastName: "",
-        phone: "",
+        noTelp: "",
         email: "",
         password: "",
       });
@@ -165,15 +165,15 @@ export default function RegisterForm() {
 
       <div>
         <input
-          name="phone"
+          name="noTelp"
           type="number"
           placeholder="No. Telepon"
-          value={form.phone}
+          value={form.noTelp}
           onChange={handleChange}
-          className={inputClass("phone")}
+          className={inputClass("noTelp")}
         />
-        {errors.phone && (
-          <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+        {errors.noTelp && (
+          <p className="text-red-500 text-xs mt-1">{errors.noTelp}</p>
         )}
       </div>
 
