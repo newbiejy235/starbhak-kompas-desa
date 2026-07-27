@@ -33,7 +33,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-6">
           <div className="font-bold text-2xl lg:text-[28px] tracking-tight whitespace-nowrap">
-            <span className="text-[#025246]">Kompas&apos; </span>
+            <span className="text-[#025246]">Kompas` </span>
             <span className="text-[#D7BE44]">Desa</span>
           </div>
           <div className="hidden md:block h-10 w-[1.5px] bg-gray-300"></div>
