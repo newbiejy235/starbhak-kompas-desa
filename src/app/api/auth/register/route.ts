@@ -19,7 +19,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    return NextResponse.json(existingEmail[0], { status: 200 });
+    const succesRegister = await db.insert(usersTable).values(data)
+     return NextResponse.json(
+      { message: "Registrasi berhasil", succesRegister },
+      { status: 201 },
+    );
 
     // Jika data berhasil ditemukan
   } catch (error) {
