@@ -1,4 +1,13 @@
 export default function About() {
+  const logos = [
+    "/images/about/KementrianPertanian.png",
+    "/images/about/BPN.png",
+    "/images/about/Bulog.png",
+    "/images/about/Hypermart.png",
+    "/images/about/Lottemart.png",
+    "/images/about/Superindo.png",
+  ];
+
   return (
     <section className="bg-[#f4f4f2] px-6 py-14 sm:px-10 md:px-16 lg:px-24">
       <h2 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-12">
@@ -35,8 +44,8 @@ export default function About() {
 
         <div className="rounded-lg overflow-hidden">
           <div className="grid grid-cols-2 h-44 sm:h-56 bg-gray-200">
-            <img src="" alt="" className="w-full h-full object-cover" />
-            <img src="" alt="" className="w-full h-full object-cover" />
+            <img src="/images/about/Pertanian1.png" alt="" className="w-full h-full object-cover" />
+            <img src="/images/about/Pertanian2.png" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="bg-[#c9a227] text-white font-semibold text-center py-2 text-sm sm:text-base">
             Pertanian di Indonesia
@@ -50,13 +59,14 @@ export default function About() {
           </h3>
           <p className="text-sm text-gray-600 mb-4">Berkolaborasi bersama:</p>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-xs">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className="border rounded-md h-12 sm:h-14 flex items-center justify-center bg-white"
-              >
-                <img src="" alt="" className="max-h-7 sm:max-h-8" />
+          <div className="grid grid-cols-3 sm:grid-cols-3 gap-6 max-w-sm items-center">
+            {logos.map((logo, i) => (
+              <div key={i} className="flex items-center justify-center">
+                <img
+                  src={logo}
+                  alt=""
+                  className="h-10 sm:h-12 object-contain"
+                />
               </div>
             ))}
           </div>
