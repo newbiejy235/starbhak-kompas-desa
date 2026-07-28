@@ -8,14 +8,13 @@ export default function PageLoader({ children }) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const animationDuration = 4500; // 2.5 detik
+    const animationDuration = 4500; 
 
-    // cegah scroll selama animasi
     document.body.style.overflow = "hidden";
 
     const timer = setTimeout(() => {
       setIsVisible(false);
-      document.body.style.overflow = "auto"; // scroll aktif setelah selesai
+      document.body.style.overflow = "auto"; 
     }, animationDuration);
 
     return () => clearTimeout(timer);
@@ -38,14 +37,13 @@ export default function PageLoader({ children }) {
               animate={{ opacity: 1 }}
               transition={{ duration: 1, ease: "easeOut" }}
             >
-              {/* Icon */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
                 <Image
-                src={"/images/logo/Logo.png"}
+                src={"/images/"}
                 alt="Logo"
                 width={90}
                 height={90}
@@ -54,7 +52,6 @@ export default function PageLoader({ children }) {
                 </Image>
               </motion.div>
 
-              {/* Text */}
               <motion.span
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
