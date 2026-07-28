@@ -1,10 +1,11 @@
-import { int, mysqlTable, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlTable, varchar, text } from "drizzle-orm/mysql-core";
 
 export const usersTable = mysqlTable("users_table", {
   id: int().primaryKey().autoincrement(),
-  firstName: varchar({ length: 255 }).notNull(),
-  lastName: varchar({ length: 255 }).notNull(),
-  noTelp: varchar({ length: 255 }).notNull(),
+  nama_pengguna: varchar({ length: 20 }).notNull(),
+  no_telp: varchar({ length: 14 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
+  nama_lengkap: varchar({ length: 50 }).notNull(),
+  foto_profile: text().notNull(),
+  email: varchar({ length: 40 }).notNull().unique(),
 });

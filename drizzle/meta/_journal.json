@@ -15,6 +15,27 @@
       "when": 1785144795918,
       "tag": "0001_yielding_wolf_cub",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1785221152950,
+      "tag": "0002_glossy_spirit",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1785221668323,
+      "tag": "0003_tiresome_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1785222552771,
+      "tag": "0004_little_magma",
+      "breakpoints": true
     }
   ]
 }
