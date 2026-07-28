@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { db } from "../db/index";
 import { usersTable } from "../db/schema"; // ganti sesuai nama tabel di schema.js lu
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 async function main() {
@@ -14,19 +14,38 @@ async function main() {
 
 async function regis() {
   const data = await db.insert(usersTable).values({
-    firstName : "jhguggugyu",
-    lastName : "hvhgggu",
-    noTelp : "gtyfytr",
-    email : "agussantoso@gmail.com"
-  })
+    firstName: "jhguggugyu",
+    lastName: "hvhgggu",
+    noTelp: "gtyfytr",
+    email: "agussantoso@gmail.com",
+  });
 
-  return data
-  
+  return data;
 }
 
-regis()
+// regis();
 
+async function login() {
+  try {
+    const data = await db
+      .select({
+        email: usersTable.email,
+        password : usersTable.password
+      })
+      .from(usersTable)
+      .where(
+        eq(usersTable.email, "admin@gmail.com") &&
+          eq(usersTable.password, "12345678"),
+      );
 
+      console.log(data);
+      return
+      
+  } catch (error) {
+    console.log(error);
+    return
+    
+  }
+}
 
-
-
+login()

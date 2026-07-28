@@ -13,7 +13,6 @@ export default function FadeAnimation({
     threshold: 0.2,     
   });
 
-  // Variasi posisi awal
   const variants = {
     up: { opacity: 0, y: 50 },
     down: { opacity: 0, y: -50 },
@@ -33,3 +32,5 @@ export default function FadeAnimation({
     </motion.div>
   );
 }
+
+  
