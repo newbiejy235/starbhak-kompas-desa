@@ -39,13 +39,13 @@ export default function KompasDesaPage() {
                 Menghubungkan <span className="text-[#EAB308] font-medium">petani</span> dengan berbagai pembeli melalui sistem distribusi yang <span className="text-[#EAB308] font-medium">aman, transparan, dan efisien.</span>
               </p>
             </div>
-          </FadeAnimation>
 
           <AnimatedCrops />
 
           <ScrollReveal>
             <About></About>
           </ScrollReveal>
+          </FadeAnimation>
         </div>
       </main>
 
