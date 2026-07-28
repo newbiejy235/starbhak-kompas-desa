@@ -3,9 +3,14 @@ import DotPattern from '@/components/ui/DotPattern'
 import Footer from '@/components/landingpage/Footer'
 import FadeAnimation from '@/components/animation/Animation'
 import AnimatedCrops from '@/components/animation/AnimatedCrop'
+import ScrollReveal from '@/components/animation/ScrollReveal'
+import About from '@/components/landingpage/about/About'
+import PageLoader from '@/components/landingpage/PageLoader'
 
 export default function KompasDesaPage() {
   return (
+    <>
+    <PageLoader/>
     <div className="relative min-h-screen bg-[#025246] overflow-hidden flex flex-col">
 
       <DotPattern className="opacity-30" />
@@ -33,12 +38,14 @@ export default function KompasDesaPage() {
               <p className="mt-8 text-white text-lg md:text-xl leading-relaxed max-w-xl">
                 Menghubungkan <span className="text-[#EAB308] font-medium">petani</span> dengan berbagai pembeli melalui sistem distribusi yang <span className="text-[#EAB308] font-medium">aman, transparan, dan efisien.</span>
               </p>
-              
             </div>
           </FadeAnimation>
 
           <AnimatedCrops />
 
+          <ScrollReveal>
+            <About></About>
+          </ScrollReveal>
         </div>
       </main>
 
@@ -47,5 +54,6 @@ export default function KompasDesaPage() {
       </div>
 
     </div>
+    </>
   )
 }
