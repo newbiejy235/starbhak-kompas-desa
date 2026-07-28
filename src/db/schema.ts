@@ -6,6 +6,6 @@ export const usersTable = mysqlTable("users_table", {
   no_telp: varchar({ length: 14 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   nama_lengkap: varchar({ length: 50 }).notNull(),
-  foto_profile: text().notNull(),
+  foto_profile: text().default(""),
   email: varchar({ length: 40 }).notNull().unique(),
 });

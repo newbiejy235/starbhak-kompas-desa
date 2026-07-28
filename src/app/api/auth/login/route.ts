@@ -1,8 +1,7 @@
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { log } from "node:console";
 
 export async function POST(req: Response) {
   const data = await req.json();
@@ -14,19 +13,22 @@ export async function POST(req: Response) {
         password: usersTable.password,
       })
       .from(usersTable)
-      .where(eq(usersTable.email, data) && eq(usersTable.password, data));
+      .where(
+        and(
+          eq(usersTable.email, data.email),
+          eq(usersTable.password, data.password),
+        ),
+      );
 
-      NextResponse.json({
-        message: "Login berhasil",
-        status: 200
-        
-      })
+    NextResponse.json({
+      message: "Login berhasil",
+      status: 200,
+    });
   } catch (error) {
     console.log(error);
     NextResponse.json({
-        message: error,
-        status: 500
-    })
-    
+      message: error,
+      status: 500,
+    });
   }
 }
