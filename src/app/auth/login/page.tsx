@@ -77,13 +77,13 @@ export default function Login() {
 
           <p className="text-center text-xs text-gray-400 leading-relaxed mt-8">
             Dengan masuk, Anda menyetujui{" "}
-            <span className="text-[#025246] font-medium">
+            <Link href="" className="text-[#025246] font-medium">
               Syarat & Ketentuan
-            </span>{" "}
+            </Link>{" "}
             dan{" "}
-            <span className="text-[#025246] font-medium">
+            <Link href="" className="text-[#025246] font-medium">
               Kebijakan Privasi
-            </span>{" "}
+            </Link>{" "}
             Kompas&apos;Desa
           </p>
         </div>
