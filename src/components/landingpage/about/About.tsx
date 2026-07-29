@@ -97,7 +97,11 @@ export default function About() {
           <div className="flex flex-wrap gap-8 sm:gap-10">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
-                🚚
+                  <img
+                  src="/images/about/IconTruck.svg"
+                  alt=""
+                  className="h-10 sm:h-12 object-contain"
+                />
               </div>
               <div>
                 <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">400+</p>
@@ -106,7 +110,11 @@ export default function About() {
             </div>
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
-                🌾
+                  <img
+                  src="/images/about/IconPadi.svg"
+                  alt=""
+                  className="h-10 sm:h-12 object-contain"
+                />
               </div>
               <div>
                 <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">1000+ Ton</p>
