@@ -120,8 +120,8 @@ export default function About() {
 
         <div className="rounded-lg overflow-hidden">
           <div className="grid grid-cols-2 h-44 sm:h-56 bg-gray-200">
-            <img src="" alt="" className="w-full h-full object-cover" />
-            <img src="" alt="" className="w-full h-full object-cover" />
+            <img src="images/about/truck.png" alt="" className="w-full h-full object-cover" />
+            <img src="images/about/truck2.png" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="bg-[#1f6d3b] text-white font-semibold text-center py-2 text-sm sm:text-base">
             Melayani Hampir di Seluruh Pulau Jawa
