@@ -11,9 +11,10 @@ import PageLoader from '@/components/landingpage/PageLoader'
 import CardBenefit from '@/components/landingpage/cardBenefit/card'
 import CardMembership from '@/components/landingpage/cardMembership/membership'
 import Counter from '@/components/animation/Counter'
+import Testimonial from '@/components/landingpage/testimonial/testi'
 
 export default function KompasDesaPage() {
-  // Fungsi untuk scroll otomatis ke section Membership
+
   const scrollToMembership = () => {
     const section = document.getElementById('membership-section');
     if (section) {
@@ -107,6 +108,7 @@ export default function KompasDesaPage() {
             <ScrollReveal>
               <FadeAnimation direction="up">
                 <CardMembership />
+                <Testimonial />
               </FadeAnimation>
             </ScrollReveal>
           </section>
