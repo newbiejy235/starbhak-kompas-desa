@@ -19,7 +19,7 @@ export default function CardMembership() {
       subtitle: "Petani profesional",
       price: "Rp1.299.000",
       period: "/ 5 Kali Distribusi",
-      isPopular: true, // Untuk menandai paket unggulan/populer
+      isPopular: true, 
       benefits: [
         "Maks. 300 Kg Setiap Distribusi",
         "Prioritas Akses Mitra Pembeli",
@@ -71,7 +71,6 @@ export default function CardMembership() {
             }`}
           >
             <div>
-              {/* Header Kartu: Ikon & Nama Paket */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 rounded-full bg-[#EBF3ED] flex-shrink-0" />
                 <div>
@@ -81,8 +80,6 @@ export default function CardMembership() {
                   <p className="text-[13px] text-[#9E9E9E]">{plan.subtitle}</p>
                 </div>
               </div>
-
-              {/* Harga & Periode */}
               <div className="text-center mb-6">
                 <div className="text-[28px] font-extrabold text-[#0B4F3A]">
                   {plan.price}
@@ -92,16 +89,13 @@ export default function CardMembership() {
                 </div>
               </div>
 
-              {/* Garis Pembatas */}
               <hr className="border-gray-100 mb-6" />
 
-              {/* Daftar Benefit */}
               <ul className="space-y-4 mb-8">
                 {plan.benefits.map((benefit, bIndex) => (
                   <li key={bIndex} className="flex items-start gap-3 text-[13px] text-[#444444]">
                     {/* Logo centang dikosongkan sesuai permintaan */}
                     <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-                      {/* TODO: Masukkan komponen/ikon centang di sini */}
                     </div>
                     <span className="leading-relaxed">{benefit}</span>
                   </li>
@@ -109,8 +103,7 @@ export default function CardMembership() {
               </ul>
             </div>
 
-            {/* Tombol Aksi */}
-            <button
+            <a href="/auth/login"
               className={`w-full py-3.5 px-6 rounded-xl font-medium text-sm transition-colors duration-200 ${
                 plan.isPopular
                   ? "bg-[#0B4F3A] text-white hover:bg-[#073829]"
@@ -118,7 +111,7 @@ export default function CardMembership() {
               }`}
             >
               Berlangganan Sekarang
-            </button>
+            </a>
           </div>
         ))}
       </div>
