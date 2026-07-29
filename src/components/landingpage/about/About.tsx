@@ -1,5 +1,7 @@
+import Counter from "@/components/animation/Counter"
+
 export default function About() {
-  const logos = [
+  const logos: string[] = [
     "/images/about/KementrianPertanian.png",
     "/images/about/BPN.png",
     "/images/about/Bulog.png",
@@ -95,41 +97,50 @@ export default function About() {
           </p>
 
           <div className="flex flex-wrap gap-8 sm:gap-10">
+            
+            {/* Counter 1: 400+ */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
-                  <img
+                <img
                   src="/images/about/IconTruck.svg"
                   alt=""
                   className="h-10 sm:h-12 object-contain"
                 />
               </div>
               <div>
-                <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">400+</p>
+                <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">
+                  <Counter end={400} suffix="+" />
+                </p>
                 <p className="text-xs sm:text-sm text-gray-600">Distribusi berhasil</p>
               </div>
             </div>
+
+            {/* Counter 2: 1000+ Ton */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
-                  <img
+                <img
                   src="/images/about/IconPadi.svg"
                   alt=""
                   className="h-10 sm:h-12 object-contain"
                 />
               </div>
               <div>
-                <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">1000+ Ton</p>
+                <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">
+                  <Counter end={1000} suffix="+ Ton" />
+                </p>
                 <p className="text-xs sm:text-sm text-gray-600">
                   Hasil panen tersalurkan
                 </p>
               </div>
             </div>
+
           </div>
         </div>
 
         <div className="rounded-lg overflow-hidden">
           <div className="grid grid-cols-2 h-44 sm:h-56 bg-gray-200">
-            <img src="images/about/truck.png" alt="" className="w-full h-full object-cover" />
-            <img src="images/about/truck2.png" alt="" className="w-full h-full object-cover" />
+            <img src="/images/about/truck.png" alt="" className="w-full h-full object-cover" />
+            <img src="/images/about/truck2.png" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="bg-[#1f6d3b] text-white font-semibold text-center py-2 text-sm sm:text-base">
             Melayani Hampir di Seluruh Pulau Jawa

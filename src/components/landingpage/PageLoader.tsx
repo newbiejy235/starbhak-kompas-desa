@@ -71,7 +71,7 @@ export default function PageLoader({ children }) {
                     }}
                   >
                     <Image
-                      src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Pornhub-logo.svg"
+                      src=""
                       alt="Logo"
                       width={70}
                       height={70}

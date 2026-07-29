@@ -11,7 +11,6 @@ export default function KompasDesaPage() {
   return (
     <>
       <PageLoader />
-
       <div className="relative min-h-screen bg-[#025246] overflow-hidden flex flex-col">
 
         <DotPattern className="opacity-30" />
