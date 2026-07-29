@@ -8,9 +8,13 @@ const inter = Inter({
   display: "swap",
 });
 
+
 export const metadata: Metadata = {
   title: "Kompas Desa",
   description: "Website Kompas Desa",
+  icons: {
+    icon: "/images/Logo.svg", 
+  },
 };
 
 export default function RootLayout({
