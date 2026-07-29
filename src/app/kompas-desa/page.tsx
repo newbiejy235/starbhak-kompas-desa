@@ -6,6 +6,7 @@ import AnimatedCrops from '@/components/animation/AnimatedCrop'
 import ScrollReveal from '@/components/animation/ScrollReveal'
 import About from '@/components/landingpage/about/About'
 import PageLoader from '@/components/landingpage/PageLoader'
+import CardBenefit from '@/components/landingpage/cardBenefit/card'
 
 export default function KompasDesaPage() {
   return (
@@ -52,6 +53,14 @@ export default function KompasDesaPage() {
             <ScrollReveal>
               <FadeAnimation direction="up">
                 <About />
+              </FadeAnimation>
+            </ScrollReveal>
+          </section>
+
+          <section className="bg-white pb-20">
+            <ScrollReveal>
+              <FadeAnimation direction="up">
+                <CardBenefit />
               </FadeAnimation>
             </ScrollReveal>
           </section>

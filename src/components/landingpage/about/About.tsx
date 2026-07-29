@@ -98,7 +98,6 @@ export default function About() {
 
           <div className="flex flex-wrap gap-8 sm:gap-10">
             
-            {/* Counter 1: 400+ */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
                 <img
@@ -115,7 +114,6 @@ export default function About() {
               </div>
             </div>
 
-            {/* Counter 2: 1000+ Ton */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
                 <img
