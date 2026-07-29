@@ -1,5 +1,9 @@
+"use client"
+
 import Image from "next/image";
 import Link from "next/link";
+import {useState} from 'react'
+import { registerAction } from "@/actions/auth";
 
 export default function Register() {
   return (
@@ -7,7 +11,7 @@ export default function Register() {
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col md:flex-row">
         <div className="hidden md:block md:w-1/2 relative">
           <Image
-            src="/images/register/RegisterLeftImage.png"
+            src="/images/register/RegisterLeftImgage.png"
             alt="Daftar"
             fill
             className="object-cover"
