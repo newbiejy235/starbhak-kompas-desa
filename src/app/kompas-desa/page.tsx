@@ -60,13 +60,22 @@ export default function KompasDesaPage() {
                       Sudah terdaftar <span className="text-[#EAB308] font-bold"><Counter end={200} suffix="+" />supplier</span>
                     </div>
                   </div>
-                  <div className="mt-8 flex items-center gap-4">
-                    <button
-                      onClick={scrollToMembership}
-                      className="bg-[#2E7D32] hover:bg-[#256628] text-white font-medium px-8 py-3.5 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer"
-                    >
-                      Berlangganan
-                    </button>
+                  <div className="mt-3 flex items-center gap-4">
+                <button
+                    onClick={scrollToMembership}
+                    className="
+                    relative
+                    px-10 py-3
+                    rounded-full
+                    text-white text-lg font-semibold
+                    bg-gradient-to-r from-[#4CAF50] to-[#2E7D32]
+                    shadow-[0_8px_20px_rgba(46,125,50,0.4)]
+                    hover:shadow-[0_10px_25px_rgba(46,125,50,0.6)]
+                    hover:scale-[1.03]
+                    transition-all duration-300"
+                >
+                  Berlangganan
+                </button>
                   </div>
                 </div>
               </FadeAnimation>

@@ -70,8 +70,8 @@ export default function PageLoader({ children }) {
                       ease: "easeInOut",
                     }}
                   >
-                    <Image
-                      src=""
+                    <Image className="rounded-full"
+                      src="/images/Logo.svg"
                       alt="Logo"
                       width={70}
                       height={70}
