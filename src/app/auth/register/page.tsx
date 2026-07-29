@@ -23,7 +23,7 @@ export default function Register() {
           <div className="flex justify-center mb-8 md:hidden">
             <Image
               src="/images/register-illustration.png"
-              alt="Register Illustration"
+              alt="Register Illustration" 
               width={250}
               height={250}
               className="object-contain"
