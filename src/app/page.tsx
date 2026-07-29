@@ -12,7 +12,7 @@ export default function Home() {
       router.push('/admin/default');
     } else if (user_role === 'user') {
       router.push('/user/home');
-    }else {
+    } else {
       router.push('/kompas-desa');
     }
   }, []);
