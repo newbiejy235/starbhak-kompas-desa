@@ -1,19 +1,7 @@
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-
-export type RegisterInput = {
-  nama_pengguna: string;
-  no_telp: string;
-  password: string;
-  nama_lengkap: string;
-  email: string;
-};
-
-export type LoginInput = {
-  email: string;
-  password: string;
-};
+import { RegisterInput, LoginInput } from "@/lib/types/auth";
 
 export async function register(data: RegisterInput) {
   try {

@@ -30,22 +30,22 @@ async function login() {
     const data = await db
       .select({
         email: usersTable.email,
-        password : usersTable.password
+        password: usersTable.password,
       })
       .from(usersTable)
       .where(
-        eq(usersTable.email, "admin@gmail.com") &&
+        and(
+          eq(usersTable.email, "admin@gmail.com"),
           eq(usersTable.password, "12345678"),
+        ),
       );
 
-      console.log(data);
-      return
-      
+    console.log(data);
+    return;
   } catch (error) {
     console.log(error);
-    return
-    
+    return;
   }
 }
 
-login()
+login();
