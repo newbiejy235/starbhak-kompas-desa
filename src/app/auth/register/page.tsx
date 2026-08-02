@@ -3,7 +3,7 @@
 <<<<<<< HEAD
 import Image from "next/image";
 import Link from "next/link";
-import {useState} from 'react'
+import { useState } from 'react'
 import { registerAction } from "@/actions/auth";
 =======
 import { useState } from "react";
@@ -138,13 +138,13 @@ export default function Register() {
           />
 =======
     <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="bg-white p-8 rounded-xl w-full max-w-md space-y-4 shadow-sm"
-    >
-      <h1 className="text-xl font-bold text-center text-gray-900">Daftar Akun</h1>
+            onSubmit={handleSubmit}
+            noValidate
+            className="bg-white p-8 rounded-xl w-full max-w-md space-y-4 shadow-sm"
+          >
+            <h1 className="text-xl font-bold text-center text-gray-900">Daftar Akun</h1>
 
-      {serverMessage && (
+            {serverMessage && (
         <div
           className={`text-sm p-3 rounded-lg ${serverMessage.type === "success"
             ? "bg-green-50 text-green-700 border border-green-200"
@@ -258,6 +258,6 @@ export default function Register() {
           </p>
         </div>
       </div>
-    </div>
-  );
+      </div>
+      );
 }
