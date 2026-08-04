@@ -3,13 +3,17 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PageLoader({ children }) {
+type Props = {
+  children: React.ReactNode;
+};
+
+export default function PageLoader({ children }: Props) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const t = setTimeout(() => {
       setIsVisible(false);
-    }, 1500); 
+    }, 1500);
     return () => clearTimeout(t);
   }, []);
 
@@ -39,6 +43,7 @@ export default function PageLoader({ children }) {
           </motion.div>
         )}
       </AnimatePresence>
+
       <motion.div
         initial={{ opacity: 0, filter: "blur(8px)" }}
         animate={{ opacity: 1, filter: "blur(0px)" }}
