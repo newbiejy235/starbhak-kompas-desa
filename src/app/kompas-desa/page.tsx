@@ -33,7 +33,6 @@ export default function KompasDesaPage() {
 
           <main className="relative z-25 grow w-full">
 
-            {/* BERANDA */}
             <section
               id="beranda"
               className="w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-20 pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 flex items-center scroll-mt-24"
@@ -83,7 +82,6 @@ export default function KompasDesaPage() {
               </div>
             </section>
 
-            {/* TENTANG */}
             <section id="tentang" className="bg-white w-full py-6 sm:py-10 scroll-mt-24">
               <ScrollReveal>
                 <FadeAnimation direction="up">
@@ -92,7 +90,6 @@ export default function KompasDesaPage() {
               </ScrollReveal>
             </section>
 
-            {/* LAYANAN */}
             <section id="layanan" className="bg-white w-full py-6 sm:py-10 scroll-mt-24">
               <ScrollReveal>
                 <FadeAnimation direction="up">
@@ -100,7 +97,7 @@ export default function KompasDesaPage() {
                 </FadeAnimation>
               </ScrollReveal>
             </section>
-            
+
             <section id="testimoni" className="bg-white w-full py-6 sm:py-12 scroll-mt-24">
               <ScrollReveal>
                 <FadeAnimation direction="up">

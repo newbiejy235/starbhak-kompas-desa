@@ -39,11 +39,15 @@ export default function DashboardPembeli() {
                     Dapatkan kualitas terbaik dengan harga yang lebih transparan. Dukung petani Indonesia!
                   </p>
                 </div>
-                <div className="hidden md:block absolute right-10 top-1/2 -translate-y-1/2 opacity-20">
-                  <Image src="" alt=""></Image>
+                  <div className="hidden md:block absolute right-10 top-1/2 -translate-y-1/2 opacity-20">
+                  <Image 
+                    src="/images/user/HeaderImageUser.svg" 
+                    alt="foto sayuran" 
+                    width={160} 
+                    height={160} 
+                  />
                 </div>
               </div>
-
 
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-[#111111]">Katalog Komoditas</h2>
