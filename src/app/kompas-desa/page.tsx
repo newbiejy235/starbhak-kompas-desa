@@ -21,6 +21,8 @@ export default function KompasDesaPage() {
     }
   }
 
+  // Mengembalikan nilai untuk export 
+
   return (
     <>
       <PageLoader />
