@@ -27,7 +27,7 @@ export default function CardBenefit() {
   ];
 
   return (
-    <section className="bg-white min-h-screen py-[60px] px-5 flex flex-col items-center font-sans">
+    <section className="bg-white min-h-screen py-15 px-5 flex flex-col items-center font-sans">
       <div className="text-center mb-10">
         <h2 className="text-[32px] font-bold text-[#111111] mb-3">
           Keuntungan yang Akan <span className="text-[#2E7D32]">Anda Peroleh</span>

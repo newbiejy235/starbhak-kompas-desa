@@ -8,7 +8,7 @@ interface CounterProps {
   suffix?: string
 }
 
-export default function Counter({ end, duration = 2000, suffix = "" }: CounterProps) {
+export default function Counter({ end, duration = 4000, suffix = "" }: CounterProps) {
   const [count, setCount] = useState<number>(0)
   const [hasAnimated, setHasAnimated] = useState<boolean>(false)
   const elementRef = useRef<HTMLSpanElement | null>(null)
