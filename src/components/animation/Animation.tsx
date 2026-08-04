@@ -2,12 +2,19 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
+type Props = {
+  children: React.ReactNode;
+  direction?: "up" | "down" | "left" | "right" | "in";
+  duration?: number;
+  delay?: number;
+};
+
 export default function FadeAnimation({ 
   children, 
   direction = "up", 
   duration = 0.8, 
   delay = 0 
-}) {
+}: Props) {
   const { ref, inView } = useInView({
     triggerOnce: false,
     threshold: 0.2,     
@@ -32,5 +39,3 @@ export default function FadeAnimation({
     </motion.div>
   );
 }
-
-  
