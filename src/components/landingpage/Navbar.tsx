@@ -73,7 +73,7 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
 
-          <Link href="/auth/loginx">
+          <Link href="/auth/login">
             <button className="hidden sm:flex items-center justify-center bg-transparent text-[#025246] font-bold text-base lg:text-lg hover:text-[#D7BE44] hover:scale-105 transition-all duration-300">
               Masuk
             </button>
