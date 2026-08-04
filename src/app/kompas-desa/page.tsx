@@ -21,11 +21,9 @@ export default function KompasDesaPage() {
     }
   }
 
-  // Mengembalikan nilai untuk export 
-
   return (
     <>
-      <PageLoader />
+    <PageLoader>
       <div className="relative min-h-screen bg-[#025246] overflow-x-hidden flex flex-col">
         <DotPattern className="opacity-30" />
 
@@ -112,6 +110,7 @@ export default function KompasDesaPage() {
           <Footer />
         </div>
       </div>
+          </PageLoader>
     </>
   )
 }
