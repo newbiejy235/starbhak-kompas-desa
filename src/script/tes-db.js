@@ -2,7 +2,7 @@ import "dotenv/config";
 import { db } from "../db/index";
 import { usersTable } from "../db/schema"; // ganti sesuai nama tabel di schema.js lu
 import { and, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+
 
 async function main() {
   console.log("mulai ambil data....");

@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function PageLoader({ children }) {
   const [isVisible, setIsVisible] = useState(true);
-
+ 
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const t = setTimeout(() => {
@@ -24,7 +24,7 @@ export default function PageLoader({ children }) {
       <AnimatePresence>
         {isVisible && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-[#025246] z-[9999] overflow-hidden"
+            className="fixed inset-0 flex items-center justify-center bg-[#jj025246] z-[9999] overflow-hidden"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
