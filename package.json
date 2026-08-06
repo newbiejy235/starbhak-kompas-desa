@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "tableDB" : "npx drizzle-kit studio",
     "test" : "npx tsx src/script/tes-db.ts",
     "dev": "next dev",
     "build": "next build",

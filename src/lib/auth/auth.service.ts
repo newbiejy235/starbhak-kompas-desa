@@ -1,34 +1,38 @@
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { RegisterInput, LoginInput } from "@/lib/types/auth";
+// import { RegisterInput, LoginInput } from "@/lib/types/auth";
 
-export async function register(data: RegisterInput) {
+export async function register(data: FormData) {
+  const userInput = {
+    username: data.get("username") as string,
+    fullName: data.get("fullName") as string,
+    noTelp: data.get("noTelp") as string,
+    password: data.get("password") as string,
+    email: data.get("email") as string,
+  };
+
   try {
-    const register_query = await db.insert(usersTable).values({
-     username: data.username,
-     fullName: data.fullName,
-     noTelp:data.noTelp,
-     password:data.password,
-     email:data.email
-    });
-    console.log(register_query);
-    return {
-      success: true,
-      message: "Register berhasil",
-    };
+    const users = await db.insert(usersTable).values(userInput);
+    console.log(users);
+    return { success: true, message: "akun berhasil dibuat" };
   } catch (error) {
     console.log(error);
     return {
       success: false,
-      message: "Register gagal",
+      message: "akun gagal dibuat, email sudah terdaftar",
     };
   }
 }
 
-export async function login(data: LoginInput) {
+export async function login(data: FormData) {
+  const loginInput = {
+    email: data.get("email") as string,
+    password: data.get("password") as string,
+  };
+
   try {
-    const login_query = db
+    const [user] = await db
       .select({
         email: usersTable.email,
         password: usersTable.password,
@@ -36,21 +40,21 @@ export async function login(data: LoginInput) {
       .from(usersTable)
       .where(
         and(
-          eq(usersTable.email, data.email),
-          eq(usersTable.password, data.password),
+          eq(usersTable.email, loginInput.email),
+          eq(usersTable.password, loginInput.password),
         ),
       );
 
-    console.log(login_query);
-    return {
-      success: true,
-      message: "Login berhasil",
-    };
+    if (!user) {
+      console.log("gagal");
+
+      return { success: false, message: "Email atau password salah" };
+    }
+    console.log("berhasil");
+
+    return { success: true, message: "Login berhasil" };
   } catch (error) {
-    console.log(error);
-    return {
-      success: false,
-      message: "Login gagal",
-    };
+    console.log("error:", error);
+    return { success: false, message: "Login gagal" };
   }
 }

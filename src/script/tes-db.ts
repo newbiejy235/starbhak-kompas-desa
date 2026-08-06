@@ -37,7 +37,7 @@ async function login() {
       .from(usersTable)
       .where(
         and(
-          eq(usersTable.email, "admin@gmail.com"),
+          eq(usersTable.email, "tiger@gmail.com"),
           eq(usersTable.password, "12345678"),
         ),
       );
@@ -50,4 +50,4 @@ async function login() {
   }
 }
 
-// login();
+login();
