@@ -9,12 +9,19 @@ type Props = {
 
 export default function PageLoader({ children }: Props) {
   const [isVisible, setIsVisible] = useState(true);
- 
+
   useEffect(() => {
-    const t = setTimeout(() => {
+    document.body.style.overflow = "hidden";
+
+    const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 1500);
-    return () => clearTimeout(t);
+      document.body.style.overflow = "auto";
+    }, 1600);
+
+    return () => {
+      clearTimeout(timer);
+      document.body.style.overflow = "auto";
+    };
   }, []);
 
   return (
@@ -23,34 +30,40 @@ export default function PageLoader({ children }: Props) {
         {isVisible && (
           <motion.div
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#025246]"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            initial={{
+              borderBottomLeftRadius: "0%",
+              borderBottomRightRadius: "0%",
+              y: "0%",
+            }}
+            exit={{
+              borderBottomLeftRadius: "50%",
+              borderBottomRightRadius: "50%",
+              y: "-100%",
+            }}
+            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
           >
             <motion.div
               className="text-4xl md:text-6xl font-bold flex"
               initial={{ opacity: 0, filter: "blur(12px)", scale: 1.05 }}
               animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-              exit={{ opacity: 0, filter: "blur(16px)", scale: 0.98 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               transition={{
-                duration: 0.7,
+                duration: 0.5,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <span className="text-white">Kompas</span>
-              <span className="text-[#D7BE44]">Desa</span>
+          <span className="text-white [text-shadow:0_0_10px_rgba(255,255,255,0.6),0_0_20px_rgba(255,255,255,0.3)]">
+            Kompas
+          </span>
+          <span className="text-[#D7BE44] [text-shadow:0_0_10px_rgba(215,190,68,0.8),0_0_20px_rgba(215,190,68,0.4)]">
+            Desa
+          </span>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <motion.div
-        initial={{ opacity: 0, filter: "blur(8px)" }}
-        animate={{ opacity: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        {children}
-      </motion.div>
+      <div className="relative z-0">{children}</div>
     </div>
   );
-}
+} 

@@ -102,13 +102,14 @@ export default function Register() {
                 Kompas&apos;Desa
               </span>
             </label>
-
+            <a href="auth/confirm-email">
             <button
               type="submit"
               className="w-full rounded-2xl bg-[#025246] py-4 text-sm font-semibold text-white hover:bg-[#013d34] transition mt-2"
             >
               Daftar
             </button>
+            </a>
           </form>
 
           <p className="text-center text-sm text-gray-600 mt-6">
