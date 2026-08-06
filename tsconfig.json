@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "src/script/tes-db.js"  ],
+    "**/*.mts",
+    "src/script/tes-db.ts"
+  ],
   "exclude": ["node_modules"]
 }

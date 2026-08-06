@@ -6,12 +6,11 @@ import { RegisterInput, LoginInput } from "@/lib/types/auth";
 export async function register(data: RegisterInput) {
   try {
     const register_query = await db.insert(usersTable).values({
-      nama_pengguna: data.nama_pengguna,
-      nama_lengkap: data.nama_lengkap,
-      no_telp: data.no_telp,
-      email: data.email,
-      password: data.password,
-      foto_profile: "",
+     username: data.username,
+     fullName: data.fullName,
+     noTelp:data.noTelp,
+     password:data.password,
+     email:data.email
     });
     console.log(register_query);
     return {

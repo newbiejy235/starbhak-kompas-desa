@@ -1,8 +1,8 @@
 export type RegisterInput = {
-  nama_pengguna: string;
-  no_telp: string;
+  username: string;
+  fullName: string;
+  noTelp: string;
   password: string;
-  nama_lengkap: string;
   email: string;
 };
 
