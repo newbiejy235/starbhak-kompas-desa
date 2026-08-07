@@ -1,7 +1,7 @@
 "use client"
 
 import { Menu, X } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { Inter } from "next/font/google"
 
@@ -9,6 +9,11 @@ const inter = Inter({
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
 })
+
+function subscribe(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange)
+  return () => window.removeEventListener("storage", onStoreChange)
+}
 
 const navLinks = [
   { href: "#beranda", label: "Beranda" },
@@ -22,6 +27,11 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activeLink, setActiveLink] = useState("#beranda")
   const [isScrolled, setIsScrolled] = useState(false)
+  const role = useSyncExternalStore(
+    subscribe,
+    () => localStorage.getItem("user_role"),
+    () => null,
+  )
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
@@ -33,6 +43,15 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const dashboardHref =
+    role === "admin"
+      ? "/admin/dashboard"
+      : role === "petani"
+        ? "/petani/dashboard"
+        : role === "pembeli"
+          ? "/user/home"
+          : null
 
   return (
     <>
@@ -73,11 +92,26 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
 
-          <Link href="/auth/login">
-            <button className="hidden sm:flex items-center justify-center bg-transparent text-[#025246] font-bold text-base lg:text-lg hover:text-[#D7BE44] hover:scale-105 transition-all duration-300">
-              Masuk
-            </button>
-          </Link>
+          {dashboardHref ? (
+            <Link href={dashboardHref}>
+              <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-full hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30">
+                Dasbor Saya
+              </button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/auth/register">
+                <button className="hidden md:flex items-center justify-center bg-[#025246] text-white font-bold text-base lg:text-lg px-6 py-2 rounded-full hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30">
+                  Daftar
+                </button>
+              </Link>
+              <Link href="/auth/login">
+                <button className="hidden sm:flex items-center justify-center bg-transparent text-[#025246] font-bold text-base lg:text-lg hover:text-[#D7BE44] hover:scale-105 transition-all duration-300">
+                  Masuk
+                </button>
+              </Link>
+            </>
+          )}
 
           <button
             onClick={toggleMenu}
@@ -138,11 +172,19 @@ export default function Navbar() {
         </div>
 
         <div className="absolute bottom-0 left-0 w-full p-6 border-t border-gray-200/50 bg-white/50">
-          <Link href="/auth/login">
-            <button className="w-full bg-[#025246] hover:bg-[#024036] text-white py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-[#025246]/30 hover:shadow-[#025246]/50">
-              Masuk
-            </button>
-          </Link>
+          {dashboardHref ? (
+            <Link href={dashboardHref}>
+              <button className="w-full bg-[#025246] hover:bg-[#024036] text-white py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-[#025246]/30 hover:shadow-[#025246]/50">
+                Dasbor Saya
+              </button>
+            </Link>
+          ) : (
+            <Link href="/auth/login">
+              <button className="w-full bg-[#025246] hover:bg-[#024036] text-white py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-[#025246]/30 hover:shadow-[#025246]/50">
+                Masuk
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </>

@@ -1,0 +1,106 @@
+"use client";
+
+import {
+  getUserNotifications,
+  markNotificationsRead,
+} from "@/actions/notification";
+import { getClientUser } from "@/lib/auth/client";
+import { formatDateTime } from "@/lib/format";
+import { LoadingState, EmptyState } from "@/components/shared/States";
+import { Bell, CheckCheck, Package, CreditCard, Star, Info, type LucideIcon } from "lucide-react";
+import { useFetch } from "@/lib/hooks";
+import type { NotificationRow } from "@/lib/types/market";
+
+const typeIcon: Record<string, LucideIcon> = {
+  order: Package,
+  payment: CreditCard,
+  review: Star,
+  system: Info,
+};
+
+const typeColor: Record<string, string> = {
+  order: "bg-blue-50 text-blue-600",
+  payment: "bg-green-50 text-green-600",
+  review: "bg-amber-50 text-amber-600",
+  system: "bg-purple-50 text-purple-600",
+};
+
+export default function UserNotifications() {
+  const user = getClientUser();
+
+  const { data: notifications, loading, reload } = useFetch(
+    () =>
+      user
+        ? getUserNotifications(user.id)
+        : Promise.resolve([] as NotificationRow[]),
+    [user?.id],
+  );
+
+  const markAll = async () => {
+    if (!user) return;
+    await markNotificationsRead(user.id);
+    reload();
+  };
+
+  if (loading) return <LoadingState />;
+
+  const list = notifications ?? [];
+  const unread = list.filter((n) => !n.isRead).length;
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#111111] mb-1">Notifikasi</h1>
+          <p className="text-sm text-gray-500">
+            {unread > 0 ? `${unread} notifikasi belum dibaca` : "Semua sudah dibaca"}
+          </p>
+        </div>
+        {unread > 0 && (
+          <button
+            onClick={markAll}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#025246] hover:underline"
+          >
+            <CheckCheck size={18} /> Tandai semua dibaca
+          </button>
+        )}
+      </div>
+
+      {list.length === 0 ? (
+        <EmptyState title="Tidak Ada Notifikasi" message="Notifikasi Anda akan muncul di sini." />
+      ) : (
+        <div className="space-y-3">
+          {list.map((n) => {
+            const Icon = typeIcon[n.type] ?? Bell;
+            return (
+              <div
+                key={n.id}
+                className={`bg-white rounded-2xl border p-5 flex gap-4 shadow-sm ${
+                  n.isRead ? "border-gray-200 opacity-70" : "border-[#025246]/30"
+                }`}
+              >
+                <div
+                  className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    typeColor[n.type] ?? "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  <Icon size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
+                    {!n.isRead && (
+                      <span className="w-2.5 h-2.5 bg-[#025246] rounded-full flex-shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">{n.message}</p>
+                  <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

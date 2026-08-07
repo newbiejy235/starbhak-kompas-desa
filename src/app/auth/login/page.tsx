@@ -1,11 +1,21 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { loginAction } from "@/actions/auth";
+import { saveSession } from "@/lib/auth/client";
 
 export default function Login() {
+  const router = useRouter();
   const [state, formAction, isPending] = useActionState(loginAction, null);
+
+  useEffect(() => {
+    if (state?.success && state.token && state.user) {
+      saveSession(state.token, state.user);
+      router.push(state.redirect ?? "/user/home");
+    }
+  }, [state, router]);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F6F6F6] p-4">

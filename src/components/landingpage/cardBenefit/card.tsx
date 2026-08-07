@@ -108,7 +108,6 @@ export default function CardBenefit() {
                   className="w-full h-full object-contain"
                 />
               </div>
-"
               <div className="bg-[#EBF3ED] text-[#025246] px-[14px] py-[6px] rounded-lg font-bold text-sm">
                 {benefit.number}
               </div>

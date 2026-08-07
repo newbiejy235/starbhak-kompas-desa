@@ -44,26 +44,34 @@ export default function PageLoader({ children }: Props) {
           >
             <motion.div
               className="text-4xl md:text-6xl font-bold flex"
-              initial={{ opacity: 0, filter: "blur(12px)", scale: 1.05 }}
-              animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, filter: "blur(12px)", scale: 1.05, y: 0 }}
+              animate={{ opacity: 1, filter: "blur(0px)", scale: 1, y: 0 }}
+
+              exit={{ 
+                y: "-42vh", 
+                scale: 0.55, 
+                opacity: 0 
+              }}
               transition={{
-                duration: 0.5,
-                ease: [0.22, 1, 0.36, 1],
+                duration: 0.8, 
+                ease: [0.76, 0, 0.24, 1],
               }}
             >
-          <span className="text-[#025246]">
-            Kompas
-          </span>
-          <span className="text-[#D7BE44]">
-            Desa
-          </span>
+              <span className="text-[#025246]">Kompas</span>
+              <span className="text-[#D7BE44]">Desa</span>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative z-0">{children}</div>
+      <motion.div 
+        className="relative z-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1.4 }} 
+      >
+        {children}
+      </motion.div>
     </div>
   );
-} 
+}

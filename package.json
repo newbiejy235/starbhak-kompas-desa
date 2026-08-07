@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "tableDB" : "npx drizzle-kit studio",
+    "seed": "npx tsx src/script/seed.ts",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate": "npx drizzle-kit migrate",
+    "db:push": "npx drizzle-kit push",
     "test" : "npx tsx src/script/tes-db.ts",
     "dev": "next dev",
     "build": "next build",
@@ -12,7 +16,9 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.27.0",
     "motion": "^12.42.2",
     "mysql2": "^3.23.1",
@@ -23,6 +29,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19",

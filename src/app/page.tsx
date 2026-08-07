@@ -9,13 +9,15 @@ export default function Home() {
   useEffect(() => {
     const user_role = localStorage.getItem('user_role');
     if (user_role === 'admin') {
-      router.push('/admin/default');
-    } else if (user_role === 'user') {
+      router.push('/admin/dashboard');
+    } else if (user_role === 'petani') {
+      router.push('/petani/dashboard');
+    } else if (user_role === 'pembeli') {
       router.push('/user/home');
     } else {
       router.push('/kompas-desa');
     }
-  }, []);
+  }, [router]);
 
   return null;
 }

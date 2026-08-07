@@ -1,3 +1,8 @@
+export type ActionState = {
+  success: boolean;
+  message: string;
+};
+
 export type RegisterInput = {
   username: string;
   fullName: string;
@@ -11,7 +16,7 @@ export type LoginInput = {
   password: string;
 };
 
-export const initialState = {
+export const initialState: ActionState = {
   success: false,
   message: "",
 };

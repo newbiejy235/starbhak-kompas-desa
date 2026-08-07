@@ -1,0 +1,85 @@
+"use client";
+
+import Link from "next/link";
+import { Star } from "lucide-react";
+import { getUserOrders } from "@/actions/order";
+import { getClientUser } from "@/lib/auth/client";
+import { formatRupiah, formatDateTime } from "@/lib/format";
+import { LoadingState, EmptyState } from "@/components/shared/States";
+import StatusBadge from "@/components/shared/StatusBadge";
+import { useFetch } from "@/lib/hooks";
+import type { BuyerOrder } from "@/lib/types/market";
+
+export default function UserOrders() {
+  const user = getClientUser();
+
+  const { data: orders, loading } = useFetch(
+    () =>
+      user ? getUserOrders(user.id) : Promise.resolve([] as BuyerOrder[]),
+    [user?.id],
+  );
+
+  if (loading) return <LoadingState />;
+
+  const orderList = orders ?? [];
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-[#111111] mb-2">Pesanan Saya</h1>
+      <p className="text-sm text-gray-500 mb-6">Pantau status pesanan Anda di sini.</p>
+
+      {orderList.length === 0 ? (
+        <EmptyState
+          title="Belum Ada Pesanan"
+          message="Anda belum memiliki pesanan. Yuk mulai belanja komoditas segar!"
+        />
+      ) : (
+        <div className="space-y-4">
+          {orderList.map((o) => (
+            <div
+              key={o.id}
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"
+            >
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div>
+                  <p className="text-xs text-gray-500">{formatDateTime(o.createdAt)}</p>
+                  <p className="text-sm font-bold text-gray-800">{o.orderCode}</p>
+                </div>
+                <StatusBadge status={o.status} />
+              </div>
+
+              <Link
+                href={`/user/checkout/${o.id}`}
+                className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors"
+              >
+                <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#025246] to-[#047857] text-white flex items-center justify-center text-2xl font-black">
+                  {o.commodityName?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
+                  <p className="text-xs text-gray-500">
+                    {Number(o.quantity)} × {formatRupiah(o.unitPrice)} · {o.farmerName}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Pembayaran: <StatusBadge status={o.paymentStatus ?? "pending"} />
+                  </p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-extrabold text-[#025246]">{formatRupiah(o.totalPrice)}</p>
+                  {o.status === "completed" && (
+                    <Link
+                      href={`/user/reviews?order=${o.id}`}
+                      className="inline-flex items-center gap-1 text-xs text-[#025246] font-semibold mt-1 hover:underline"
+                    >
+                      <Star size={12} /> Beri Ulasan
+                    </Link>
+                  )}
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
