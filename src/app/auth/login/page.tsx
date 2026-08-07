@@ -13,7 +13,7 @@ export default function Login() {
         <div className="hidden md:block md:w-1/2 relative">
           <Image
             // src="/images/login/LoginLeftImage.png"
-            src='/images/login/LoginLeftImage.png'
+            src='/images/login/joni.jpg'
             alt="Login"
             fill
             className="object-cover"
