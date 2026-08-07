@@ -29,7 +29,7 @@ export default function PageLoader({ children }: Props) {
       <AnimatePresence>
         {isVisible && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#025246]"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-white"
             initial={{
               borderBottomLeftRadius: "0%",
               borderBottomRightRadius: "0%",
@@ -52,10 +52,10 @@ export default function PageLoader({ children }: Props) {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-          <span className="text-white [text-shadow:0_0_10px_rgba(255,255,255,0.6),0_0_20px_rgba(255,255,255,0.3)]">
+          <span className="text-[#025246]">
             Kompas
           </span>
-          <span className="text-[#D7BE44] [text-shadow:0_0_10px_rgba(215,190,68,0.8),0_0_20px_rgba(215,190,68,0.4)]">
+          <span className="text-[#D7BE44]">
             Desa
           </span>
             </motion.div>

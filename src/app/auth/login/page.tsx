@@ -12,7 +12,8 @@ export default function Login() {
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col md:flex-row">
         <div className="hidden md:block md:w-1/2 relative">
           <Image
-            src="/images/login/LoginLeftImage.png"
+            // src="/images/login/LoginLeftImage.png"
+            src='/images/login/beser.jpg'
             alt="Login"
             fill
             className="object-cover"
