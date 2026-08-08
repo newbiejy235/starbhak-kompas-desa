@@ -15,6 +15,7 @@ import {
   gt,
   asc,
   sql,
+  inArray,
 } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth/auth.service";
 import { revalidatePath } from "next/cache";
@@ -75,8 +76,34 @@ export async function getPublicCommodities(params?: {
     .orderBy(desc(commoditiesTable.createdAt));
 }
 
-export async function getCommodityById(id: number) {
-  const [row] = await db
+export async function getCommoditiesByIds(ids: number[]) {
+  if (ids.length === 0) return [];
+  const uniqueIds = [...new Set(ids)];
+  return db
+    .select({
+      id: commoditiesTable.id,
+      farmerId: commoditiesTable.farmerId,
+      categoryId: commoditiesTable.categoryId,
+      name: commoditiesTable.name,
+      price: commoditiesTable.price,
+      stock: commoditiesTable.stock,
+      unit: commoditiesTable.unit,
+      quality: commoditiesTable.quality,
+      location: commoditiesTable.location,
+      image: commoditiesTable.image,
+      status: commoditiesTable.status,
+      rating: commoditiesTable.rating,
+      reviewCount: commoditiesTable.reviewCount,
+      categoryName: categoriesTable.name,
+      farmerName: usersTable.fullName,
+    })
+    .from(commoditiesTable)
+    .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
+    .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .where(inArray(commoditiesTable.id, uniqueIds));
+}
+
+export async function getCommodityById(id: number) {  const [row] = await db
     .select({
       id: commoditiesTable.id,
       farmerId: commoditiesTable.farmerId,

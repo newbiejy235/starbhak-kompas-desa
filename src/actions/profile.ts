@@ -59,6 +59,7 @@ export async function updateProfile(
     await db.update(usersTable).set(patch).where(eq(usersTable.id, userId));
     revalidatePath("/petani/profile");
     revalidatePath("/admin/profile");
+    revalidatePath("/user/profile");
     return { success: true, message: "Profil berhasil diperbarui" };
   } catch (error) {
     console.error(error);

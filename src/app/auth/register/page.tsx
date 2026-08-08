@@ -1,191 +1,153 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { registerAction } from "@/actions/auth";
+import { ChevronLeft } from "lucide-react";
 
 export default function Register() {
-  const router = useRouter();
-  const [state, formAction, isPending] = useActionState(registerAction, null);
-  const [role, setRole] = useState("pembeli");
-  const [businessType, setBusinessType] = useState("restoran");
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
 
-  useEffect(() => {
-    if (state?.success) {
-      router.push("/auth/login");
-    }
-  }, [state, router]);
-
-  const inputCls =
-    "w-full rounded-2xl border border-[#C1C1C1] px-5 py-4 text-sm text-[#2D2D2D] placeholder:text-gray-400 focus:outline-none focus:border-[#025246] transition";
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Lanjut ke langkah berikutnya");
+  };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#F6F6F6] p-4">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-sm overflow-hidden flex flex-col md:flex-row">
-        <div className="hidden md:block md:w-1/2 relative">
+    <div className="h-[100dvh] w-full flex items-center justify-center bg-[#F6F6F6] p-2 sm:p-4 overflow-hidden">
+      <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-sm">
+        <div className="hidden md:flex relative w-[45%] lg:w-1/2 h-full rounded-[1.5rem] overflow-hidden flex-col">
           <Image
-            src="/images/register/RegisterLeftImgage.png"
-            alt="Daftar"
+            src="/images/login/ImageLogin.png"
+            alt="Kompas Desa Background"
             fill
             className="object-cover"
             priority
           />
+          <div className="absolute inset-0 bg-black/30" />
+
+          <div className="absolute inset-0 flex flex-col justify-between p-8 text-white">
+            <div>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-[13px] font-medium hover:text-gray-200 transition-colors"
+              >
+                <div className="border border-white rounded-full p-0.5">
+                  <ChevronLeft size={14} strokeWidth={3} />
+                </div>
+                Kembali ke halaman utama
+              </Link>
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <h2 className="text-[1.3rem] font-bold tracking-wide mb-1">
+                Mulai Langkah Baru Bersama
+              </h2>
+              <h1 className="text-[3rem] font-bold leading-none mb-4 tracking-tight">
+                Kompas<span className="text-[#FFD600]">'Desa</span>
+              </h1>
+              <p className="text-[13px] leading-relaxed text-white/90">
+                Bergabunglah untuk terhubung langsung dengan petani
+                <br />
+                lokal dan dapatkan komoditas berkualitas dengan harga
+                <br />
+                terbaik.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <p className="text-[12px] font-medium text-white/90">
+                Ikuti kami @kompasdesa.official
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-8">
-            Daftar
-          </h1>
-
-          <form className="flex flex-col gap-4" action={formAction}>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole("petani")}
-                className={`rounded-2xl border-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                  role === "petani"
-                    ? "border-[#025246] bg-[#025246]/5 text-[#025246]"
-                    : "border-[#C1C1C1] text-gray-500 hover:border-[#025246]"
-                }`}
-              >
-                🌾 Petani
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("pembeli")}
-                className={`rounded-2xl border-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                  role === "pembeli"
-                    ? "border-[#025246] bg-[#025246]/5 text-[#025246]"
-                    : "border-[#C1C1C1] text-gray-500 hover:border-[#025246]"
-                }`}
-              >
-                🛒 Pembeli
-              </button>
+        <div className="w-full md:w-[55%] lg:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-4">
+          <div className="flex flex-col h-full justify-center max-w-[420px] mx-auto w-full">
+            <div className="text-center mb-6 lg:mb-8">
+              <p className="text-[#025246] font-semibold text-[11px] lg:text-xs tracking-wide mb-1 lg:mb-2">
+                Langkah 1 dari 3
+              </p>
+              <h2 className="text-[22px] lg:text-[26px] font-bold text-gray-900 mb-1.5 lg:mb-2">
+                Bergabung sebagai Pelanggan
+              </h2>
+              <p className="text-[11px] lg:text-[13px] text-gray-400">
+                Belanja komoditas segar langsung dari petani lokal bersama KompasDesa.
+              </p>
             </div>
-            <input type="hidden" name="role" value={role} />
 
-            {role === "pembeli" && (
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { id: "distributor", label: "Distributor" },
-                  { id: "umkm", label: "UMKM" },
-                  { id: "restoran", label: "Restoran" },
-                  { id: "koperasi", label: "Koperasi" },
-                ].map((b) => (
-                  <label
-                    key={b.id}
-                    className={`rounded-xl border-2 px-3 py-2 text-xs font-semibold cursor-pointer text-center transition-colors ${
-                      businessType === b.id
-                        ? "border-[#025246] bg-[#025246]/5 text-[#025246]"
-                        : "border-[#C1C1C1] text-gray-500 hover:border-[#025246]"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="businessTypeRadio"
-                      value={b.id}
-                      checked={businessType === b.id}
-                      onChange={() => setBusinessType(b.id)}
-                      className="sr-only"
-                    />
-                    {b.label}
-                  </label>
-                ))}
-                <input type="hidden" name="businessType" value={businessType} />
+            <form onSubmit={handleNext} className="flex flex-col gap-3 lg:gap-4">
+              <div className="flex flex-col">
+                <label className="text-[12px] lg:text-[13px] font-medium text-gray-700 mb-1 lg:mb-1.5">
+                  Nama Lengkap
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
+                  required
+                />
               </div>
-            )}
 
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Nama Lengkap"
-              required
-              className={inputCls}
-            />
-            <input
-              type="text"
-              name="username"
-              placeholder="Nama Pengguna"
-              required
-              className={inputCls}
-            />
+              <div className="flex flex-col">
+                <label className="text-[12px] lg:text-[13px] font-medium text-gray-700 mb-1 lg:mb-1.5">
+                  Nama Pengguna
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
+                  required
+                />
+              </div>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              required
-              className={inputCls}
-            />
+              <div className="flex flex-col">
+                <label className="text-[12px] lg:text-[13px] font-medium text-gray-700 mb-1 lg:mb-1.5">
+                  Nomor Telepon
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
+                  required
+                />
+              </div>
 
-            <input
-              type="tel"
-              name="noTelp"
-              placeholder="Nomor Telepon"
-              required
-              className={inputCls}
-            />
+              <div className="flex flex-col">
+                <label className="text-[12px] lg:text-[13px] font-medium text-gray-700 mb-1 lg:mb-1.5">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
+                  required
+                />
+              </div>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Kata Sandi"
-              required
-              className={inputCls}
-            />
+              <button
+                type="submit"
+                className="w-full bg-[#025246] hover:bg-[#013f36] text-white font-semibold text-[13px] lg:text-sm rounded-xl py-3 lg:py-3.5 mt-2 transition-colors"
+              >
+                Berikutnya
+              </button>
+            </form>
 
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Konfirmasi Kata Sandi"
-              required
-              className={inputCls}
-            />
-
-            {state && !state.success && (
-              <p className="text-sm text-red-500">{state.message}</p>
-            )}
-
-            <label className="flex items-start gap-2 text-xs text-gray-500 mt-1">
-              <input
-                type="checkbox"
-                name="agreeTerms"
-                required
-                className="mt-0.5 accent-[#025246]"
-              />
-              <span>
-                Saya menyetujui{" "}
-                <Link href="" className="text-[#025246] font-medium">
-                  Syarat & Ketentuan
-                </Link>{" "}
-                dan{" "}
-                <Link href="" className="text-[#025246] font-medium">
-                  Kebijakan Privasi
-                </Link>{" "}
-                Kompas&apos;Desa
-              </span>
-            </label>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full rounded-2xl bg-[#025246] py-4 text-sm font-semibold text-white hover:bg-[#013d34] transition mt-2 disabled:opacity-50"
-            >
-              {isPending ? "Memproses..." : "Daftar"}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-gray-600 mt-6">
-            Sudah punya akun?{" "}
-            <Link
-              href="/auth/login"
-              className="font-bold text-[#459655] hover:underline"
-            >
-              Masuk
-            </Link>
-          </p>
+            <p className="text-center text-[12px] lg:text-[13px] text-gray-800 mt-5 lg:mt-6">
+              Sudah punya akun?{" "}
+              <Link href="/auth/login" className="text-[#025246] font-medium hover:underline">
+                Masuk
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

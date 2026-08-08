@@ -214,7 +214,7 @@ export const notificationsTable = pgTable(
       .notNull()
       .references(() => usersTable.id, { onDelete: "cascade" }),
     title: varchar({ length: 150 }).notNull(),
-    message: text().notNull(),
+    message: varchar().notNull(),
     type: varchar({ length: 30 }).notNull().default("info"),
     isRead: boolean().notNull().default(false),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

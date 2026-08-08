@@ -20,6 +20,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import { LoadingState, EmptyState, formatImage } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
 import { getClientUser } from "@/lib/auth/client";
+import { addToCart } from "@/lib/cart";
 import { useFetch } from "@/lib/hooks";
 import type {
   CommodityDetail,
@@ -86,6 +87,16 @@ export default function ProductDetail() {
       quantity: String(quantity),
     });
     router.push(`/user/checkout?${params.toString()}`);
+  };
+
+  const handleAddToCart = () => {
+    const user = getClientUser();
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    addToCart(product.id, quantity);
+    router.push("/user/cart");
   };
 
   return (
@@ -183,12 +194,20 @@ export default function ProductDetail() {
                   <span className="text-xs text-gray-400">{product.unit}</span>
                 </div>
 
-                <button
-                  onClick={checkout}
-                  className="w-full rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
-                >
-                  Beli Sekarang
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={handleAddToCart}
+                    className="rounded-2xl border-2 border-[#025246] py-4 text-sm font-bold text-[#025246] hover:bg-[#025246]/5 transition-colors"
+                  >
+                    Masukkan ke Keranjang
+                  </button>
+                  <button
+                    onClick={checkout}
+                    className="rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+                  >
+                    Beli Sekarang
+                  </button>
+                </div>
               </>
             ) : (
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-500">

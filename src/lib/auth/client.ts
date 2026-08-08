@@ -46,3 +46,12 @@ export function getRoleRedirect(role: string): string {
   if (role === "petani") return "/petani/dashboard";
   return "/user/home";
 }
+
+export function updateSessionRole(role: string) {
+  if (typeof window === "undefined") return;
+  const user = getClientUser();
+  if (!user) return;
+  user.role = role;
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  localStorage.setItem("user_role", role);
+}

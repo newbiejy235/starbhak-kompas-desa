@@ -15,7 +15,6 @@ export async function register(data: FormData): Promise<RegisterResult> {
   const password = (data.get("password") as string) || "";
   const confirmPassword = (data.get("confirmPassword") as string) || "";
   const role = (data.get("role") as string) || "pembeli";
-  const businessType = (data.get("businessType") as string) || "";
 
   if (!fullName || !username || !noTelp || !email || !password) {
     return { success: false, message: "Semua field wajib diisi" };
@@ -59,8 +58,7 @@ export async function register(data: FormData): Promise<RegisterResult> {
         email,
         password: hashedPassword,
         role: role as "petani" | "pembeli",
-        businessType:
-          role === "pembeli" ? (businessType as never) : "",
+        businessType: "",
         status: "pending",
       })
       .returning({ id: usersTable.id, email: usersTable.email });
@@ -170,4 +168,49 @@ export async function getAuthUser(userId: number) {
     .from(usersTable)
     .where(and(eq(usersTable.id, userId)));
   return user ?? null;
+}
+
+export async function upgradeToPetani(
+  userId: number,
+  data: FormData,
+): Promise<RegisterResult> {
+  try {
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, userId));
+
+    if (!user) return { success: false, message: "Akun tidak ditemukan" };
+
+    if (user.role === "petani") {
+      return {
+        success: true,
+        message: "Anda sudah menjadi petani",
+        redirect: "/petani/dashboard",
+      };
+    }
+
+    const address = (data.get("address") as string)?.trim() || "";
+
+    await db
+      .update(usersTable)
+      .set({ role: "petani", address, businessType: "" })
+      .where(eq(usersTable.id, userId));
+
+    await db.insert(notificationsTable).values({
+      userId,
+      title: "Selamat! Anda menjadi Petani",
+      message: "Akun Anda ditingkatkan menjadi petani. Silakan tambahkan komoditas Anda.",
+      type: "system",
+    });
+
+    return {
+      success: true,
+      message: "Selamat! Anda kini terdaftar sebagai petani",
+      redirect: "/petani/dashboard",
+    };
+  } catch (error) {
+    console.error("upgrade to petani error:", error);
+    return { success: false, message: "Gagal, coba lagi nanti" };
+  }
 }

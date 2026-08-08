@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { MapPin, ShoppingCart, Star } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
+import { addToCart } from "@/lib/cart";
+import { useState } from "react";
 
 export interface ProductCardData {
   id: number;
@@ -31,11 +34,25 @@ const categoryGradient: Record<string, string> = {
 };
 
 export default function ProductCard({ data }: ProductCardProps) {
+  const router = useRouter();
+  const [added, setAdded] = useState(false);
+
   if (!data) return null;
   const img = formatImage(data.image);
   const gradient =
     categoryGradient[data.categoryName ?? ""] || "from-[#025246] to-[#047857]";
   const initial = data.name?.charAt(0)?.toUpperCase() || "P";
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(data.id);
+    setAdded(true);
+    setTimeout(() => {
+      setAdded(false);
+      router.push("/user/cart");
+    }, 500);
+  };
 
   return (
     <Link
@@ -88,7 +105,14 @@ export default function ProductCard({ data }: ProductCardProps) {
               per {data.unit} · stok {formatNumber(data.stock)} {data.unit}
             </div>
           </div>
-          <span className="w-10 h-10 bg-[#025246] text-white rounded-full flex items-center justify-center group-hover:bg-[#024036] group-hover:scale-105 transition-all shadow-md">
+          <span
+            onClick={handleAddToCart}
+            role="button"
+            tabIndex={0}
+            className={`w-10 h-10 text-white rounded-full flex items-center justify-center group-hover:scale-105 transition-all shadow-md cursor-pointer ${
+              added ? "bg-[#00AA5B]" : "bg-[#025246] group-hover:bg-[#024036]"
+            }`}
+          >
             <ShoppingCart size={18} />
           </span>
         </div>

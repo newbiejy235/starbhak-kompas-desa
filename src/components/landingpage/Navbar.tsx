@@ -100,13 +100,8 @@ export default function Navbar() {
             </Link>
           ) : (
             <>
-              <Link href="/auth/register">
-                <button className="hidden md:flex items-center justify-center bg-[#025246] text-white font-bold text-base lg:text-lg px-6 py-2 rounded-full hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30">
-                  Daftar
-                </button>
-              </Link>
               <Link href="/auth/login">
-                <button className="hidden sm:flex items-center justify-center bg-transparent text-[#025246] font-bold text-base lg:text-lg hover:text-[#D7BE44] hover:scale-105 transition-all duration-300">
+                <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-base lg:text-lg px-6 py-2 rounded-full hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30">
                   Masuk
                 </button>
               </Link>
