@@ -3,23 +3,60 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { saveRegisterDraft } from "@/lib/register";
 
 export default function ProfilPembeli() {
+  const router = useRouter();
   const [komoditas, setKomoditas] = useState("");
   const [lokasi, setLokasi] = useState("");
   const [estimasi, setEstimasi] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const daftarKota = [
+    "Kabupaten Bogor",
+    "Kabupaten Sukabumi",
+    "Kabupaten Cianjur",
+    "Kabupaten Bandung",
+    "Kabupaten Garut",
+    "Kota Bogor",
+    "Kota Sukabumi",
+    "Kota Bandung",
+    "Kota Cirebon",
+    "Kota Bekasi",
+    "Kota Depok",
+    "Jakarta Pusat",
+    "Jakarta Utara",
+    "Jakarta Barat",
+    "Jakarta Selatan",
+    "Jakarta Timur",
+    "Kota Semarang",
+    "Kota Surakarta",
+    "Kota Yogyakarta",
+    "Kota Surabaya",
+    "Kota Malang"
+  ];
+
+  const filteredKota = daftarKota.filter((kota) =>
+    kota.toLowerCase().includes(lokasi.toLowerCase())
+  );
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+    saveRegisterDraft({ komoditas, lokasi, estimasi });
+    router.push("/auth/register/password");
   };
 
   const handleBack = () => {
+    saveRegisterDraft({ komoditas, lokasi, estimasi });
+    router.back();
   };
 
   return (
     <div className="h-[100dvh] w-full flex items-center justify-center bg-[#F6F6F6] p-2 sm:p-4 overflow-hidden">
       <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-sm">
+        
         <div className="w-full md:w-[55%] lg:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-4">
           <div className="flex flex-col h-full justify-center max-w-[420px] mx-auto w-full">
             <div className="text-center mb-6 lg:mb-8">
@@ -48,17 +85,40 @@ export default function ProfilPembeli() {
                 />
               </div>
 
-              <div className="flex flex-col">
+              <div className="flex flex-col relative">
                 <label className="text-[12px] lg:text-[13px] font-medium text-gray-700 mb-1 lg:mb-1.5">
                   Lokasi (Domisili Pengiriman)
                 </label>
                 <input
                   type="text"
                   value={lokasi}
-                  onChange={(e) => setLokasi(e.target.value)}
+                  onChange={(e) => {
+                    setLokasi(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                  placeholder="Ketik nama kota/kabupaten..."
                   className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
                   required
                 />
+                
+                {showDropdown && lokasi && filteredKota.length > 0 && (
+                  <ul className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg">
+                    {filteredKota.map((kota, index) => (
+                      <li
+                        key={index}
+                        onClick={() => {
+                          setLokasi(kota);
+                          setShowDropdown(false);
+                        }}
+                        className="px-4 py-2.5 text-sm text-gray-700 hover:bg-[#EBF3ED] hover:text-[#025246] cursor-pointer transition-colors border-b border-gray-50 last:border-0"
+                      >
+                        {kota}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="flex flex-col">
@@ -125,7 +185,7 @@ export default function ProfilPembeli() {
                 Mulai Langkah Baru Bersama
               </h2>
               <h1 className="text-[3rem] font-bold leading-none mb-4 tracking-tight">
-                Kompas<span className="text-[#FFD600]">'Desa</span>
+                Kompas<span className="text-[#FFD600]">&apos;Desa</span>
               </h1>
               <p className="text-[13px] leading-relaxed text-white/90">
                 Bergabunglah untuk terhubung langsung dengan petani
@@ -143,6 +203,7 @@ export default function ProfilPembeli() {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -3,9 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { saveRegisterDraft } from "@/lib/register";
 
 export default function Register() {
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
@@ -13,7 +16,8 @@ export default function Register() {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Lanjut ke langkah berikutnya");
+    saveRegisterDraft({ fullName, username, noTelp: phone, email });
+    router.push("/auth/register/profile");
   };
 
   return (
@@ -47,7 +51,7 @@ export default function Register() {
                 Mulai Langkah Baru Bersama
               </h2>
               <h1 className="text-[3rem] font-bold leading-none mb-4 tracking-tight">
-                Kompas<span className="text-[#FFD600]">'Desa</span>
+                Kompas<span className="text-[#FFD600]">&apos;Desa</span>
               </h1>
               <p className="text-[13px] leading-relaxed text-white/90">
                 Bergabunglah untuk terhubung langsung dengan petani
@@ -134,6 +138,7 @@ export default function Register() {
               </div>
 
               <button
+                onClick={handleNext}
                 type="submit"
                 className="w-full bg-[#025246] hover:bg-[#013f36] text-white font-semibold text-[13px] lg:text-sm rounded-xl py-3 lg:py-3.5 mt-2 transition-colors"
               >

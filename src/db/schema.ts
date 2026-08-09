@@ -1,13 +1,4 @@
-import {
-  integer,
-  pgTable,
-  varchar,
-  text,
-  timestamp,
-  numeric,
-  boolean,
-  pgEnum,
-  index,
+import { integer, pgTable, varchar, text, timestamp, numeric, boolean, pgEnum, index,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", [
@@ -27,6 +18,13 @@ export const businessTypeEnum = pgEnum("business_type", [
   "umkm",
   "restoran",
   "koperasi",
+  "",
+]);
+
+export const demandScaleEnum = pgEnum("demand_scale", [
+  "SKALA_KECIL",
+  "SKALA_MENENGAH",
+  "SKALA_BESAR",
   "",
 ]);
 
@@ -78,6 +76,8 @@ export const usersTable = pgTable(
     email: varchar({ length: 100 }).notNull().unique(),
     role: userRoleEnum().notNull().default("pembeli"),
     businessType: businessTypeEnum().notNull().default(""),
+    preferredCommodity: varchar({ length: 150 }),
+    demandScale: demandScaleEnum().notNull().default(""),
     fotoProfile: text(),
     address: text(),
     status: userStatusEnum().notNull().default("pending"),

@@ -15,6 +15,10 @@ export async function register(data: FormData): Promise<RegisterResult> {
   const password = (data.get("password") as string) || "";
   const confirmPassword = (data.get("confirmPassword") as string) || "";
   const role = (data.get("role") as string) || "pembeli";
+  const address = (data.get("address") as string)?.trim() || "";
+  const preferredCommodity =
+    (data.get("preferredCommodity") as string)?.trim() || "";
+  const demandScale = (data.get("demandScale") as string) || "";
 
   if (!fullName || !username || !noTelp || !email || !password) {
     return { success: false, message: "Semua field wajib diisi" };
@@ -59,6 +63,13 @@ export async function register(data: FormData): Promise<RegisterResult> {
         password: hashedPassword,
         role: role as "petani" | "pembeli",
         businessType: "",
+        address: address || null,
+        preferredCommodity: preferredCommodity || null,
+        demandScale: demandScale as
+          | "SKALA_KECIL"
+          | "SKALA_MENENGAH"
+          | "SKALA_BESAR"
+          | "",
         status: "pending",
       })
       .returning({ id: usersTable.id, email: usersTable.email });
