@@ -15,21 +15,21 @@ export default function Testimonial() {
   ];
 
   return (
-    <section className="bg-white min-h-screen py-[60px] px-5 flex flex-col items-center font-sans">
-      <div className="max-w-[1140px] w-full mb-12">
-        <h2 className="text-[32px] font-bold text-[#111111]">
-          Kepercayaan yang <span className="text-[#0B4F3A]">Terbangun</span>
+    <section className="bg-white w-full py-10 lg:py-16 px-4 sm:px-6 flex flex-col items-center font-sans">
+      <div className="max-w-[1140px] w-full mb-8 lg:mb-12">
+        <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#111111] text-center lg:text-left">
+          Kepercayaan yang <span className="text-[#025246]">Terbangun</span>
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1140px] w-full items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-[1140px] w-full items-stretch">
         {testimonials.map((item, index) => (
           <div
             key={index}
-            className="bg-[#EFEFEF] rounded-3xl p-8 relative flex flex-col justify-between border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
+            className="bg-[#EFEFEF] rounded-2xl sm:rounded-3xl p-6 sm:p-8 relative flex flex-col justify-between border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md"
           >
             <div>
-              <div className="text-[#0B4F3A] mb-4">
+              <div className="text-[#025246] mb-4">
                 <svg
                   width="24"
                   height="24"
@@ -41,12 +41,12 @@ export default function Testimonial() {
                 </svg>
               </div>
 
-              <p className="text-[14px] text-[#222222] leading-relaxed mb-6">
+              <p className="text-[13px] sm:text-[14px] text-[#222222] leading-relaxed mb-6">
                 {item.quote}
               </p>
             </div>
 
-            <div className="text-[13px] font-medium text-[#444444]">
+            <div className="text-[12px] sm:text-[13px] font-medium text-[#444444]">
               — {item.author}
             </div>
           </div>
