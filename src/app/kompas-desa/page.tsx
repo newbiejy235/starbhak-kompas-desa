@@ -75,7 +75,7 @@ export default function KompasDesaPage() {
                 </FadeAnimation>
 
                 <FadeAnimation direction="up">
-                  <div className="w-full max-w-md mx-auto lg:max-w-none flex justify-center mt-4 lg:mt-0">
+                  <div className="hidden md:flex w-full max-w-md mx-auto lg:max-w-none justify-center mt-4 lg:mt-0">
                     <AnimatedCrops />
                   </div>
                 </FadeAnimation>
