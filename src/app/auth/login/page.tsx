@@ -54,7 +54,7 @@ export default function Login() {
               </Link>
             </div>
 
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center ml-15">
               <h2 className="text-[1.1rem] lg:text-[1.3rem] font-bold tracking-wide mb-1">
                 Selamat Datang Kembali di
               </h2>
