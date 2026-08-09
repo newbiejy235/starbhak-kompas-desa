@@ -54,9 +54,9 @@ export default function Register() {
                 Kompas<span className="text-[#FFD600]">&apos;Desa</span>
               </h1>
               <p className="text-[13px] leading-relaxed text-white/90">
-                Bergabunglah untuk terhubung langsung dengan petani
+                Bergabunglah bersama ribuan petani lainnya untuk 
                 <br />
-                lokal dan dapatkan komoditas berkualitas dengan harga
+                menjangkau pembeli langsung tanpa perantara.
                 <br />
                 terbaik.
               </p>
@@ -80,7 +80,7 @@ export default function Register() {
                 Bergabung sebagai Petani
               </h2>
               <p className="text-[11px] lg:text-[13px] text-gray-400">
-                Belanja komoditas segar langsung dari petani lokal bersama KompasDesa.
+                Perluas pasar dan kembangkan hasil pertanianmu bersama KompasDesa.
               </p>
             </div>
 
