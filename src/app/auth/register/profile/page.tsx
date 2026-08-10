@@ -35,7 +35,9 @@ export default function ProfilPembeli() {
     "Kota Surakarta",
     "Kota Yogyakarta",
     "Kota Surabaya",
-    "Kota Malang"
+    "Kota Malang",
+    "",
+    ""
   ];
 
   const filteredKota = daftarKota.filter((kota) =>

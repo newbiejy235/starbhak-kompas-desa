@@ -9,6 +9,7 @@ import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
+import FadeAnimation from "@/components/animation/Animation";
 
 export default function Login() {
   const router = useRouter();
@@ -28,10 +29,11 @@ export default function Login() {
   }, [state, router]);
 
   return (
+
     <div className="h-[100dvh] w-full flex items-center justify-center bg-[#F8F8F8] p-2 sm:p-4 overflow-hidden">
       
       <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-sm">
-        <div className="hidden md:flex relative w-[45%] lg:w-1/2 h-full rounded-[1.5rem] overflow-hidden flex-col">
+      <div className="hidden md:flex relative w-[45%] lg:w-1/2 h-full rounded-[1.5rem] overflow-hidden flex-col">
           <Image
             src="/images/login/serbser.jpg" 
             alt="Kompas Desa Background"
@@ -43,6 +45,7 @@ export default function Login() {
           <div className="absolute inset-0 flex flex-col justify-between p-8 text-white">
 
             <div>
+              <FadeAnimation direction="right">
               <Link
                 href="/"
                 className="inline-flex items-center gap-2 text-[12px] lg:text-[13px] font-medium hover:text-gray-200 transition-colors"
@@ -50,8 +53,10 @@ export default function Login() {
                 <div className="border border-white rounded-full p-0.5">
                   <ChevronLeft size={14} strokeWidth={2.5} />
                 </div>
+
                 Kembali ke halaman utama
               </Link>
+              </FadeAnimation>
             </div>
 
             <div className="flex flex-col justify-center ml-15">

@@ -12,6 +12,7 @@ import CardBenefit from '@/components/landingpage/cardBenefit/card'
 import CardMembership from '@/components/landingpage/cardEndorse/membership'
 import Counter from '@/components/animation/Counter'
 import Testimonial from '@/components/landingpage/testimonial/testi'
+import PlatformFeatures from '@/components/landingpage/FeatureSection/FeatureCard'
 
 export default function KompasDesaPage() {
   const scrollToMembership = () => {

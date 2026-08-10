@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { saveRegisterDraft } from "@/lib/register";
+import FadeAnimation from "@/components/animation/Animation";
 
 export default function Register() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function Register() {
   return (
     <div className="h-[100dvh] w-full flex items-center justify-center bg-[#F6F6F6] p-2 sm:p-4 overflow-hidden">
       <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-sm">
+        {/* <FadeAnimation direction="left"> */}
         <div className="hidden md:flex relative w-[45%] lg:w-1/2 h-full rounded-[1.5rem] overflow-hidden flex-col">
           <Image
             src="/images/login/ImageLogin.png"
