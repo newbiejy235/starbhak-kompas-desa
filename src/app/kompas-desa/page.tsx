@@ -56,11 +56,11 @@ export default function KompasDesaPage() {
                     </p>
 
                     <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 sm:gap-3 mb-6 mt-6 sm:mt-8">
-                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-md shadow-sm">
-                        Kolaborasi dengan <span className="text-[#EAB308] font-bold"><Counter end={10} suffix="+" /> Mitra</span>
+                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-full shadow-sm">
+                        Sudah terdaftar <span className="text-[#EAB308] font-bold"><Counter end={200} suffix="+" /> Petani</span>
                       </div>
-                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-md shadow-sm">
-                        Sudah terdaftar <span className="text-[#EAB308] font-bold"><Counter end={200} suffix="+" />supplier</span>
+                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-full shadow-sm">
+                      <Counter end={1200} suffix="+"></Counter> Ton Hasil Panen Terjual
                       </div>
                     </div>
 
