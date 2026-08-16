@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "tableDB" : "npx drizzle-kit studio",
+    "tableDB": "npx drizzle-kit studio",
     "seed": "npx tsx src/script/seed.ts",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
-    "test" : "npx tsx src/script/tes-db.ts",
+    "test": "npx tsx src/script/tes-db.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "drizzle-orm": "^0.45.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.27.0",

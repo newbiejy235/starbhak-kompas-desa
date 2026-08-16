@@ -9,6 +9,7 @@ import {
   categoriesTable,
   feeSettingsTable,
   notificationsTable,
+  ImageUpload,
 } from "@/db/schema";
 import { eq, desc, asc, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth/auth.service";
@@ -143,7 +144,7 @@ export async function getAllCommoditiesAdmin() {
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -154,6 +155,7 @@ export async function getAllCommoditiesAdmin() {
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .orderBy(desc(commoditiesTable.createdAt));
 }
 

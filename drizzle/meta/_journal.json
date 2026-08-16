@@ -15,6 +15,13 @@
       "when": 1786266598654,
       "tag": "0001_neat_edwin_jarvis",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786893383524,
+      "tag": "0002_nifty_screwball",
+      "breakpoints": true
     }
   ]
 }

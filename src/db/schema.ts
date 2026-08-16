@@ -1,11 +1,16 @@
-import { integer, pgTable, varchar, text, timestamp, numeric, boolean, pgEnum, index,
+import {
+  integer,
+  pgTable,
+  varchar,
+  text,
+  timestamp,
+  numeric,
+  boolean,
+  pgEnum,
+  index,
 } from "drizzle-orm/pg-core";
 
-export const userRoleEnum = pgEnum("user_role", [
-  "admin",
-  "petani",
-  "pembeli",
-]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
 
 export const userStatusEnum = pgEnum("user_status", [
   "pending",
@@ -112,7 +117,9 @@ export const commoditiesTable = pgTable(
     quality: varchar({ length: 50 }).notNull().default("A"),
     location: varchar({ length: 150 }).notNull(),
     harvestEstimate: timestamp({ withTimezone: true }),
-    image: text(),
+    image: integer().references(() => ImageUpload.id, {
+      onDelete: "set null",
+    }),
     status: commodityStatusEnum().notNull().default("pending"),
     rating: numeric({ precision: 3, scale: 2 }).notNull().default("0"),
     reviewCount: integer().notNull().default(0),
@@ -231,6 +238,13 @@ export const feeSettingsTable = pgTable("fee_settings_table", {
   percentage: numeric({ precision: 5, scale: 2 }).notNull().default("2.5"),
   active: boolean().notNull().default(true),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export const ImageUpload = pgTable("ImageUpload", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  publicId: varchar("public_id", { length: 255 }).notNull(),
+  secureUrl: text("secure_url").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export type User = typeof usersTable.$inferSelect;

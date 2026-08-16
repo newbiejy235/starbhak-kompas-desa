@@ -11,6 +11,7 @@ import {
 import { getClientUser } from "@/lib/auth/client";
 import { LoadingState } from "@/components/shared/States";
 import { formatNumber } from "@/lib/format";
+import ImageUploadField from "@/components/shared/ImageUploadField";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity } from "@/lib/types/market";
@@ -143,10 +144,10 @@ export default function EditCommodity() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">URL Gambar (opsional)</label>
-          <input name="image" defaultValue={commodity.image ?? ""} className={inputCls} />
-        </div>
+        <ImageUploadField
+          defaultValue={commodity.image ?? undefined}
+          defaultImageId={commodity.imageId}
+        />
 
         {state && !state.success && (
           <p className="text-sm text-red-500">{state.message}</p>
