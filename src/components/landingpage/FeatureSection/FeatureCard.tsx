@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Jangan lupa import ini
+import Image from 'next/image'; 
 
 const PlatformFeatures = () => {
   const features = [
