@@ -95,6 +95,7 @@ export default function ImageUploadField({
       <input
         ref={inputRef}
         type="file"
+        name="image"
         accept="image/*"
         className="hidden"
         onChange={handleFileChange}
