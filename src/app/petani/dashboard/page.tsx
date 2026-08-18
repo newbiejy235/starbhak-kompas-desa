@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Package,
   CheckCircle2,
@@ -11,6 +12,7 @@ import {
   Trash2,
   MapPin,
 } from "lucide-react";
+import { formatImage } from "@/components/shared/States";
 import { getFarmerCommodities, setCommodityStatus, deleteCommodity } from "@/actions/commodity";
 import { getFarmerOrders } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
@@ -136,8 +138,19 @@ export default function PetaniDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {commodities.map((c) => (
               <div key={c.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                <div className="aspect-[4/3] bg-gradient-to-br from-[#025246] to-[#047857] relative flex items-center justify-center">
-                  <span className="text-5xl font-black text-white/90">{c.name?.charAt(0)?.toUpperCase()}</span>
+                <div className="aspect-[4/3] bg-gradient-to-br from-[#025246] to-[#047857] relative flex items-center justify-center overflow-hidden">
+                  {formatImage(c.image) ? (
+                    <Image
+                      src={formatImage(c.image)!}
+                      alt={c.name || "Komoditas"}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="text-5xl font-black text-white/90">{c.name?.charAt(0)?.toUpperCase()}</span>
+                  )}
                   <div className="absolute top-3 right-3">
                     <StatusBadge status={c.status} />
                   </div>
