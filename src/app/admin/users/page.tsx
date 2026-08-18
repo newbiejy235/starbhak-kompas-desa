@@ -89,11 +89,10 @@ export default function AdminUsers() {
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-              filter === f.id
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${filter === f.id
                 ? "bg-[#025246] text-white border-[#025246]"
                 : "bg-white text-gray-600 border-gray-200 hover:border-[#025246]"
-            }`}
+              }`}
           >
             {f.label}
           </button>
@@ -108,11 +107,10 @@ export default function AdminUsers() {
           <button
             key={f.id}
             onClick={() => setStatusFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-              statusFilter === f.id
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${statusFilter === f.id
                 ? "bg-gray-800 text-white border-gray-800"
                 : "bg-white text-gray-600 border-gray-200 hover:border-gray-800"
-            }`}
+              }`}
           >
             {f.label}
           </button>

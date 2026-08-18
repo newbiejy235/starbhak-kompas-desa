@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import Navbar from '@/components/landingpage/Navbar'
 import DotPattern from '@/components/ui/DotPattern'
 import Footer from '@/components/landingpage/Footer'
@@ -13,6 +15,9 @@ import CardMembership from '@/components/landingpage/cardEndorse/membership'
 import Counter from '@/components/animation/Counter'
 import Testimonial from '@/components/landingpage/testimonial/testi'
 import PlatformFeatures from '@/components/landingpage/FeatureSection/FeatureCard'
+import AnimatedHeading from '@/components/animation/headinglandingpage'
+import BentoGridStats from '@/components/landingpage/berandaCard/cardBeranda'
+import PartnerSection from '@/components/landingpage/mitra/Mitra'
 
 export default function KompasDesaPage() {
   const scrollToMembership = () => {
@@ -24,66 +29,70 @@ export default function KompasDesaPage() {
 
   return (
     <>
-      <div className="relative z-[999] w-full">
+      <div className="relative z-999 w-full">
         <Navbar />
       </div>
 
       <PageLoader>
-        <div className="relative min-h-screen bg-[#025246] overflow-x-hidden flex flex-col">
+        <div className="relative min-h-screen bg-white overflow-x-hidden flex flex-col">
           <DotPattern className="opacity-30" />
 
-          <main className="relative z-25 grow w-full">
-
+          <main className="relative z-25 grow w-full landing-theme">
             <section
               id="beranda"
-              className="w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-20 pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 flex items-center scroll-mt-24"
+              className="relative w-full min-h-[80vh] mx-auto px-4 sm:px-6 md:px-12 lg:px-20 pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 flex items-center justify-center scroll-mt-24"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 w-full items-center">
+              <div className="w-full max-w-4xl flex justify-center">
                 <FadeAnimation direction="in">
-                  <div className="flex flex-col text-center lg:text-left items-center lg:items-start">
-                    <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal tracking-wide mb-1 sm:mb-2">
-                      Membuka Akses
-                    </h1>
-                    <h2 className="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-3 sm:mb-4">
-                      Hasil Panen
-                    </h2>
-                    <h3 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal tracking-wide">
-                      ke Pasar yang Lebih Luas
-                    </h3>
+                  <div className="flex flex-col items-center text-center">
 
-                    <p className="mt-5 sm:mt-6 text-white text-base sm:text-lg md:text-xl leading-relaxed max-w-xl">
-                      Temukan hasil panen segar langsung dari petani, atau perluas jangkauan penjualan ke lebih banyak pembeli melalui satu platform.
-                    </p>
-
-                    <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 sm:gap-3 mb-6 mt-6 sm:mt-8">
-                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-md shadow-sm">
-                        Kolaborasi dengan <span className="text-[#EAB308] font-bold"><Counter end={10} suffix="+" /> Mitra</span>
-                      </div>
-                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-md shadow-sm">
-                        Sudah terdaftar <span className="text-[#EAB308] font-bold"><Counter end={200} suffix="+" />supplier</span>
-                      </div>
+                    {/* Badge Header */}
+                    <div className="bg-[#E4F1EB] text-[#025246] px-4 py-1.5 rounded-full text-sm font-semibold mb-4 inline-flex items-center gap-1.5 shadow-sm">
+                      <span>#DariDesaUntukNegeri</span>
                     </div>
 
-                    <div className="mt-1 flex items-center justify-center lg:justify-start w-full">
-                      <button
-                        onClick={scrollToMembership}
-                        className="w-full sm:w-auto relative px-8 sm:px-10 py-3 rounded-full text-white text-base sm:text-lg font-semibold bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] shadow-[0_8px_20px_rgba(46,125,50,0.4)] hover:shadow-[0_10px_25px_rgba(46,125,50,0.6)] hover:scale-[1.03] transition-all duration-300 text-center"
-                      >
-                        Berlangganan
+                    {/* Headline */}
+                    <h1 className="text-[#1f1f1f] text-3xl sm:text-4xl md:text-4xl tracking-tight font-bold leading-tight max-w-3xl">
+                      <AnimatedHeading text='Membuka Akses Hasil Panen ke Pasar yang Lebih Luas' />
+
+                    </h1>
+
+                    {/* Subtitle */}
+                    <p className="mt-1 text-[#75938f] text-sm sm:text-2xs leading-relaxed max-w-2xl">
+                      Temukan hasil panen segar langsung dari petani, atau perluas jangkauan
+                      penjualan ke lebih banyak pembeli melalui satu platform.
+                    </p>
+                    <div className="flex items-center gap-3 mt-4">
+                      {/* 1. Tombol Daftar */}
+                      <button className="inline-flex items-center gap-2 bg-[#025246] hover:bg-[#013e35] px-5 py-2.5 text-white font-bold text-sm rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group">
+                        {/* Icon User Plus - Lucide */}
+                        <svg className="w-4 h-4 text-emerald-300 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <line x1="19" x2="19" y1="8" y2="14" />
+                          <line x1="22" x2="16" y1="11" y2="11" />
+                        </svg>
+                        <span>Daftar</span>
+                      </button>
+
+                      {/* 2. Tombol Cari Komoditas */}
+                      <button className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50/60 text-[#025246] font-semibold text-sm px-5 py-2.5 rounded-xl border border-black/10 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer">
+                        {/* Icon Search (Magnifying Glass) */}
+                        <svg className="w-4 h-4 text-[#025246]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        <span>Cari Komoditas</span>
                       </button>
                     </div>
-                  </div>
-                </FadeAnimation>
 
-                <FadeAnimation direction="up">
-                  <div className="hidden md:flex w-full max-w-md mx-auto lg:max-w-none justify-center mt-4 lg:mt-0">
-                    <AnimatedCrops />
+                    <BentoGridStats />
                   </div>
                 </FadeAnimation>
               </div>
             </section>
+            <PartnerSection />
 
-            <section id="tentang" className="bg-white w-full py-6 sm:py-10 scroll-mt-24">
+            <section id="tentang" className="bg-white w-full  scroll-mt-24">
               <ScrollReveal>
                 <FadeAnimation direction="up">
                   <About />

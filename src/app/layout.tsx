@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Kompas Desa",
   description: "Website Kompas Desa",
   icons: {
-    icon: "/images/Logo.svg", 
+    icon: "/images/Logo.svg",
   },
 };
 

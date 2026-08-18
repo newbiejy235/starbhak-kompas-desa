@@ -64,11 +64,10 @@ export default function AdminSidebar() {
               key={item.id}
               href={item.href}
               onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                active
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${active
                   ? "bg-[#025246] text-white"
                   : "text-gray-600 hover:bg-gray-50 hover:text-[#025246]"
-              }`}
+                }`}
             >
               <item.icon size={19} />
               {item.label}

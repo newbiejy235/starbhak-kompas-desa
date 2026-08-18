@@ -19,6 +19,7 @@
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "drizzle-orm": "^0.45.2",
+    "framer-motion": "^13.1.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.27.0",
     "motion": "^12.42.2",

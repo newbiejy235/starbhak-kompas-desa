@@ -11,13 +11,13 @@ export default function About() {
   ];
 
   return (
-    <section className="bg-[#f4f4f2] px-6 py-14 sm:px-10 md:px-16 lg:px-24">
+    <section className="bg-white px-6 py-14 sm:px-10 md:px-16 lg:px-24">
       <h2 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-12">
         Mengapa memilih kami?
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 max-w-6xl mx-auto">
-        
+
         <div>
           <p className="text-gray-700 leading-relaxed mb-8 text-sm sm:text-base">
             Hasil pertanian merupakan salah satu penopang utama ketahanan
@@ -97,7 +97,7 @@ export default function About() {
           </p>
 
           <div className="flex flex-wrap gap-8 sm:gap-10">
-            
+
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
                 <img

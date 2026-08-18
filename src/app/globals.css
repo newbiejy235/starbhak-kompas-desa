@@ -9,6 +9,14 @@
   display: none;          
 }
 
+
 html {
   scroll-behavior: smooth
 }
+
+/* Landing Page  */
+.landing-theme ::selection {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+

@@ -57,32 +57,30 @@ export default function Navbar() {
     <>
       <nav
         className={`${inter.className} fixed left-1/2 -translate-x-1/2 z-[999] w-[95%] md:w-[90%] lg:w-[1112px]
-        px-8 flex items-center justify-between gap-6 rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
-        ${
-          isScrolled
+        px-8 flex items-center justify-between gap-6 rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
+        ${isScrolled
             ? "top-4 py-3 bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
-            : "top-6 py-5 bg-[#F6F6F6] border border-transparent shadow-none"
-        }`}
+            : "top-6 py-3 bg-white border border-[#dddddd] shadow-none"
+          }`}
       >
         <div className="flex items-center gap-6">
-          <div className="font-bold text-2xl lg:text-[28px] tracking-tight whitespace-nowrap">
-            <span className="text-[#025246]">Kompas` </span>
+          <div className="font-bold text-2xl lg:text-[23px] tracking-tight whitespace-nowrap">
+            <span className="text-[#025246]">Kompas`</span>
             <span className="text-[#D7BE44]">Desa</span>
           </div>
           <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
         </div>
 
-        <div className="hidden md:flex items-center gap-10 lg:gap-14 font-semibold text-base lg:text-lg">
+        <div className="hidden md:flex items-center gap-10 lg:gap-14 font-semibold text-base lg:text-3xs">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={() => setActiveLink(link.href)}
-              className={`relative pb-1 transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-[2.5px] after:bg-[#025246] after:transition-all after:duration-300 after:rounded-full ${
-                activeLink === link.href
-                  ? "text-[#025246] after:w-full"
-                  : "text-[#1D1D1D] hover:text-[#025246] after:w-0 hover:after:w-full"
-              }`}
+              className={`relative pb-1 transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-[2.5px] after:bg-[#025246] after:transition-all after:duration-300 after:rounded-full ${activeLink === link.href
+                ? "text-[#025246] after:w-full"
+                : "text-[#1D1D1D] hover:text-[#025246] after:w-0 hover:after:w-full"
+                }`}
             >
               {link.label}
             </a>
@@ -94,8 +92,8 @@ export default function Navbar() {
 
           {dashboardHref ? (
             <Link href={dashboardHref}>
-              <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-full hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30">
-                Dasbor Saya
+              <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-xl hover:bg-[#024036] hover:scale-105 transition-all duration-300 cursor-pointer">
+                Masuk
               </button>
             </Link>
           ) : (
@@ -155,11 +153,10 @@ export default function Navbar() {
                 setActiveLink(link.href)
                 toggleMenu()
               }}
-              className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center ${
-                activeLink === link.href
-                  ? "text-[#025246] bg-[#025246]/10 translate-x-2"
-                  : "text-gray-600 hover:text-[#025246] hover:bg-gray-50 hover:translate-x-1"
-              }`}
+              className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center ${activeLink === link.href
+                ? "text-[#025246] bg-[#025246]/10 translate-x-2"
+                : "text-gray-600 hover:text-[#025246] hover:bg-gray-50 hover:translate-x-1"
+                }`}
             >
               {link.label}
             </a>
