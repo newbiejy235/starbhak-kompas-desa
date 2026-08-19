@@ -8,7 +8,6 @@ import {
   getChatMessages,
   sendChatMessage,
   markMessagesAsRead,
-  respondToOffer,
 } from "@/actions/chat";
 import ChatRoomView from "@/components/shared/chat/ChatRoomView";
 import { LoadingState } from "@/components/shared/States";
@@ -102,25 +101,7 @@ export default function PetaniChatRoomPage() {
     setMessages(msgs as unknown as ChatMessageData[]);
   };
 
-  const handleRespondToOffer = async (offerId: number, response: "accepted" | "rejected") => {
-    await respondToOffer(offerId, response);
-    if (response === "accepted") {
-      await sendChatMessage(
-        Number(roomId),
-        user!.id,
-        "Penawaran diterima! Silakan lanjut ke keranjang belanja.",
-        "accept",
-      );
-    } else {
-      await sendChatMessage(
-        Number(roomId),
-        user!.id,
-        "Penawaran ditolak.",
-        "reject",
-      );
-    }
-    await loadRoom();
-  };
+  const handleAddToCart = () => {};
 
   if (loading) return <LoadingState />;
   if (!room) return <div className="text-center py-20 text-gray-500">Chat tidak ditemukan.</div>;
@@ -132,7 +113,7 @@ export default function PetaniChatRoomPage() {
       currentUserId={user?.id || 0}
       currentRole="petani"
       onSendMessage={handleSendMessage}
-      onRespondToOffer={handleRespondToOffer}
+      onAddToCart={handleAddToCart}
       onBack={() => router.push("/petani/chat")}
     />
   );

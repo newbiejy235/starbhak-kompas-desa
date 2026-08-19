@@ -102,8 +102,10 @@ export default function UserChatRoomPage() {
     setMessages(msgs as unknown as ChatMessageData[]);
   };
 
-  const handleRespondToOffer = async (offerId: number, response: "accepted" | "rejected") => {
-    await loadRoom();
+  const handleAddToCart = (price: number, quantity: number) => {
+    if (!room) return;
+    addToCart(room.commodityId, quantity, price);
+    router.push("/user/cart");
   };
 
   if (loading) return <LoadingState />;
@@ -116,7 +118,7 @@ export default function UserChatRoomPage() {
       currentUserId={user?.id || 0}
       currentRole="pembeli"
       onSendMessage={handleSendMessage}
-      onRespondToOffer={handleRespondToOffer}
+      onAddToCart={handleAddToCart}
       onBack={() => router.push("/user/chat")}
     />
   );
