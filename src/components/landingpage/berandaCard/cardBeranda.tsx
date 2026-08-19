@@ -48,7 +48,7 @@ export default function BentoGridStats() {
         className="md:col-span-2 relative h-[210px] overflow-hidden rounded-[2.5rem] bg-[#E4F1EB] group border border-emerald-950/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(2,82,70,0.12)] transition-shadow duration-500 cursor-pointer"
       >
         <Image
-          src="/images/landingpage/beranda/kementan.png"
+          src="/images/landingpage/beranda/kementan.webp"
           alt="Terverifikasi Kementan"
           className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
           width={1000}
@@ -149,7 +149,7 @@ export default function BentoGridStats() {
         className="h-[210px] overflow-hidden rounded-[2.5rem] bg-[#E4F1EB] group border border-emerald-950/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] transition-shadow duration-500 relative cursor-pointer"
       >
         <Image
-          src="/images/landingpage/beranda/petani.png"
+          src="/images/landingpage/beranda/petani.webp"
           alt="Aktivitas Petani"
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
           width={1000}

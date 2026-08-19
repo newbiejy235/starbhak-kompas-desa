@@ -40,19 +40,19 @@ export default function Error({
           </div>
         </div>
 
-        {/* Headline */}
+
         <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
           Oops! Terjadi Kesalahan
         </h2>
 
-        {/* Pesan Error */}
+
         <p className="text-slate-500 text-base sm:text-lg mb-10 leading-relaxed">
           Maaf, kami mengalami sedikit masalah saat memuat halaman ini. Silakan coba lagi atau kembali ke beranda.
         </p>
 
-        {/* Tombol Aksi */}
+
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-          {/* Tombol Coba Lagi (Primary) */}
+
           <button
             onClick={() => reset()}
             className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-8 py-3.5 rounded-full bg-[#025246] text-white text-sm font-semibold hover:bg-[#013d34] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
@@ -63,7 +63,7 @@ export default function Error({
             Coba Lagi
           </button>
 
-          {/* Tombol Kembali ke Beranda (Secondary) */}
+
           <Link
             href="/"
             className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-8 py-3.5 rounded-full bg-white border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
@@ -72,7 +72,6 @@ export default function Error({
           </Link>
         </div>
 
-        {/* Support Link Minimalist (Opsional) */}
         <p className="mt-12 text-sm text-slate-400">
           Masalah berlanjut? <Link href="/bantuan" className="text-[#025246] hover:underline font-medium">Hubungi Bantuan</Link>
         </p>

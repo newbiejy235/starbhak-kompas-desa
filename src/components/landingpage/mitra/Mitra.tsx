@@ -1,9 +1,6 @@
+import { partners_Mitra } from "@/app/constants/Kemitraan";
+
 export default function PartnerSection() {
-  const partners = [
-    "BULOG", "Kementan", "Bapanas", "ID FOOD", "Pupuk Indonesia",
-    "John Deere", "Kubota", "Bayer", "Syngenta", "Cap Panah Merah",
-    "eFishery", "Agriaku", "Tokopedia", "BRIN", "IPB University",
-  ];
 
   return (
     <section className="w-full bg-white py-10 sm:py-14 relative overflow-hidden">
@@ -15,7 +12,7 @@ export default function PartnerSection() {
 
         {/* Grid Murni Teks dengan Smooth Hover Animation */}
         <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-6 sm:gap-x-12 sm:gap-y-8 max-w-4xl">
-          {partners.map((partner, index) => (
+          {partners_Mitra.map((partner, index) => (
             <span
               key={index}
               className="relative inline-block text-slate-400 hover:text-[#025246] font-bold text-base sm:text-lg tracking-wide cursor-default select-none transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-105 hover:drop-shadow-[0_4px_12px_rgba(2,82,70,0.15)] group"

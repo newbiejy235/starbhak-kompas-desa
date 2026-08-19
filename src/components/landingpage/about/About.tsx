@@ -1,151 +1,572 @@
-import Counter from "@/components/animation/Counter"
+"use client";
 
-export default function About() {
-  const logos: string[] = [
-    "/images/about/KementrianPertanian.png",
-    "/images/about/BPN.png",
-    "/images/about/Bulog.png",
-    "/images/about/Hypermart.png",
-    "/images/about/Lottemart.png",
-    "/images/about/Superindo.png",
-  ];
+import Image from "next/image";
+import { ArrowUpRight, MoveUpRight } from "lucide-react";
+import { motion } from "framer-motion";
+import Counter from "@/components/animation/Counter";
 
+const statistics = [
+  {
+    value: <Counter end={28} duration={3000} />,
+    suffix: "juta+",
+    label: "Rumah tangga usahaㅤ pertanian",
+    source: "BPS · 2024",
+  },
+  {
+    value: "2–7",
+    suffix: "",
+    label: "Pelaku distribusi dalam rantai pasok",
+    source: "BPS · 2025",
+  },
+  {
+    value: <Counter end={6} duration={2000} />,
+    suffix: "juta+",
+    label: "Petani milenial usia 19–39 tahun",
+    source: "BPS · 2023",
+  },
+];
+
+export function About() {
   return (
-    <section className="bg-white px-6 py-14 sm:px-10 md:px-16 lg:px-24">
-      <h2 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-12">
-        Mengapa memilih kami?
-      </h2>
+    <section className="relative overflow-hidden bg-[#F7F9F8] text-[#18211F]">
+      {/* Decorative Background */}
+      <div aria-hidden="true" className="pointer-events-none absolute right-[-120px] top-[140px] h-[420px] w-[420px] rounded-full bg-[#025246]/[0.035] blur-3xl" />
+      <div className="mx-auto max-w-[1280px] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+        {/* ================= HEADER ================= */}
+        <div className="mb-14 flex lg:mb-20 items-center justify-center">
+          <div>
+            <h2 className="max-w-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] text-3xl sm:text-3xl md:text-3xl text-center">
+              Membangun akses, <span className="text-[#025246]">dan Membuka peluang.</span>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 max-w-6xl mx-auto">
+            </h2>
+          </div>
+        </div>
 
-        <div>
-          <p className="text-gray-700 leading-relaxed mb-8 text-sm sm:text-base">
-            Hasil pertanian merupakan salah satu penopang utama ketahanan
-            pangan dan perekonomian masyarakat. Namun, masih banyak petani
-            yang menghadapi kendala dalam mendistribusikan hasil panennya
-            akibat terbatasnya akses pasar dan panjangnya rantai distribusi.
+        {/* ================= MAIN CONTENT ================= */}
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+          {/* LEFT : IMAGE */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{
+              duration: 0.7,
+              ease: "easeOut",
+            }}
+            className="relative mx-auto w-full max-w-[500px] lg:max-w-none"
+          >
+            <div className="relative overflow-hidden rounded-[2rem] bg-[#DDE8E4]">
+              <Image
+                src="/images/landingpage/about/tanamanpetani.webp"
+                alt="Petani dan hasil pertanian"
+                width={1200}
+                height={1400}
+                className="aspect-[4/5] h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+              />
+
+              {/* Image Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+              {/* Image Label */}
+              <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4 text-left">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">
+                    Dari Desa
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    Potensi lokal, peluang nasional.
+                  </p>
+                </div>
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md">
+                  <MoveUpRight className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* RIGHT : CONTENT */}
+          <div className="flex flex-col justify-center">
+            <div className="mx-auto max-w-[650px] lg:mx-0">
+              {/* Statistics */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-0">
+                {statistics.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{
+                      opacity: 0,
+                      y: 16,
+                    }}
+                    whileInView={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    viewport={{
+                      once: true,
+                      margin: "-60px",
+                    }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.08,
+                      ease: "easeOut",
+                    }}
+                    className={`group flex flex-col items-center text-center md:items-start md:text-left py-3 sm:py-5 lg:py-1 ${index > 0
+                      ? "border-t border-[#DDE5E1] pt-6 md:border-l md:border-t-0 md:pt-0 md:pl-8 lg:pl-8"
+                      : ""
+                      }`}
+                  >
+                    {/* Number */}
+                    <div className="flex items-end justify-center gap-2 md:justify-start">
+                      <span className="text-[48px] font-black leading-none tracking-[-0.05em] text-[#025246] sm:text-[50px]">
+                        {stat.value}
+                      </span>
+
+                      {stat.suffix && (
+                        <span className="pb-1 text-xl font-bold text-[#B29921]">
+                          {stat.suffix}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Label */}
+                    <p className="mt-4 max-w-[220px] text-[14px] font-semibold leading-relaxed text-[#33433E]">
+                      {stat.label}
+                    </p>
+
+                    {/* Source */}
+                    <div className="mt-5 flex items-center justify-center gap-2 md:justify-start">
+                      <span className="h-1 w-1 rounded-full bg-[#025246]" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                        {stat.source}
+                      </span>
+                    </div>
+
+                    {/* Hover Line */}
+                    <div className="mt-6 h-px w-0 bg-[#025246] transition-all duration-500 group-hover:w-10 mx-auto md:mx-0" />
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="my-8 h-px w-full bg-[#DDE5E1]" />
+
+              {/* Story */}
+              <div className="text-center lg:text-left">
+                <p className="text-[16px] leading-[1.9] text-[#52605C]">
+                  Potensi pertanian Indonesia tumbuh dari desa, dengan beragam
+                  hasil pertanian yang menjadi bagian penting bagi masyarakat.
+                  Namun, tidak semua hasil tersebut memiliki akses yang mudah
+                  untuk menjangkau pasar yang lebih luas dan menemukan pembeli
+                  yang tepat.
+                </p>
+
+                <p className="mt-6 text-[16px] leading-[1.9] text-[#52605C]">
+                  Jarak antara petani dan pasar, proses distribusi yang panjang,
+                  serta keterbatasan informasi masih menjadi tantangan dalam
+                  mengembangkan potensi hasil pertanian lokal secara optimal.
+                </p>
+
+                <p className="mt-6 text-[16px] leading-[1.9] text-[#52605C]">
+                  <strong className="font-bold text-[#025246]">
+                    KompasDesa hadir untuk membuka akses pasar yang lebih luas
+                  </strong>{" "}
+                  dengan mempertemukan petani, pembeli, dan jaringan distribusi
+                  melalui pemasaran yang lebih mudah, terarah, transparan, dan
+                  efisien.
+                </p>
+              </div>
+
+              {/* Brand Statement */}
+              <div className="mt-8 flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left gap-4 border-t border-[#DDE5E1] pt-7">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#025246]">
+                  <ArrowUpRight
+                    className="h-4 w-4 text-white"
+                    strokeWidth={2.5}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-sm font-bold text-[#18211F]">
+                    Tujuan Kami
+                  </p>
+                  <p className="mt-1 max-w-md text-sm leading-relaxed text-slate-400">
+                    Menghubungkan potensi desa dengan pasar untuk menciptakan
+                    pertanian yang lebih maju dan berkelanjutan.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ================= BOTTOM STATEMENT ================= */}
+        <div className="mt-16 flex flex-col items-center text-center gap-4 border-t border-[#DDE5E1] pt-7 sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          <p className="max-w-xl text-sm leading-relaxed text-slate-400">
+            Bukan hanya mempertemukan produk dengan pembeli, tetapi membuka
+            jalur agar potensi desa dapat berkembang lebih jauh.
           </p>
 
-          <div className="flex flex-wrap gap-6 sm:gap-10">
-            <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#c9a227]">25 Juta+</p>
-              <p className="text-xs sm:text-sm text-gray-600">Rumah Tangga Pertanian</p>
-            </div>
-            <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#c9a227]">2-7</p>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Pelaku dalam rantai distribusi
-              </p>
-            </div>
-            <div>
-              <p className="text-xl sm:text-2xl font-bold text-[#c9a227]">12,6%</p>
-              <p className="text-xs sm:text-sm text-gray-600">Kontribusi PDB Nasional</p>
-            </div>
-          </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#025246]">
+            #DariDesaUntukNegeri
+          </span>
         </div>
-
-        <div className="rounded-lg overflow-hidden">
-          <div className="grid grid-cols-2 h-44 sm:h-56 bg-gray-200">
-            <img src="/images/about/Pertanian1.png" alt="" className="w-full h-full object-cover" />
-            <img src="/images/about/Pertanian2.png" alt="" className="w-full h-full object-cover" />
-          </div>
-          <div className="bg-[#c9a227] text-white font-semibold text-center py-2 text-sm sm:text-base">
-            Pertanian di Indonesia
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-xl sm:text-2xl font-bold mb-2">
-            <span className="text-[#1f6d3b]">Kompas</span>
-            <span className="text-[#c9a227]">&apos;Desa</span>
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">Berkolaborasi bersama:</p>
-
-          <div className="grid grid-cols-3 sm:grid-cols-3 gap-6 max-w-sm items-center">
-            {logos.map((logo, i) => (
-              <div key={i} className="flex items-center justify-center">
-                <img
-                  src={logo}
-                  alt=""
-                  className="h-10 sm:h-12 object-contain"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center">
-          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-            <span className="font-bold">
-              <span className="text-[#1f6d3b]">Kompas</span>
-              <span className="text-[#c9a227]">&apos;Desa</span>
-            </span>{" "}
-            hadir sebagai platform yang menghubungkan petani dengan berbagai
-            pembeli melalui sistem distribusi yang lebih mudah, transparan,
-            dan efisien. Hingga saat ini, Kompas&apos;Desa telah menjalin kerja
-            sama dengan 10 mitra terpercaya sebagai bagian dari upaya
-            membangun ekosistem distribusi hasil pertanian yang lebih luas
-            dan berkelanjutan.
-          </p>
-        </div>
-
-        <div>
-          <p className="text-gray-700 leading-relaxed mb-8 text-sm sm:text-base">
-            Dengan demikian, hasil panen dapat menjangkau pasar yang lebih
-            luas sekaligus meningkatkan peluang penjualan dan kesejahteraan
-            petani.
-          </p>
-
-          <div className="flex flex-wrap gap-8 sm:gap-10">
-
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
-                <img
-                  src="/images/about/IconTruck.svg"
-                  alt=""
-                  className="h-10 sm:h-12 object-contain"
-                />
-              </div>
-              <div>
-                <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">
-                  <Counter end={400} suffix="+" />
-                </p>
-                <p className="text-xs sm:text-sm text-gray-600">Distribusi berhasil</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1f6d3b] flex items-center justify-center text-white text-sm">
-                <img
-                  src="/images/about/IconPadi.svg"
-                  alt=""
-                  className="h-10 sm:h-12 object-contain"
-                />
-              </div>
-              <div>
-                <p className="text-lg sm:text-xl font-bold text-[#1f6d3b]">
-                  <Counter end={1000} suffix="+ Ton" />
-                </p>
-                <p className="text-xs sm:text-sm text-gray-600">
-                  Hasil panen tersalurkan
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div className="rounded-lg overflow-hidden">
-          <div className="grid grid-cols-2 h-44 sm:h-56 bg-gray-200">
-            <img src="/images/about/truck.png" alt="" className="w-full h-full object-cover" />
-            <img src="/images/about/truck2.png" alt="" className="w-full h-full object-cover" />
-          </div>
-          <div className="bg-[#1f6d3b] text-white font-semibold text-center py-2 text-sm sm:text-base">
-            Melayani Hampir di Seluruh Pulau Jawa
-          </div>
-        </div>
-
       </div>
     </section>
   );
 }
+
+// "use client";
+
+// import { useRef } from "react";
+// import Image from "next/image";
+// import { ArrowUpRight, MoveUpRight } from "lucide-react";
+// import gsap from "gsap";
+// import { ScrollTrigger } from "gsap/ScrollTrigger";
+// import { useGSAP } from "@gsap/react";
+// import Counter from "@/components/animation/Counter";
+
+// // Register ScrollTrigger
+// if (typeof window !== "undefined") {
+//   gsap.registerPlugin(ScrollTrigger);
+// }
+
+// const statistics = [
+//   {
+//     value: <Counter end={28} duration={3000} />,
+//     suffix: "juta+",
+//     label: "Rumah tangga usahaㅤ pertanian",
+//     source: "BPS · 2024",
+//   },
+//   {
+//     value: "2–7",
+//     suffix: "",
+//     label: "Pelaku distribusi dalam rantai pasok",
+//     source: "BPS · 2025",
+//   },
+//   {
+//     value: <Counter end={6} duration={2000} />,
+//     suffix: "juta+",
+//     label: "Petani milenial usia 19–39 tahun",
+//     source: "BPS · 2023",
+//   },
+// ];
+
+// export function About() {
+//   const containerRef = useRef<HTMLDivElement>(null);
+//   const imageWrapperRef = useRef<HTMLDivElement>(null);
+//   const imageRef = useRef<HTMLImageElement>(null);
+//   const imageOverlayRef = useRef<HTMLDivElement>(null);
+
+//   useGSAP(
+//     () => {
+//       // 1. Header Animation (Fade & Slide Up)
+//       gsap.from(".header-content", {
+//         y: 40,
+//         opacity: 0,
+//         duration: 1.2,
+//         ease: "power3.out",
+//         scrollTrigger: {
+//           trigger: ".header-content",
+//           start: "top 85%",
+//         },
+//       });
+
+//       // 2. 3D Image Reveal Animation
+//       const imgTl = gsap.timeline({
+//         scrollTrigger: {
+//           trigger: imageWrapperRef.current,
+//           start: "top 80%",
+//         },
+//       });
+
+//       imgTl
+//         .fromTo(
+//           imageWrapperRef.current,
+//           { opacity: 0, y: 60, rotationX: 15, transformPerspective: 1000 },
+//           { opacity: 1, y: 0, rotationX: 0, duration: 1.5, ease: "expo.out" }
+//         )
+//         .fromTo(
+//           imageRef.current,
+//           { scale: 1.2 },
+//           { scale: 1, duration: 1.8, ease: "power3.out" },
+//           "-=1.5"
+//         );
+
+//       // 3. Statistics Cards Stagger Animation (Setiap card naik satu-satu secara elegan)
+//       gsap.from(".stat-item", {
+//         y: 40,
+//         opacity: 0,
+//         stagger: 0.2,
+//         duration: 1.2,
+//         ease: "power3.out",
+//         scrollTrigger: {
+//           trigger: ".stats-container",
+//           start: "top 85%",
+//         },
+//       });
+
+//       // 4. Dividers Animation (Melebar dari kiri ke kanan)
+//       gsap.utils.toArray(".divider-line").forEach((line: any) => {
+//         gsap.from(line, {
+//           scaleX: 0,
+//           transformOrigin: "left center",
+//           duration: 1.5,
+//           ease: "expo.inOut",
+//           scrollTrigger: {
+//             trigger: line,
+//             start: "top 90%",
+//           },
+//         });
+//       });
+
+//       // 5. Story Content Stagger (Paragraf demi paragraf naik berurutan)
+//       gsap.from(".story-item", {
+//         y: 30,
+//         opacity: 0,
+//         stagger: 0.2,
+//         duration: 1.2,
+//         ease: "power3.out",
+//         scrollTrigger: {
+//           trigger: ".story-container",
+//           start: "top 85%",
+//         },
+//       });
+
+//       // 6. Brand Statement & Bottom Section Animation
+//       gsap.from(".reveal-bottom", {
+//         y: 30,
+//         opacity: 0,
+//         stagger: 0.15,
+//         duration: 1.2,
+//         ease: "power3.out",
+//         scrollTrigger: {
+//           trigger: ".reveal-bottom-container",
+//           start: "top 90%",
+//         },
+//       });
+//     },
+//     { scope: containerRef }
+//   );
+
+//   // --- LOGIKA 3D LAYERING (MOUSE MOVE) ---
+//   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+//     if (!imageWrapperRef.current || !imageOverlayRef.current) return;
+
+//     const { left, top, width, height } =
+//       imageWrapperRef.current.getBoundingClientRect();
+
+//     const x = (e.clientX - left) / width - 0.5;
+//     const y = (e.clientY - top) / height - 0.5;
+
+//     // Putar kontainer utama (Max 12 derajat)
+//     gsap.to(imageWrapperRef.current, {
+//       rotationY: x * 12,
+//       rotationX: -y * 12,
+//       ease: "power2.out",
+//       duration: 0.6,
+//       transformPerspective: 1000,
+//     });
+
+//     // Geser overlay/label lebih jauh (Efek Parallax / Pop-out)
+//     gsap.to(imageOverlayRef.current, {
+//       x: x * -20,
+//       y: y * -20,
+//       ease: "power2.out",
+//       duration: 0.6,
+//     });
+//   };
+
+//   const handleMouseLeave = () => {
+//     gsap.to(imageWrapperRef.current, {
+//       rotationY: 0,
+//       rotationX: 0,
+//       ease: "power3.out",
+//       duration: 1.2,
+//     });
+//     gsap.to(imageOverlayRef.current, {
+//       x: 0,
+//       y: 0,
+//       ease: "power3.out",
+//       duration: 1.2,
+//     });
+//   };
+
+//   return (
+//     <section
+//       ref={containerRef}
+//       className="relative overflow-hidden bg-[#F7F9F8] text-[#18211F]"
+//     >
+//       {/* Decorative Background */}
+//       <div
+//         aria-hidden="true"
+//         className="pointer-events-none absolute right-[-120px] top-[140px] h-[420px] w-[420px] rounded-full bg-[#025246]/[0.035] blur-3xl"
+//       />
+
+//       <div className="mx-auto max-w-[1280px] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+//         {/* ================= HEADER ================= */}
+//         <div className="header-content mb-14 flex items-center justify-center lg:mb-20">
+//           <div>
+//             <h2 className="max-w-3xl text-center text-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-3xl md:text-3xl">
+//               Membangun akses, <span className="text-[#025246]">dan Membuka peluang.</span>
+//             </h2>
+//           </div>
+//         </div>
+
+//         {/* ================= MAIN CONTENT ================= */}
+//         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+
+//           {/* LEFT : IMAGE DENGAN 3D LAYERING */}
+//           <div className="relative mx-auto w-full max-w-[500px] lg:max-w-none [perspective:1000px]">
+//             <div
+//               ref={imageWrapperRef}
+//               onMouseMove={handleMouseMove}
+//               onMouseLeave={handleMouseLeave}
+//               className="relative overflow-hidden rounded-[2rem] bg-[#DDE8E4] shadow-2xl shadow-[#025246]/5 [transform-style:preserve-3d] cursor-crosshair"
+//             >
+//               <Image
+//                 ref={imageRef}
+//                 src="/images/about/tanamanpetani.png"
+//                 alt="Petani dan hasil pertanian"
+//                 width={1200}
+//                 height={1400}
+//                 className="aspect-[4/5] h-full w-full object-cover scale-105"
+//               />
+
+//               {/* Image Overlay Gradient */}
+//               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
+
+//               {/* Image Label - Diberi efek pop-out translateZ */}
+//               <div
+//                 ref={imageOverlayRef}
+//                 className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4 text-left pointer-events-none [transform:translateZ(40px)]"
+//               >
+//                 <div>
+//                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80 drop-shadow-md">
+//                     Dari Desa
+//                   </p>
+//                   <p className="mt-1 text-sm font-semibold text-white drop-shadow-md">
+//                     Potensi lokal, peluang nasional.
+//                   </p>
+//                 </div>
+
+//                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md shadow-lg">
+//                   <MoveUpRight className="h-4 w-4 text-white" />
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* RIGHT : CONTENT */}
+//           <div className="flex flex-col justify-center">
+//             <div className="mx-auto max-w-[650px] lg:mx-0">
+
+//               {/* Statistics (Animated Cards) */}
+//               <div className="stats-container grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-0">
+//                 {statistics.map((stat, index) => (
+//                   <div
+//                     key={index}
+//                     className={`stat-item group flex flex-col items-center text-center py-3 sm:py-5 lg:py-1 md:items-start md:text-left ${index > 0
+//                         ? "border-t border-[#DDE5E1] pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0 lg:pl-8"
+//                         : ""
+//                       }`}
+//                   >
+//                     {/* Number */}
+//                     <div className="flex items-end justify-center gap-2 md:justify-start">
+//                       <span className="text-[48px] font-black leading-none tracking-[-0.05em] text-[#025246] sm:text-[50px]">
+//                         {stat.value}
+//                       </span>
+//                       {stat.suffix && (
+//                         <span className="pb-1 text-xl font-bold text-[#B29921]">
+//                           {stat.suffix}
+//                         </span>
+//                       )}
+//                     </div>
+
+//                     {/* Label */}
+//                     <p className="mt-4 max-w-[220px] text-[14px] font-semibold leading-relaxed text-[#33433E]">
+//                       {stat.label}
+//                     </p>
+
+//                     {/* Source */}
+//                     <div className="mt-5 flex items-center justify-center gap-2 md:justify-start">
+//                       <span className="h-1 w-1 rounded-full bg-[#025246]" />
+//                       <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+//                         {stat.source}
+//                       </span>
+//                     </div>
+
+//                     {/* Hover Line */}
+//                     <div className="mx-auto mt-6 h-px w-0 bg-[#025246] transition-all duration-500 group-hover:w-10 md:mx-0" />
+//                   </div>
+//                 ))}
+//               </div>
+
+//               {/* Divider */}
+//               <div className="divider-line my-8 h-px w-full bg-[#DDE5E1]" />
+
+//               {/* Story (Animated Stagger Paragraphs) */}
+//               <div className="story-container text-center lg:text-left">
+//                 <p className="story-item text-[16px] leading-[1.9] text-[#52605C]">
+//                   Potensi pertanian Indonesia tumbuh dari desa, dengan beragam
+//                   hasil pertanian yang menjadi bagian penting bagi masyarakat.
+//                   Namun, tidak semua hasil tersebut memiliki akses yang mudah
+//                   untuk menjangkau pasar yang lebih luas dan menemukan pembeli
+//                   yang tepat.
+//                 </p>
+
+//                 <p className="story-item mt-6 text-[16px] leading-[1.9] text-[#52605C]">
+//                   Jarak antara petani dan pasar, proses distribusi yang panjang,
+//                   serta keterbatasan informasi masih menjadi tantangan dalam
+//                   mengembangkan potensi hasil pertanian lokal secara optimal.
+//                 </p>
+
+//                 <p className="story-item mt-6 text-[16px] leading-[1.9] text-[#52605C]">
+//                   <strong className="font-bold text-[#025246]">
+//                     KompasDesa hadir untuk membuka akses pasar yang lebih luas
+//                   </strong>{" "}
+//                   dengan mempertemukan petani, pembeli, dan jaringan distribusi
+//                   melalui pemasaran yang lebih mudah, terarah, transparan, dan
+//                   efisien.
+//                 </p>
+//               </div>
+
+//               {/* Brand Statement (Animated Item) */}
+//               <div className="story-item mt-8 flex flex-col items-center gap-4 border-t border-[#DDE5E1] pt-7 text-center sm:flex-row sm:items-start sm:text-left">
+//                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#025246]">
+//                   <ArrowUpRight
+//                     className="h-4 w-4 text-white"
+//                     strokeWidth={2.5}
+//                   />
+//                 </div>
+
+//                 <div>
+//                   <p className="text-sm font-bold text-[#18211F]">
+//                     Tujuan Kami
+//                   </p>
+//                   <p className="mt-1 max-w-md text-sm leading-relaxed text-slate-400">
+//                     Menghubungkan potensi desa dengan pasar untuk menciptakan
+//                     pertanian yang lebih maju dan berkelanjutan.
+//                   </p>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* ================= BOTTOM STATEMENT ================= */}
+//         <div className="reveal-bottom-container mt-16 border-t border-[#DDE5E1] pt-7">
+//           <div className="reveal-bottom flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+//             <p className="max-w-xl text-sm leading-relaxed text-slate-400">
+//               Bukan hanya mempertemukan produk dengan pembeli, tetapi membuka
+//               jalur agar potensi desa dapat berkembang lebih jauh.
+//             </p>
+
+//             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#025246]">
+//               #DariDesaUntukNegeri
+//             </span>
+//           </div>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }

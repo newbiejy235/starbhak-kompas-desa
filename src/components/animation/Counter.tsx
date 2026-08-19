@@ -45,7 +45,7 @@ export default function Counter({ end, duration, suffix = "" }: CounterProps) {
       if (!duration) duration = 2000
       const progress = Math.min((currentTime - startTime) / duration, 1)
 
-      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+      const easeProgress = 1 - Math.pow(1 - progress, 3)
 
       setCount(Math.floor(easeProgress * end))
 

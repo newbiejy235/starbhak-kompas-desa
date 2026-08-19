@@ -20,8 +20,8 @@ export default function AnimatedHeading({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08, // Dipercepat sedikit agar alur bacanya lebih asik
-        delayChildren: 2,    // Delay awal dikurangi agar responsif
+        staggerChildren: 0.08, 
+        delayChildren: 2,   
       },
     },
   };
