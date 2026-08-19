@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatNumber, formatDate } from "@/lib/format";
 import { LoadingState } from "@/components/shared/States";
-import { useFetch } from "@/lib/hooks";
 import {
   getFarmerDashboard,
   getSalesChart,
@@ -13,7 +12,7 @@ import {
   type TopProduct,
   type ActivityItem,
   type HarvestScheduleItem,
-} from "@/actions/dashboard";
+} from "@/actions/dashboard"; // Sesuaikan path ini dengan project lu
 
 type ChartRange = "30d" | "3m" | "1y";
 
@@ -28,22 +27,67 @@ export default function PetaniDashboard() {
   const user = getClientUser();
   const [chartRange, setChartRange] = useState<ChartRange>("30d");
 
-  const { data: dashboard, loading: dashboardLoading } = useFetch(async (): Promise<DashboardData | null> => {
-    if (!user) return null;
-    const result = await getFarmerDashboard(user.id);
-    return {
-      stats: result.stats,
-      topProducts: result.topProducts,
-      activities: result.activities,
-      harvestSchedule: result.harvestSchedule,
+  // State terpisah yang jauh lebih aman dari infinite loop
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  
+  const [chartData, setChartData] = useState<SalesChartPoint[]>([]);
+  const [chartLoading, setChartLoading] = useState(true);
+
+  // 1. Fetch Data Utama (HANYA JALAN SEKALI saat halaman dimuat)
+  useEffect(() => {
+    if (!user?.id) return;
+
+    let isMounted = true;
+    setDashboardLoading(true);
+
+    getFarmerDashboard(user.id)
+      .then((result) => {
+        if (isMounted) {
+          setDashboard({
+            stats: result.stats,
+            topProducts: result.topProducts,
+            activities: result.activities,
+            harvestSchedule: result.harvestSchedule,
+          });
+          setDashboardLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Gagal memuat dashboard:", error);
+        if (isMounted) setDashboardLoading(false);
+      });
+
+    return () => {
+      isMounted = false; // Cleanup biar gak memory leak
     };
-  }, [user?.id]);
+  }, [user?.id]); // Dependency hanya user.id
 
-  const { data: chartData, loading: chartLoading } = useFetch(async (): Promise<SalesChartPoint[]> => {
-    if (!user) return [];
-    return getSalesChart(user.id, chartRange);
-  }, [user?.id, chartRange]);
+  // 2. Fetch Data Grafik (HANYA JALAN saat range waktu diubah)
+  useEffect(() => {
+    if (!user?.id) return;
 
+    let isMounted = true;
+    setChartLoading(true);
+
+    getSalesChart(user.id, chartRange)
+      .then((result) => {
+        if (isMounted) {
+          setChartData(result);
+          setChartLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Gagal memuat grafik:", error);
+        if (isMounted) setChartLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, chartRange]); // Dependency user.id & chartRange
+
+  // Loading State
   if (dashboardLoading || !dashboard) return <LoadingState />;
 
   const { stats, topProducts, activities, harvestSchedule } = dashboard;

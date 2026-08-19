@@ -135,6 +135,17 @@ export default function EditCommodity() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Minimum Nego (Rp)</label>
+            <input type="number" name="minPrice" min="0" defaultValue={commodity.minPrice ? formatNumber(commodity.minPrice) : ""} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Maksimum Nego (Rp)</label>
+            <input type="number" name="maxPrice" min="0" defaultValue={commodity.maxPrice ? formatNumber(commodity.maxPrice) : ""} className={inputCls} />
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Lokasi *</label>
             <input name="location" required defaultValue={commodity.location} className={inputCls} />
           </div>

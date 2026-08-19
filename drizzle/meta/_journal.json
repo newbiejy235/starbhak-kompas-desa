@@ -22,6 +22,20 @@
       "when": 1786893383524,
       "tag": "0002_nifty_screwball",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787140312162,
+      "tag": "0003_parallel_silverclaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787145316600,
+      "tag": "0004_purple_jack_flag",
+      "breakpoints": true
     }
   ]
 }

@@ -12,6 +12,7 @@ import {
   LogOut,
   X,
   Menu,
+  MessageCircle,
 } from "lucide-react";
 import { clearSession } from "@/lib/auth/client";
 
@@ -22,6 +23,7 @@ export default function UserSidebar() {
 
   const menuItems = [
     { id: "home", label: "Beranda", icon: LayoutDashboard, href: "/user/home" },
+    { id: "chat", label: "Pesan", icon: MessageCircle, href: "/user/chat" },
     { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },
     { id: "transactions", label: "Riwayat Transaksi", icon: History, href: "/user/transactions" },
     { id: "reviews", label: "Ulasan Saya", icon: Star, href: "/user/reviews" },

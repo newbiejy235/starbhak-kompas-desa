@@ -51,15 +51,22 @@ export default function CartPage() {
     [idsKey],
   );
 
-  const items = entries
+  type CartItem = { product: CommodityDetail; quantity: number; negotiatedPrice?: number };
+
+  const items: CartItem[] = entries
     .map((entry) => {
       const product = products?.find((p) => p.id === entry.commodityId);
-      return product ? { product, quantity: entry.quantity } : null;
+      if (!product) return null;
+      const item: CartItem = { product, quantity: entry.quantity };
+      if (entry.negotiatedPrice !== undefined) {
+        item.negotiatedPrice = entry.negotiatedPrice;
+      }
+      return item;
     })
-    .filter((i): i is { product: CommodityDetail; quantity: number } => i !== null);
+    .filter((i): i is CartItem => i !== null);
 
   const subtotal = items.reduce(
-    (sum, i) => sum + Number(i.product.price) * i.quantity,
+    (sum, i) => sum + (i.negotiatedPrice ?? Number(i.product.price)) * i.quantity,
     0,
   );
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -146,7 +153,9 @@ export default function CartPage() {
               <ul className="divide-y divide-gray-100">
                 {items.map((item) => {
                   const img = formatImage(item.product.image);
-                  const lineTotal = Number(item.product.price) * item.quantity;
+                  const unitPrice = item.negotiatedPrice ?? Number(item.product.price);
+                  const lineTotal = unitPrice * item.quantity;
+                  const isNegotiated = item.negotiatedPrice !== undefined;
                   return (
                     <li key={item.product.id} className="flex items-center gap-4 px-6 py-5">
                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
@@ -177,13 +186,20 @@ export default function CartPage() {
                           {item.product.location}
                         </p>
                         <div className="flex items-center justify-between mt-3 gap-3">
-                          <span className="text-sm font-extrabold text-[#025246]">
-                            {formatRupiah(item.product.price)}
-                            <span className="text-[11px] font-medium text-gray-400">
-                              {" "}
-                              / {item.product.unit}
+                          <div>
+                            <span className={`text-sm font-extrabold ${isNegotiated ? "text-[#00AA5B]" : "text-[#025246]"}`}>
+                              {formatRupiah(unitPrice)}
+                              <span className="text-[11px] font-medium text-gray-400">
+                                {" "}
+                                / {item.product.unit}
+                              </span>
                             </span>
-                          </span>
+                            {isNegotiated && (
+                              <span className="ml-2 text-[10px] bg-[#00AA5B]/10 text-[#00AA5B] px-1.5 py-0.5 rounded-full font-medium">
+                                Harga Nego
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
                             <button
                               type="button"

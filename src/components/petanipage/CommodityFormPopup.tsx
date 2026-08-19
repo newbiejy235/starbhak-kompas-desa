@@ -241,6 +241,35 @@ export default function CommodityFormPopup({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Harga Minimum Nego (Rp)
+                </label>
+                <input
+                  type="number"
+                  name="minPrice"
+                  min="0"
+                  placeholder="10000"
+                  defaultValue={commodity?.minPrice ? formatNumber(commodity.minPrice) : ""}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Harga Maksimum Nego (Rp)
+                </label>
+                <input
+                  type="number"
+                  name="maxPrice"
+                  min="0"
+                  placeholder="15000"
+                  defaultValue={commodity?.maxPrice ? formatNumber(commodity.maxPrice) : ""}
+                  className={inputCls}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Estimasi Panen
                 </label>
                 <input

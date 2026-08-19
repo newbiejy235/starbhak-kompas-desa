@@ -14,6 +14,7 @@ import {
   LogOut,
   X,
   Menu,
+  MessageCircle,
 } from "lucide-react";
 import { clearSession, getClientUser } from "@/lib/auth/client";
 
@@ -25,6 +26,7 @@ export default function PetaniSidebar() {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/petani/dashboard" },
+    { id: "chat", label: "Pesan", icon: MessageCircle, href: "/petani/chat" },
     { id: "add", label: "Tambah Komoditas", icon: PackagePlus, href: "/petani/commodities/add" },
     { id: "orders", label: "Pesanan Masuk", icon: ShoppingBag, href: "/petani/orders" },
     { id: "sales", label: "Riwayat Penjualan", icon: History, href: "/petani/sales" },

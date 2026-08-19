@@ -56,6 +56,8 @@ export async function getPublicCommodities(params?: {
       id: commoditiesTable.id,
       name: commoditiesTable.name,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
@@ -88,6 +90,8 @@ export async function getCommoditiesByIds(ids: number[]) {
       categoryId: commoditiesTable.categoryId,
       name: commoditiesTable.name,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
@@ -114,6 +118,8 @@ export async function getCommodityById(id: number) {  const [row] = await db
       name: commoditiesTable.name,
       description: commoditiesTable.description,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
@@ -148,6 +154,8 @@ export async function getFarmerCommodities(farmerId: number) {
       name: commoditiesTable.name,
       description: commoditiesTable.description,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
@@ -180,6 +188,10 @@ export async function createCommodity(
   const description = (data.get("description") as string)?.trim() || "";
   const categoryId = Number(data.get("categoryId"));
   const price = Number(data.get("price"));
+  const minPriceRaw = data.get("minPrice") as string | null;
+  const maxPriceRaw = data.get("maxPrice") as string | null;
+  const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+  const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
   const stock = Number(data.get("stock"));
   const unit = (data.get("unit") as string) || "kg";
   const quality = (data.get("quality") as string) || "A";
@@ -199,6 +211,8 @@ export async function createCommodity(
       name,
       description,
       price: String(price),
+      minPrice: minPrice ? String(minPrice) : null,
+      maxPrice: maxPrice ? String(maxPrice) : null,
       stock: String(stock),
       unit,
       quality,
@@ -244,6 +258,10 @@ export async function updateCommodity(
   const description = (data.get("description") as string)?.trim() || "";
   const categoryId = Number(data.get("categoryId"));
   const price = Number(data.get("price"));
+  const minPriceRaw = data.get("minPrice") as string | null;
+  const maxPriceRaw = data.get("maxPrice") as string | null;
+  const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+  const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
   const stock = Number(data.get("stock"));
   const unit = (data.get("unit") as string) || "kg";
   const quality = (data.get("quality") as string) || "A";
@@ -265,6 +283,8 @@ export async function updateCommodity(
         description,
         categoryId,
         price: String(price),
+        minPrice: minPrice ? String(minPrice) : null,
+        maxPrice: maxPrice ? String(maxPrice) : null,
         stock: String(stock),
         unit,
         quality,
@@ -349,6 +369,8 @@ export async function getRelatedCommodities(
       id: commoditiesTable.id,
       name: commoditiesTable.name,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
