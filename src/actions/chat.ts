@@ -9,7 +9,7 @@ import {
   usersTable,
   ImageUpload,
 } from "@/db/schema";
-import { eq, and, desc, sql, or } from "drizzle-orm";
+import { eq, and, desc, sql, or, gt } from "drizzle-orm";
 
 export async function getOrCreateChatRoom(
   buyerId: number,
@@ -87,6 +87,7 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
         commodityPrice: commoditiesTable.price,
         commodityImage: ImageUpload.secureUrl,
         commodityUnit: commoditiesTable.unit,
+        hasDeal: sql<boolean>`exists(select 1 from chat_messages_table m where m."roomId" = chat_rooms_table.id and m.type = 'accept')`,
       })
       .from(chatRoomsTable)
       .innerJoin(usersTable, eq(usersTable.id, role === "pembeli" ? chatRoomsTable.farmerId : chatRoomsTable.buyerId))
@@ -207,6 +208,7 @@ export async function sendChatMessage(
     await db
       .update(chatRoomsTable)
       .set({
+        status: "active",
         lastMessage: content,
         lastMessageAt: new Date(),
       })
@@ -216,6 +218,37 @@ export async function sendChatMessage(
   } catch (error) {
     console.error(error);
     return null;
+  }
+}
+
+export async function getNewMessages(roomId: number, afterId: number) {
+  try {
+    const messages = await db
+      .select({
+        id: chatMessagesTable.id,
+        senderId: chatMessagesTable.senderId,
+        type: chatMessagesTable.type,
+        content: chatMessagesTable.content,
+        offerPrice: chatMessagesTable.offerPrice,
+        offerQuantity: chatMessagesTable.offerQuantity,
+        isRead: chatMessagesTable.isRead,
+        createdAt: chatMessagesTable.createdAt,
+        senderName: usersTable.fullName,
+      })
+      .from(chatMessagesTable)
+      .innerJoin(usersTable, eq(usersTable.id, chatMessagesTable.senderId))
+      .where(
+        and(
+          eq(chatMessagesTable.roomId, roomId),
+          gt(chatMessagesTable.id, afterId),
+        ),
+      )
+      .orderBy(chatMessagesTable.createdAt);
+
+    return messages;
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }
 

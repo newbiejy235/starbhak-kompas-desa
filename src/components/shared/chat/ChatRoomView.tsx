@@ -76,6 +76,11 @@ export default function ChatRoomView({
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [offerPrice, setOfferPrice] = useState("");
   const [offerQty, setOfferQty] = useState("1");
+  const [confirmDeal, setConfirmDeal] = useState<{
+    price: string;
+    quantity: string;
+  } | null>(null);
+  const [submittingDeal, setSubmittingDeal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const img = formatImage(room.commodityImage);
@@ -90,6 +95,8 @@ export default function ChatRoomView({
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
       if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId !== currentUserId) {
+        const next = messages[i + 1];
+        if (next && (next.type === "accept" || next.type === "reject")) continue;
         return msg;
       }
     }
@@ -99,7 +106,8 @@ export default function ChatRoomView({
   const latestAcceptedOffer = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
-      if (msg.type === "accept" && msg.senderId === currentUserId) {
+      if (msg.type === "accept") {
+        if (msg.offerPrice && msg.offerQuantity) return msg;
         const prev = messages[i - 1];
         if (prev && (prev.type === "offer" || prev.type === "counter_offer")) {
           return prev;
@@ -107,7 +115,7 @@ export default function ChatRoomView({
       }
     }
     return null;
-  }, [messages, currentUserId]);
+  }, [messages]);
 
   const myLatestOffer = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -120,8 +128,8 @@ export default function ChatRoomView({
   }, [messages, currentUserId]);
 
   const hasAcceptedDeal = useMemo(() => {
-    return messages.some((msg) => msg.type === "accept" && msg.senderId === currentUserId);
-  }, [messages, currentUserId]);
+    return messages.some((msg) => msg.type === "accept");
+  }, [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -147,9 +155,30 @@ export default function ChatRoomView({
     setOfferQty("1");
   };
 
-  const handleAcceptOffer = async (msg: ChatMessageData) => {
-    const acceptText = `Setuju! Saya terima penawaran ${formatRupiah(msg.offerPrice)} / ${room.commodityUnit} × ${formatNumber(msg.offerQuantity)} ${room.commodityUnit}`;
-    await onSendMessage(acceptText, "accept");
+  const openConfirmDeal = (msg: ChatMessageData) => {
+    setConfirmDeal({
+      price: msg.offerPrice ?? "",
+      quantity: msg.offerQuantity ?? "1",
+    });
+  };
+
+  const handleConfirmDeal = async () => {
+    if (!confirmDeal || submittingDeal) return;
+    const price = parseFloat(confirmDeal.price);
+    const qty = parseFloat(confirmDeal.quantity);
+    if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
+
+    setSubmittingDeal(true);
+    try {
+      const acceptText = `Deal disetujui! ${formatRupiah(price)} / ${room.commodityUnit} × ${formatNumber(qty)} ${room.commodityUnit} (Total: ${formatRupiah(price * qty)})`;
+      await onSendMessage(acceptText, "accept", price, qty);
+      if (!isFarmer) {
+        onAddToCart(price, qty);
+      }
+      setConfirmDeal(null);
+    } finally {
+      setSubmittingDeal(false);
+    }
   };
 
   const handleRejectOffer = async () => {
@@ -168,7 +197,7 @@ export default function ChatRoomView({
           </h3>
           <p className="text-xs text-gray-500 truncate">{room.commodityName}</p>
         </div>
-        {isRoomClosed && (
+        {hasAcceptedDeal && (
           <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
             Deal Tercapai
           </span>
@@ -217,7 +246,7 @@ export default function ChatRoomView({
           </div>
         </div>
 
-        {latestPendingOffer && !isRoomClosed && (
+        {latestPendingOffer && (
           <div className="sticky top-0 z-10 px-4 pb-3">
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
@@ -258,7 +287,7 @@ export default function ChatRoomView({
             {isFarmer ? (
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleAcceptOffer(latestPendingOffer)}
+                  onClick={() => openConfirmDeal(latestPendingOffer)}
                   className="flex-1 flex items-center justify-center gap-2 bg-[#025246] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#024036] transition-colors"
                 >
                   <Check size={16} />
@@ -278,48 +307,31 @@ export default function ChatRoomView({
               </div>
             ) : (
               <div className="flex gap-2">
-                {isRoomClosed && hasAcceptedDeal && (
-                  <button
-                    onClick={() => {
-                      if (latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity) {
-                        onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity));
-                      }
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#00AA5B] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#009A4F] transition-colors"
-                  >
-                    <ShoppingCart size={16} />
-                    Tambah ke Keranjang
-                  </button>
-                )}
-                {!isRoomClosed && (
-                  <>
-                    <button
-                      onClick={() => handleAcceptOffer(latestPendingOffer)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-[#025246] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#024036] transition-colors"
-                    >
-                      <Check size={16} />
-                      Setuju
-                    </button>
-                    <button
-                      onClick={() => {
-                        setOfferPrice("");
-                        setOfferQty("1");
-                        setShowOfferForm(true);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 bg-white border border-amber-300 text-amber-700 text-sm font-bold py-2.5 rounded-xl hover:bg-amber-50 transition-colors"
-                    >
-                      <RotateCcw size={16} />
-                      Ajukan Lain
-                    </button>
-                  </>
-                )}
+                <button
+                  onClick={() => openConfirmDeal(latestPendingOffer)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#025246] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#024036] transition-colors"
+                >
+                  <Check size={16} />
+                  Setuju
+                </button>
+                <button
+                  onClick={() => {
+                    setOfferPrice("");
+                    setOfferQty("1");
+                    setShowOfferForm(true);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-amber-300 text-amber-700 text-sm font-bold py-2.5 rounded-xl hover:bg-amber-50 transition-colors"
+                >
+                  <RotateCcw size={16} />
+                  Ajukan Lain
+                </button>
               </div>
             )}
           </div>
           </div>
         )}
 
-        {isRoomClosed && hasAcceptedDeal && !latestPendingOffer && (
+        {hasAcceptedDeal && !latestPendingOffer && (
           <div className="sticky top-0 z-10 px-4 pb-3">
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
@@ -486,43 +498,113 @@ export default function ChatRoomView({
           </div>
         )}
 
-        {!isRoomClosed ? (
-          <div className="flex gap-2">
-            {!showOfferForm && hasPriceRange && (
-              <button
-                onClick={() => {
-                  setOfferPrice("");
-                  setOfferQty("1");
-                  setShowOfferForm(true);
-                }}
-                className="px-4 py-3 bg-[#00AA5B] text-white text-sm font-bold rounded-xl hover:bg-[#009A4F] transition-colors flex items-center gap-1.5 shrink-0"
-              >
-                <Tag size={16} />
-                Nego
-              </button>
-            )}
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ketik pesan..."
-              className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
-            />
+        <div className="flex gap-2">
+          {!showOfferForm && hasPriceRange && (
             <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="w-12 h-12 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] transition-colors disabled:opacity-40 shrink-0"
+              onClick={() => {
+                setOfferPrice("");
+                setOfferQty("1");
+                setShowOfferForm(true);
+              }}
+              className="px-4 py-3 bg-[#00AA5B] text-white text-sm font-bold rounded-xl hover:bg-[#009A4F] transition-colors flex items-center gap-1.5 shrink-0"
             >
-              <Send size={18} />
+              <Tag size={16} />
+              Nego
             </button>
-          </div>
-        ) : (
-          <div className="text-center py-3 text-sm text-gray-500">
-            Percakapan ini sudah ditutup. Deal telah tercapai.
-          </div>
-        )}
+          )}
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Ketik pesan..."
+            className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="w-12 h-12 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] transition-colors disabled:opacity-40 shrink-0"
+          >
+            <Send size={18} />
+          </button>
+        </div>
       </div>
+
+      {confirmDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setConfirmDeal(null)}
+          />
+          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-[#025246] to-[#047857] px-6 py-4 text-white">
+              <h3 className="font-bold text-lg">Konfirmasi Deal</h3>
+              <p className="text-xs text-white/70">
+                Periksa harga & jumlah sebelum menyetujui
+              </p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                  Harga per {room.commodityUnit}
+                </label>
+                <input
+                  type="number"
+                  value={confirmDeal.price}
+                  onChange={(e) =>
+                    setConfirmDeal((d) => (d ? { ...d, price: e.target.value } : d))
+                  }
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                  Jumlah ({room.commodityUnit})
+                </label>
+                <input
+                  type="number"
+                  value={confirmDeal.quantity}
+                  min="1"
+                  max={stock}
+                  onChange={(e) =>
+                    setConfirmDeal((d) => (d ? { ...d, quantity: e.target.value } : d))
+                  }
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
+                />
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                <span className="text-xs text-gray-500">Total Kesepakatan</span>
+                <span className="text-sm font-extrabold text-[#025246]">
+                  {formatRupiah(
+                    (parseFloat(confirmDeal.price) || 0) *
+                      (parseFloat(confirmDeal.quantity) || 0),
+                  )}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleConfirmDeal}
+                  disabled={
+                    submittingDeal ||
+                    parseFloat(confirmDeal.price) <= 0 ||
+                    parseFloat(confirmDeal.quantity) <= 0
+                  }
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#00AA5B] text-white text-sm font-bold py-3 rounded-xl hover:bg-[#009A4F] transition-colors disabled:opacity-40"
+                >
+                  <Check size={16} />
+                  {submittingDeal ? "Memproses..." : "Setujui Deal"}
+                </button>
+                <button
+                  onClick={() => setConfirmDeal(null)}
+                  className="px-4 py-3 bg-gray-100 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
