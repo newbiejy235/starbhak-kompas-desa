@@ -16,7 +16,7 @@ export default function About() {
         Mengapa memilih kami?
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 lg:gap-x-16 lg:gap-y-6 max-w-6xl mx-auto">
         
         <div>
           <p className="text-gray-700 leading-relaxed mb-8 text-sm sm:text-base">

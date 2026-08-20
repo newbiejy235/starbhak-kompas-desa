@@ -7,12 +7,16 @@ import {
   ArrowLeft,
   Package,
   Check,
+  CheckCheck,
   X,
   ShoppingCart,
   MapPin,
   Tag,
   Handshake,
   RotateCcw,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
 } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
@@ -63,6 +67,28 @@ interface ChatRoomViewProps {
   onBack: () => void;
 }
 
+function formatTime(date: Date) {
+  const d = new Date(date);
+  return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDate(date: Date) {
+  const d = new Date(date);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return "Hari ini";
+  if (d.toDateString() === yesterday.toDateString()) return "Kemarin";
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function shouldShowDate(messages: ChatMessageData[], index: number) {
+  if (index === 0) return true;
+  const prev = new Date(messages[index - 1].createdAt);
+  const curr = new Date(messages[index].createdAt);
+  return prev.toDateString() !== curr.toDateString();
+}
+
 export default function ChatRoomView({
   room,
   messages,
@@ -76,11 +102,9 @@ export default function ChatRoomView({
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [offerPrice, setOfferPrice] = useState("");
   const [offerQty, setOfferQty] = useState("1");
-  const [confirmDeal, setConfirmDeal] = useState<{
-    price: string;
-    quantity: string;
-  } | null>(null);
+  const [confirmDeal, setConfirmDeal] = useState<{ price: string; quantity: string } | null>(null);
   const [submittingDeal, setSubmittingDeal] = useState(false);
+  const [showProductInfo, setShowProductInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const img = formatImage(room.commodityImage);
@@ -88,7 +112,6 @@ export default function ChatRoomView({
   const maxPrice = room.commodityMaxPrice ? Number(room.commodityMaxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
   const stock = Number(room.commodityStock);
-  const isRoomClosed = room.status === "closed";
   const isFarmer = currentRole === "petani";
 
   const latestPendingOffer = useMemo(() => {
@@ -109,9 +132,7 @@ export default function ChatRoomView({
       if (msg.type === "accept") {
         if (msg.offerPrice && msg.offerQuantity) return msg;
         const prev = messages[i - 1];
-        if (prev && (prev.type === "offer" || prev.type === "counter_offer")) {
-          return prev;
-        }
+        if (prev && (prev.type === "offer" || prev.type === "counter_offer")) return prev;
       }
     }
     return null;
@@ -120,16 +141,12 @@ export default function ChatRoomView({
   const myLatestOffer = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
-      if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId === currentUserId) {
-        return msg;
-      }
+      if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId === currentUserId) return msg;
     }
     return null;
   }, [messages, currentUserId]);
 
-  const hasAcceptedDeal = useMemo(() => {
-    return messages.some((msg) => msg.type === "accept");
-  }, [messages]);
+  const hasAcceptedDeal = useMemo(() => messages.some((m) => m.type === "accept"), [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,20 +163,12 @@ export default function ChatRoomView({
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-
-    const label = type === "counter_offer" ? "Counter penawaran" : "Ajukan penawaran";
-    const offerText = `${label}: ${formatRupiah(price)} / ${room.commodityUnit} × ${formatNumber(qty)} ${room.commodityUnit}`;
+    const label = type === "counter_offer" ? "Counter" : "Penawaran";
+    const offerText = `${label}: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
     await onSendMessage(offerText, type, price, qty);
     setShowOfferForm(false);
     setOfferPrice("");
     setOfferQty("1");
-  };
-
-  const openConfirmDeal = (msg: ChatMessageData) => {
-    setConfirmDeal({
-      price: msg.offerPrice ?? "",
-      quantity: msg.offerQuantity ?? "1",
-    });
   };
 
   const handleConfirmDeal = async () => {
@@ -167,436 +176,371 @@ export default function ChatRoomView({
     const price = parseFloat(confirmDeal.price);
     const qty = parseFloat(confirmDeal.quantity);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-
     setSubmittingDeal(true);
     try {
-      const acceptText = `Deal disetujui! ${formatRupiah(price)} / ${room.commodityUnit} × ${formatNumber(qty)} ${room.commodityUnit} (Total: ${formatRupiah(price * qty)})`;
+      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
       await onSendMessage(acceptText, "accept", price, qty);
-      if (!isFarmer) {
-        onAddToCart(price, qty);
-      }
+      if (!isFarmer) onAddToCart(price, qty);
       setConfirmDeal(null);
     } finally {
       setSubmittingDeal(false);
     }
   };
 
-  const handleRejectOffer = async () => {
-    await onSendMessage("Penawaran tidak disetujui. Silakan ajukan harga lain.", "reject");
+  const renderMessage = (msg: ChatMessageData, isMe: boolean) => {
+    const isSystem = msg.type === "system";
+    const isOffer = msg.type === "offer" || msg.type === "counter_offer";
+    const isAccept = msg.type === "accept";
+    const isReject = msg.type === "reject";
+
+    if (isSystem) {
+      return (
+        <div className="flex justify-center my-2">
+          <span className="text-[11px] text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+            {msg.content}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2`}>
+        <div className={`max-w-[78%]`}>
+          {!isMe && (
+            <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
+          )}
+          <div
+            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${
+              isMe
+                ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
+                : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
+            }`}
+          >
+            {isOffer && (
+              <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-[#025246]"}`}>
+                  <Tag size={12} />
+                  {msg.type === "counter_offer" ? "Counter" : "Penawaran"}
+                </div>
+                {msg.offerPrice && (
+                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-[#025246]"}`}>
+                    {formatRupiah(msg.offerPrice)}
+                    <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
+                      {" "}per {room.commodityUnit}
+                    </span>
+                    {msg.offerQuantity && (
+                      <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
+                        {" "}&bull; {formatNumber(msg.offerQuantity)} {room.commodityUnit}
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+            {isAccept && (
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-green-300" : "text-green-600"}`}>
+                <Check size={14} /> Deal disetujui
+              </div>
+            )}
+            {isReject && (
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-red-300" : "text-red-500"}`}>
+                <X size={14} /> Penawaran ditolak
+              </div>
+            )}
+            <p className="whitespace-pre-line">{msg.content}</p>
+            <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
+              <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
+              {isMe && (
+                msg.id < 0 ? (
+                  <Loader2 size={11} className="animate-spin" />
+                ) : msg.isRead ? (
+                  <CheckCheck size={13} className="text-[#53BDEB]" />
+                ) : (
+                  <CheckCheck size={13} />
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-4rem)]">
-      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 shrink-0">
-        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-          <ArrowLeft size={20} className="text-gray-600" />
+    <div className="flex flex-col h-[100dvh] lg:h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-[#025246] text-white shrink-0 shadow-md">
+        <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-gray-800 truncate">
+          <h3 className="text-sm font-bold truncate">
             {isFarmer ? room.buyerName : room.farmerName}
           </h3>
-          <p className="text-xs text-gray-500 truncate">{room.commodityName}</p>
+          <p className="text-[11px] text-white/60 truncate">{room.commodityName}</p>
         </div>
         {hasAcceptedDeal && (
-          <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-            Deal Tercapai
+          <span className="text-[10px] bg-green-400 text-white px-2.5 py-1 rounded-full font-bold tracking-wide">
+            DEAL
           </span>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-[#F6F6F6]">
-        <div className="px-4 pt-4 pb-3">
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-            <div className="flex gap-3">
-              <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative">
-                {img ? (
-                  <Image src={img} alt={room.commodityName} fill sizes="80px" className="object-cover" unoptimized />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
-                    <Package size={24} className="text-white" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-gray-800 truncate">{room.commodityName}</h4>
-                {hasPriceRange ? (
-                  <p className="text-sm font-bold text-[#025246]">
-                    {formatRupiah(minPrice)} - {formatRupiah(maxPrice)}
-                    <span className="text-xs font-medium text-gray-500"> / {room.commodityUnit}</span>
-                  </p>
-                ) : (
-                  <p className="text-sm font-bold text-[#025246]">
-                    {formatRupiah(room.commodityPrice)}
-                    <span className="text-xs font-medium text-gray-500"> / {room.commodityUnit}</span>
-                  </p>
-                )}
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                    <Tag size={10} /> Stok: {formatNumber(room.commodityStock)} {room.commodityUnit}
-                  </span>
-                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                    <MapPin size={10} /> {room.farmerAddress || "Lokasi tidak diketahui"}
-                  </span>
+      {/* Product Info Toggle */}
+      <button
+        onClick={() => setShowProductInfo(!showProductInfo)}
+        className="flex items-center justify-center gap-2 py-2.5 bg-white border-b border-gray-200 text-[#025246] text-xs font-semibold shrink-0 hover:bg-gray-50 transition-colors"
+      >
+        <div className="w-5 h-5 bg-[#025246] rounded flex items-center justify-center">
+          <Package size={12} className="text-white" />
+        </div>
+        {room.commodityName}
+        <span className="text-gray-400 font-normal">-</span>
+        <span className="font-bold">{hasPriceRange ? `${formatRupiah(minPrice)}-${formatRupiah(maxPrice)}` : formatRupiah(room.commodityPrice)}</span>
+        <span className="text-gray-400 font-normal text-[11px]">/{room.commodityUnit}</span>
+        {showProductInfo ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+      </button>
+
+      {showProductInfo && (
+        <div className="bg-white border-b border-gray-200 px-4 py-3 shrink-0">
+          <div className="flex gap-3">
+            <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative border border-gray-200">
+              {img ? (
+                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" unoptimized />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
+                  <Package size={20} className="text-white" />
                 </div>
-              </div>
+              )}
             </div>
-            {room.commodityDescription && (
-              <p className="text-xs text-gray-500 mt-3 leading-relaxed line-clamp-2">{room.commodityDescription}</p>
-            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatNumber(room.commodityStock)}</span> {room.commodityUnit}</p>
+              <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                <MapPin size={10} className="text-[#025246]" /> {room.farmerAddress || "Lokasi tidak diketahui"}
+              </p>
+            </div>
           </div>
         </div>
+      )}
 
-        {latestPendingOffer && (
-          <div className="sticky top-0 z-10 px-4 pb-3">
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
+      {/* Pending Offer Banner */}
+      {latestPendingOffer && (
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-4 py-3 shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
                 <Handshake size={16} className="text-amber-600" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-amber-800">Penawaran Terbaru</h4>
-                <p className="text-[11px] text-amber-600">
-                  dari {latestPendingOffer.senderName}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl p-3 mb-3 border border-amber-100">
-              <div className="flex items-center gap-2 mb-1">
-                <Tag size={14} className="text-amber-600" />
-                <span className="text-xs font-bold text-amber-800">
-                  {latestPendingOffer.type === "counter_offer" ? "Counter Penawaran" : "Ajukan Harga"}
-                </span>
-              </div>
-              <p className="text-lg font-extrabold text-[#025246]">
-                {formatRupiah(latestPendingOffer.offerPrice)}
-                <span className="text-xs font-medium text-gray-500"> / {room.commodityUnit}</span>
-              </p>
-              {latestPendingOffer.offerQuantity && (
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Jumlah: {formatNumber(latestPendingOffer.offerQuantity)} {room.commodityUnit}
-                  {latestPendingOffer.offerPrice && latestPendingOffer.offerQuantity && (
-                    <span className="ml-2 font-bold text-[#025246]">
-                      Total: {formatRupiah(Number(latestPendingOffer.offerPrice) * Number(latestPendingOffer.offerQuantity))}
+                <p className="text-[11px] text-amber-600 font-medium">Penawaran dari {latestPendingOffer.senderName}</p>
+                <p className="text-sm font-extrabold text-[#025246]">
+                  {formatRupiah(latestPendingOffer.offerPrice)}
+                  {latestPendingOffer.offerQuantity && (
+                    <span className="text-[11px] font-normal text-gray-500">
+                      {" "}x {formatNumber(latestPendingOffer.offerQuantity)} {room.commodityUnit}
                     </span>
                   )}
                 </p>
-              )}
+              </div>
             </div>
-
-            {isFarmer ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => openConfirmDeal(latestPendingOffer)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#025246] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#024036] transition-colors"
-                >
-                  <Check size={16} />
-                  Setuju
-                </button>
-                <button
-                  onClick={() => {
-                    setOfferPrice("");
-                    setOfferQty("1");
-                    setShowOfferForm(true);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-amber-300 text-amber-700 text-sm font-bold py-2.5 rounded-xl hover:bg-amber-50 transition-colors"
-                >
-                  <RotateCcw size={16} />
-                  Ajukan Lain
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => openConfirmDeal(latestPendingOffer)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#025246] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#024036] transition-colors"
-                >
-                  <Check size={16} />
-                  Setuju
-                </button>
-                <button
-                  onClick={() => {
-                    setOfferPrice("");
-                    setOfferQty("1");
-                    setShowOfferForm(true);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-amber-300 text-amber-700 text-sm font-bold py-2.5 rounded-xl hover:bg-amber-50 transition-colors"
-                >
-                  <RotateCcw size={16} />
-                  Ajukan Lain
-                </button>
-              </div>
-            )}
+            <div className="flex gap-1.5 shrink-0">
+              <button
+                onClick={() => setConfirmDeal({ price: latestPendingOffer.offerPrice ?? "", quantity: latestPendingOffer.offerQuantity ?? "1" })}
+                className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm"
+              >
+                Setuju
+              </button>
+              <button
+                onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
+                className="px-3 py-1.5 bg-white border border-[#025246]/20 text-[#025246] text-xs font-bold rounded-lg hover:bg-gray-50"
+              >
+                Counter
+              </button>
+            </div>
           </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        {hasAcceptedDeal && !latestPendingOffer && (
-          <div className="sticky top-0 z-10 px-4 pb-3">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
+      {/* Deal Banner */}
+      {hasAcceptedDeal && !latestPendingOffer && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-4 py-3 shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <Handshake size={16} className="text-green-600" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-green-800">Deal Tercapai!</h4>
-                <p className="text-[11px] text-green-600">Harga dan jumlah sudah disepakati</p>
+                <p className="text-[11px] text-green-600 font-medium">Deal Tercapai!</p>
+                {latestAcceptedOffer && (
+                  <p className="text-sm font-extrabold text-[#025246]">
+                    {formatRupiah(latestAcceptedOffer.offerPrice)}
+                    <span className="text-[11px] font-normal text-gray-500">
+                      {" "}x {formatNumber(latestAcceptedOffer.offerQuantity)} {room.commodityUnit} = {" "}
+                      {formatRupiah(Number(latestAcceptedOffer.offerPrice) * Number(latestAcceptedOffer.offerQuantity))}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
-            {latestAcceptedOffer && (
-              <div className="bg-white rounded-xl p-3 mb-3 border border-green-100">
-                <p className="text-lg font-extrabold text-[#025246]">
-                  {formatRupiah(latestAcceptedOffer.offerPrice)}
-                  <span className="text-xs font-medium text-gray-500"> / {room.commodityUnit}</span>
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Jumlah: {formatNumber(latestAcceptedOffer.offerQuantity)} {room.commodityUnit}
-                  <span className="ml-2 font-bold text-[#025246]">
-                    Total: {formatRupiah(Number(latestAcceptedOffer.offerPrice) * Number(latestAcceptedOffer.offerQuantity))}
-                  </span>
-                </p>
-              </div>
-            )}
-            {!isFarmer && (
+            {!isFarmer && latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity && (
               <button
-                onClick={() => {
-                  if (latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity) {
-                    onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity));
-                  }
-                }}
-                className="w-full flex items-center justify-center gap-2 bg-[#00AA5B] text-white text-sm font-bold py-3 rounded-xl hover:bg-[#009A4F] transition-colors"
+                onClick={() => onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity))}
+                className="px-3 py-1.5 bg-[#00AA5B] text-white text-xs font-bold rounded-lg hover:bg-[#009A4F] flex items-center gap-1.5 shadow-sm shrink-0"
               >
-                <ShoppingCart size={18} />
-                Tambahkan ke Keranjang
+                <ShoppingCart size={14} /> Keranjang
               </button>
             )}
           </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        <div className="px-4 space-y-3">
-        {messages.map((msg) => {
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-3 py-3">
+        {messages.map((msg, i) => {
           const isMe = msg.senderId === currentUserId;
-          const isSystem = msg.type === "system";
-          const isOffer = msg.type === "offer" || msg.type === "counter_offer";
-          const isAccept = msg.type === "accept";
-          const isReject = msg.type === "reject";
-
-          if (isSystem) {
-            return (
-              <div key={msg.id} className="flex justify-center">
-                <div className="text-[11px] text-gray-400 bg-white/80 px-3 py-1 rounded-full">
-                  {msg.content}
-                </div>
-              </div>
-            );
-          }
-
+          const showDate = shouldShowDate(messages, i);
           return (
-            <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-              <div
-                className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                  isMe
-                    ? "bg-[#025246] text-white rounded-br-md"
-                    : "bg-white text-gray-800 rounded-bl-md border border-gray-100 shadow-sm"
-                }`}
-              >
-                {!isMe && (
-                  <p className={`text-[11px] font-bold mb-1 ${isMe ? "text-white/70" : "text-[#025246]"}`}>
-                    {msg.senderName}
-                  </p>
-                )}
-                {isOffer && (
-                  <div className={`mb-1 p-2 rounded-lg ${isMe ? "bg-white/10" : "bg-gray-50"}`}>
-                    <div className="flex items-center gap-1.5 text-xs font-bold">
-                      <Tag size={12} />
-                      {msg.type === "counter_offer" ? "Counter Penawaran" : "Ajukan Harga"}
-                    </div>
-                    {msg.offerPrice && (
-                      <p className="text-xs mt-1">
-                        {formatRupiah(msg.offerPrice)} / {room.commodityUnit}
-                        {msg.offerQuantity && ` × ${formatNumber(msg.offerQuantity)} ${room.commodityUnit}`}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {isAccept && (
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-green-400">
-                    <Check size={14} />
-                    Menerima penawaran
-                  </div>
-                )}
-                {isReject && (
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-red-400">
-                    <X size={14} />
-                    Menolak penawaran
-                  </div>
-                )}
-                <p className="whitespace-pre-line">{msg.content}</p>
-              </div>
+            <div key={msg.id}>
+              {showDate && (
+                <div className="flex justify-center my-4">
+                  <span className="text-[11px] text-gray-500 bg-white px-3 py-1 rounded-lg shadow-sm border border-gray-100 font-medium">
+                    {formatDate(msg.createdAt)}
+                  </span>
+                </div>
+              )}
+              {renderMessage(msg, isMe)}
             </div>
           );
         })}
         <div ref={messagesEndRef} />
-        </div>
       </div>
 
-      <div className="shrink-0 bg-white border-t border-gray-200 px-4 py-3">
+      {/* Input */}
+      <div className="shrink-0 bg-white border-t border-gray-200 px-3 py-3">
         {showOfferForm && (
-          <div className="bg-gray-50 rounded-2xl p-4 mb-3 border border-gray-200">
-            <h4 className="text-sm font-bold text-gray-800 mb-3">
-              {myLatestOffer ? "Ajukan Penawaran Lain" : "Ajukan Penawaran"}
-            </h4>
+          <div className="bg-gray-50 rounded-xl p-3 mb-2.5 border border-gray-200">
+            <div className="flex items-center justify-between mb-2.5">
+              <h4 className="text-xs font-bold text-gray-800">
+                {myLatestOffer ? "Counter Penawaran" : "Ajukan Penawaran"}
+              </h4>
+              <button onClick={() => setShowOfferForm(false)} className="p-1 hover:bg-gray-200 rounded-lg transition-colors">
+                <X size={14} className="text-gray-400" />
+              </button>
+            </div>
             {hasPriceRange && (
-              <p className="text-xs text-gray-500 mb-3">
-                Range harga: {formatRupiah(minPrice)} - {formatRupiah(maxPrice)} / {room.commodityUnit}
+              <p className="text-[11px] text-gray-500 mb-2">
+                Range: {formatRupiah(minPrice)} - {formatRupiah(maxPrice)} / {room.commodityUnit}
               </p>
             )}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <label className="block text-xs text-gray-600 mb-1">Harga per {room.commodityUnit}</label>
-                <input
-                  type="number"
-                  value={offerPrice}
-                  onChange={(e) => setOfferPrice(e.target.value)}
-                  placeholder="Masukkan harga"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-600 mb-1">Jumlah ({room.commodityUnit})</label>
-                <input
-                  type="number"
-                  value={offerQty}
-                  onChange={(e) => setOfferQty(e.target.value)}
-                  min="1"
-                  max={stock}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246]"
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <input
+                type="number"
+                value={offerPrice}
+                onChange={(e) => setOfferPrice(e.target.value)}
+                placeholder="Harga"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
+              />
+              <input
+                type="number"
+                value={offerQty}
+                onChange={(e) => setOfferQty(e.target.value)}
+                min="1"
+                max={stock}
+                placeholder={`Qty (${room.commodityUnit})`}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
+              />
             </div>
             {offerPrice && offerQty && (
-              <p className="text-sm font-bold text-[#025246] mb-3">
+              <p className="text-xs font-bold text-[#025246] mb-2">
                 Total: {formatRupiah(parseFloat(offerPrice) * parseFloat(offerQty || "1"))}
               </p>
             )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleSendOffer(myLatestOffer ? "counter_offer" : "offer")}
-                disabled={!offerPrice || parseFloat(offerPrice) <= 0}
-                className="flex-1 bg-[#025246] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#024036] transition-colors disabled:opacity-40"
-              >
-                {myLatestOffer ? "Kirim Counter" : "Kirim Penawaran"}
-              </button>
-              <button
-                onClick={() => setShowOfferForm(false)}
-                className="px-4 py-2.5 bg-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-300 transition-colors"
-              >
-                Batal
-              </button>
-            </div>
+            <button
+              onClick={() => handleSendOffer(myLatestOffer ? "counter_offer" : "offer")}
+              disabled={!offerPrice || parseFloat(offerPrice) <= 0}
+              className="w-full bg-[#025246] text-white text-xs font-bold py-2 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
+            >
+              {myLatestOffer ? "Kirim Counter" : "Kirim Penawaran"}
+            </button>
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           {!showOfferForm && hasPriceRange && (
             <button
-              onClick={() => {
-                setOfferPrice("");
-                setOfferQty("1");
-                setShowOfferForm(true);
-              }}
-              className="px-4 py-3 bg-[#00AA5B] text-white text-sm font-bold rounded-xl hover:bg-[#009A4F] transition-colors flex items-center gap-1.5 shrink-0"
+              onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
+              className="px-3 py-2.5 bg-[#00AA5B] text-white text-xs font-bold rounded-xl hover:bg-[#009A4F] flex items-center gap-1.5 shrink-0 shadow-sm"
             >
-              <Tag size={16} />
-              Nego
+              <Tag size={14} /> Nego
             </button>
           )}
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ketik pesan..."
-            className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
-          />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Ketik pesan..."
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:bg-white focus:ring-1 focus:ring-[#025246]/20 transition-all"
+            />
+          </div>
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="w-12 h-12 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] transition-colors disabled:opacity-40 shrink-0"
+            className="w-10 h-10 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] disabled:opacity-40 shrink-0 shadow-sm transition-colors"
           >
-            <Send size={18} />
+            <Send size={16} />
           </button>
         </div>
       </div>
 
+      {/* Deal Confirm Modal */}
       {confirmDeal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setConfirmDeal(null)}
-          />
-          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-[#025246] to-[#047857] px-6 py-4 text-white">
-              <h3 className="font-bold text-lg">Konfirmasi Deal</h3>
-              <p className="text-xs text-white/70">
-                Periksa harga & jumlah sebelum menyetujui
-              </p>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDeal(null)} />
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="bg-[#025246] px-5 py-4 text-white">
+              <h3 className="font-bold text-sm">Konfirmasi Deal</h3>
+              <p className="text-[11px] text-white/60 mt-0.5">Pastikan harga dan jumlah sudah sesuai</p>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-5 space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                  Harga per {room.commodityUnit}
-                </label>
+                <label className="block text-[11px] text-gray-500 mb-1 font-medium">Harga per {room.commodityUnit}</label>
                 <input
                   type="number"
                   value={confirmDeal.price}
-                  onChange={(e) =>
-                    setConfirmDeal((d) => (d ? { ...d, price: e.target.value } : d))
-                  }
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
+                  onChange={(e) => setConfirmDeal((d) => (d ? { ...d, price: e.target.value } : d))}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                  Jumlah ({room.commodityUnit})
-                </label>
+                <label className="block text-[11px] text-gray-500 mb-1 font-medium">Jumlah ({room.commodityUnit})</label>
                 <input
                   type="number"
                   value={confirmDeal.quantity}
                   min="1"
                   max={stock}
-                  onChange={(e) =>
-                    setConfirmDeal((d) => (d ? { ...d, quantity: e.target.value } : d))
-                  }
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
+                  onChange={(e) => setConfirmDeal((d) => (d ? { ...d, quantity: e.target.value } : d))}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
                 />
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-                <span className="text-xs text-gray-500">Total Kesepakatan</span>
+              <div className="bg-gray-50 rounded-xl p-3 flex justify-between items-center border border-gray-100">
+                <span className="text-[11px] text-gray-500 font-medium">Total</span>
                 <span className="text-sm font-extrabold text-[#025246]">
-                  {formatRupiah(
-                    (parseFloat(confirmDeal.price) || 0) *
-                      (parseFloat(confirmDeal.quantity) || 0),
-                  )}
+                  {formatRupiah((parseFloat(confirmDeal.price) || 0) * (parseFloat(confirmDeal.quantity) || 0))}
                 </span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-1">
                 <button
                   onClick={handleConfirmDeal}
-                  disabled={
-                    submittingDeal ||
-                    parseFloat(confirmDeal.price) <= 0 ||
-                    parseFloat(confirmDeal.quantity) <= 0
-                  }
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#00AA5B] text-white text-sm font-bold py-3 rounded-xl hover:bg-[#009A4F] transition-colors disabled:opacity-40"
+                  disabled={submittingDeal || parseFloat(confirmDeal.price) <= 0 || parseFloat(confirmDeal.quantity) <= 0}
+                  className="flex-1 bg-[#025246] text-white text-xs font-bold py-2.5 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
                 >
-                  <Check size={16} />
-                  {submittingDeal ? "Memproses..." : "Setujui Deal"}
+                  {submittingDeal ? "Proses..." : "Setujui Deal"}
                 </button>
                 <button
                   onClick={() => setConfirmDeal(null)}
-                  className="px-4 py-3 bg-gray-100 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   Batal
                 </button>
