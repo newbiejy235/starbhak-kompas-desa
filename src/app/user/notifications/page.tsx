@@ -7,8 +7,9 @@ import {
 import { getClientUser } from "@/lib/auth/client";
 import { formatDateTime } from "@/lib/format";
 import { LoadingState, EmptyState } from "@/components/shared/States";
-import { Bell, CheckCheck, Package, CreditCard, Star, Info, type LucideIcon } from "lucide-react";
+import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
+import Link from "next/link";
 import type { NotificationRow } from "@/lib/types/market";
 
 const typeIcon: Record<string, LucideIcon> = {
@@ -16,6 +17,7 @@ const typeIcon: Record<string, LucideIcon> = {
   payment: CreditCard,
   review: Star,
   system: Info,
+  chat: MessageCircle,
 };
 
 const typeColor: Record<string, string> = {
@@ -23,6 +25,7 @@ const typeColor: Record<string, string> = {
   payment: "bg-green-50 text-green-600",
   review: "bg-amber-50 text-amber-600",
   system: "bg-purple-50 text-purple-600",
+  chat: "bg-[#025246]/10 text-[#025246]",
 };
 
 export default function UserNotifications() {
@@ -72,7 +75,7 @@ export default function UserNotifications() {
         <div className="space-y-3">
           {list.map((n) => {
             const Icon = typeIcon[n.type] ?? Bell;
-            return (
+            const card = (
               <div
                 key={n.id}
                 className={`bg-white rounded-2xl border p-5 flex gap-4 shadow-sm ${
@@ -86,17 +89,24 @@ export default function UserNotifications() {
                 >
                   <Icon size={20} />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
-                    {!n.isRead && (
-                      <span className="w-2.5 h-2.5 bg-[#025246] rounded-full flex-shrink-0" />
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mt-1">{n.message}</p>
-                  <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
-                </div>
-              </div>
+                 <div className="min-w-0 flex-1">
+                   <div className="flex items-center justify-between gap-2">
+                     <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
+                     {!n.isRead && (
+                       <span className="w-2.5 h-2.5 bg-[#025246] rounded-full flex-shrink-0" />
+                     )}
+                   </div>
+                   <p className="text-sm text-gray-600 mt-1">{n.message}</p>
+                   <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
+                 </div>
+               </div>
+            );
+            return n.type === "chat" ? (
+              <Link key={n.id} href="/user/chat" className="block hover:opacity-90 transition-opacity">
+                {card}
+              </Link>
+            ) : (
+              <div key={n.id}>{card}</div>
             );
           })}
         </div>

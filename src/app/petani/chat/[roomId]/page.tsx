@@ -15,7 +15,7 @@ export default function PetaniChatRoomPage() {
   const userFullName = currentUser?.fullName ?? "Anda";
   const rid = Number(roomId);
 
-  const { room, messages, loading, sendMessage } = useChatSSE(rid, userId, userFullName);
+  const { room, messages, loading, sendMessage, editMessage, deleteMessage } = useChatSSE(rid, userId, userFullName);
 
   const handleAddToCart = () => {};
 
@@ -31,6 +31,8 @@ export default function PetaniChatRoomPage() {
       onSendMessage={sendMessage}
       onAddToCart={handleAddToCart}
       onBack={() => router.push("/petani/chat")}
+      onEditMessage={editMessage}
+      onDeleteMessage={deleteMessage}
     />
   );
 }

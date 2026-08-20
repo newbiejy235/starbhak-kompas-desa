@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import {
   Send,
@@ -13,10 +13,14 @@ import {
   MapPin,
   Tag,
   Handshake,
-  RotateCcw,
   ChevronDown,
   ChevronUp,
   Loader2,
+  Pencil,
+  Trash2,
+  MoreVertical,
+  AlertTriangle,
+  Reply,
 } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
@@ -52,6 +56,9 @@ interface ChatMessageData {
   offerPrice: string | null;
   offerQuantity: string | null;
   isRead: boolean;
+  isEdited: boolean;
+  isDeleted: boolean;
+  replyToId: number | null;
   createdAt: Date;
   senderName: string;
   senderFoto: string | null;
@@ -62,9 +69,11 @@ interface ChatRoomViewProps {
   messages: ChatMessageData[];
   currentUserId: number;
   currentRole: "pembeli" | "petani";
-  onSendMessage: (content: string, type?: string, offerPrice?: number, offerQuantity?: number) => Promise<void>;
+  onSendMessage: (content: string, type?: string, offerPrice?: number, offerQuantity?: number, replyToId?: number) => Promise<void>;
   onAddToCart: (price: number, quantity: number) => void;
   onBack: () => void;
+  onEditMessage?: (messageId: number, newContent: string) => Promise<{ success: boolean; error?: string }>;
+  onDeleteMessage?: (messageId: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 function formatTime(date: Date) {
@@ -97,6 +106,8 @@ export default function ChatRoomView({
   onSendMessage,
   onAddToCart,
   onBack,
+  onEditMessage,
+  onDeleteMessage,
 }: ChatRoomViewProps) {
   const [input, setInput] = useState("");
   const [showOfferForm, setShowOfferForm] = useState(false);
@@ -106,6 +117,13 @@ export default function ChatRoomView({
   const [submittingDeal, setSubmittingDeal] = useState(false);
   const [showProductInfo, setShowProductInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msg: ChatMessageData } | null>(null);
+  const [editingMsg, setEditingMsg] = useState<ChatMessageData | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<ChatMessageData | null>(null);
+  const [replyTo, setReplyTo] = useState<ChatMessageData | null>(null);
 
   const img = formatImage(room.commodityImage);
   const minPrice = room.commodityMinPrice ? Number(room.commodityMinPrice) : null;
@@ -152,11 +170,75 @@ export default function ChatRoomView({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Close context menu on outside click
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    document.addEventListener("click", close);
+    document.addEventListener("scroll", close, true);
+    return () => {
+      document.removeEventListener("click", close);
+      document.removeEventListener("scroll", close, true);
+    };
+  }, [contextMenu]);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent, msg: ChatMessageData) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const menuWidth = 170;
+    const menuHeight = 132;
+    let x = e.clientX;
+    let y = e.clientY;
+    if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 8;
+    if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 8;
+    setContextMenu({ x, y, msg });
+  }, []);
+
+  const handleEdit = useCallback(() => {
+    if (!contextMenu) return;
+    setEditingMsg(contextMenu.msg);
+    setEditContent(contextMenu.msg.content);
+    setContextMenu(null);
+  }, [contextMenu]);
+
+  const handleDelete = useCallback(() => {
+    if (!contextMenu) return;
+    setDeleteConfirm(contextMenu.msg);
+    setContextMenu(null);
+  }, [contextMenu]);
+
+  const handleReply = useCallback(() => {
+    if (!contextMenu) return;
+    setReplyTo(contextMenu.msg);
+    setContextMenu(null);
+    setTimeout(() => {
+      const inputEl = document.getElementById("chat-input") as HTMLInputElement | null;
+      inputEl?.focus();
+    }, 50);
+  }, [contextMenu]);
+
+  const handleSaveEdit = async () => {
+    if (!editingMsg || !editContent.trim() || !onEditMessage) return;
+    const res = await onEditMessage(editingMsg.id, editContent.trim());
+    if (res.success) {
+      setEditingMsg(null);
+      setEditContent("");
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm || !onDeleteMessage) return;
+    await onDeleteMessage(deleteConfirm.id);
+    setDeleteConfirm(null);
+  };
+
   const handleSend = async () => {
     const text = input.trim();
     if (!text) return;
     setInput("");
-    await onSendMessage(text);
+    const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
+    setReplyTo(null);
+    await onSendMessage(text, "text", undefined, undefined, replyId);
   };
 
   const handleSendOffer = async (type: "offer" | "counter_offer" = "offer") => {
@@ -165,7 +247,9 @@ export default function ChatRoomView({
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
     const label = type === "counter_offer" ? "Counter" : "Penawaran";
     const offerText = `${label}: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
-    await onSendMessage(offerText, type, price, qty);
+    const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
+    setReplyTo(null);
+    await onSendMessage(offerText, type, price, qty, replyId);
     setShowOfferForm(false);
     setOfferPrice("");
     setOfferQty("1");
@@ -179,7 +263,9 @@ export default function ChatRoomView({
     setSubmittingDeal(true);
     try {
       const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
-      await onSendMessage(acceptText, "accept", price, qty);
+      const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
+      setReplyTo(null);
+      await onSendMessage(acceptText, "accept", price, qty, replyId);
       if (!isFarmer) onAddToCart(price, qty);
       setConfirmDeal(null);
     } finally {
@@ -187,11 +273,19 @@ export default function ChatRoomView({
     }
   };
 
+  const getReplyMessage = (replyToId: number | null): ChatMessageData | undefined => {
+    if (!replyToId || replyToId < 0) return undefined;
+    return messages.find((m) => m.id === replyToId);
+  };
+
   const renderMessage = (msg: ChatMessageData, isMe: boolean) => {
     const isSystem = msg.type === "system";
     const isOffer = msg.type === "offer" || msg.type === "counter_offer";
     const isAccept = msg.type === "accept";
     const isReject = msg.type === "reject";
+    const isEditing = editingMsg?.id === msg.id;
+    const canInteract = isMe && !isSystem && !msg.isDeleted && onEditMessage;
+    const canReply = !isSystem && !msg.isDeleted;
 
     if (isSystem) {
       return (
@@ -203,8 +297,13 @@ export default function ChatRoomView({
       );
     }
 
+    const replyMsg = getReplyMessage(msg.replyToId);
+
     return (
-      <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2`}>
+      <div
+        className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2 group`}
+        onContextMenu={(e) => (canInteract || canReply) && handleContextMenu(e, msg)}
+      >
         <div className={`max-w-[78%]`}>
           {!isMe && (
             <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
@@ -214,8 +313,30 @@ export default function ChatRoomView({
               isMe
                 ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
                 : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
-            }`}
+            } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
           >
+            {/* Reply quote */}
+            {replyMsg && !msg.isDeleted && (
+              <div
+                className={`mb-2 pl-2 border-l-2 ${
+                  isMe ? "border-white/40 bg-white/10" : "border-[#025246] bg-gray-50"
+                } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
+                onClick={() => {
+                  const el = document.getElementById(`msg-${replyMsg.id}`);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  el?.classList.add("ring-2", "ring-[#00AA5B]", "ring-offset-1");
+                  setTimeout(() => el?.classList.remove("ring-2", "ring-[#00AA5B]", "ring-offset-1"), 1500);
+                }}
+              >
+                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-[#025246]"}`}>
+                  {replyMsg.senderId === currentUserId ? "Anda" : replyMsg.senderName}
+                </p>
+                <p className={`text-[11px] truncate ${isMe ? "text-white/70" : "text-gray-500"} max-w-[200px]`}>
+                  {replyMsg.isDeleted ? "Pesan telah dihapus" : replyMsg.content}
+                </p>
+              </div>
+            )}
+
             {isOffer && (
               <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
                 <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-[#025246]"}`}>
@@ -247,19 +368,65 @@ export default function ChatRoomView({
                 <X size={14} /> Penawaran ditolak
               </div>
             )}
-            <p className="whitespace-pre-line">{msg.content}</p>
-            <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
-              <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-              {isMe && (
-                msg.id < 0 ? (
-                  <Loader2 size={11} className="animate-spin" />
-                ) : msg.isRead ? (
-                  <CheckCheck size={13} className="text-[#53BDEB]" />
-                ) : (
-                  <CheckCheck size={13} />
-                )
-              )}
-            </div>
+
+            {isEditing ? (
+              <div className="min-w-[200px]">
+                <input
+                  id="edit-input"
+                  type="text"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveEdit();
+                    if (e.key === "Escape") { setEditingMsg(null); setEditContent(""); }
+                  }}
+                  autoFocus
+                  className="w-full bg-white/20 text-white placeholder-white/50 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-white/40"
+                  placeholder="Edit pesan..."
+                />
+                <div className="flex gap-1.5 mt-1.5">
+                  <button onClick={handleSaveEdit} className="text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md transition-colors">
+                    Simpan
+                  </button>
+                  <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md transition-colors">
+                    Batal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="whitespace-pre-line">{msg.content}</p>
+                {msg.isEdited && !msg.isDeleted && (
+                  <span className={`text-[9px] italic ${isMe ? "text-white/40" : "text-gray-400"}`}>diedit</span>
+                )}
+                <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
+                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
+                  {isMe && (
+                    msg.id < 0 ? (
+                      <Loader2 size={11} className="animate-spin" />
+                    ) : msg.isRead ? (
+                      <CheckCheck size={13} className="text-[#53BDEB]" />
+                    ) : (
+                      <CheckCheck size={13} />
+                    )
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Edit/Delete button on hover */}
+            {(canInteract || canReply) && !isEditing && (
+              <button
+                id={`msg-${msg.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleContextMenu(e as unknown as React.MouseEvent, msg);
+                }}
+                className={`absolute top-1/2 -translate-y-1/2 ${isMe ? "-left-8" : "-right-8"} opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-black/5`}
+              >
+                <MoreVertical size={14} className="text-gray-400" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -400,7 +567,7 @@ export default function ChatRoomView({
           const isMe = msg.senderId === currentUserId;
           const showDate = shouldShowDate(messages, i);
           return (
-            <div key={msg.id}>
+            <div key={msg.id} id={`msg-wrap-${msg.id}`}>
               {showDate && (
                 <div className="flex justify-center my-4">
                   <span className="text-[11px] text-gray-500 bg-white px-3 py-1 rounded-lg shadow-sm border border-gray-100 font-medium">
@@ -417,6 +584,26 @@ export default function ChatRoomView({
 
       {/* Input */}
       <div className="shrink-0 bg-white border-t border-gray-200 px-3 py-3">
+        {/* Reply preview */}
+        {replyTo && (
+          <div className="bg-gray-50 rounded-xl p-2.5 mb-2 border-l-2 border-[#025246] flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold text-[#025246]">
+                Membalas {replyTo.senderId === currentUserId ? "Anda" : replyTo.senderName}
+              </p>
+              <p className="text-[11px] text-gray-500 truncate">
+                {replyTo.isDeleted ? "Pesan telah dihapus" : replyTo.content}
+              </p>
+            </div>
+            <button
+              onClick={() => setReplyTo(null)}
+              className="p-1 hover:bg-gray-200 rounded-lg transition-colors shrink-0"
+            >
+              <X size={14} className="text-gray-400" />
+            </button>
+          </div>
+        )}
+
         {showOfferForm && (
           <div className="bg-gray-50 rounded-xl p-3 mb-2.5 border border-gray-200">
             <div className="flex items-center justify-between mb-2.5">
@@ -476,6 +663,7 @@ export default function ChatRoomView({
           )}
           <div className="flex-1 relative">
             <input
+              id="chat-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -493,6 +681,76 @@ export default function ChatRoomView({
           </button>
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden min-w-[170px] py-1"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {canReplyFor(contextMenu.msg) && (
+            <button
+              onClick={handleReply}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Reply size={15} className="text-[#025246]" />
+              Balas Pesan
+            </button>
+          )}
+          {onEditMessage && contextMenu.msg.senderId === currentUserId && contextMenu.msg.type === "text" && !contextMenu.msg.isDeleted && (
+            <button
+              onClick={handleEdit}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Pencil size={15} className="text-[#025246]" />
+              Edit Pesan
+            </button>
+          )}
+          {onDeleteMessage && contextMenu.msg.senderId === currentUserId && !contextMenu.msg.isDeleted && (
+            <button
+              onClick={handleDelete}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 size={15} />
+              Hapus Pesan
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Delete Confirm Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="px-5 py-4 text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle size={24} className="text-red-500" />
+              </div>
+              <h3 className="font-bold text-sm text-gray-800">Hapus Pesan?</h3>
+              <p className="text-xs text-gray-500 mt-1">Pesan yang dihapus tidak bisa dikembalikan.</p>
+              <p className="text-xs text-gray-400 mt-2 line-clamp-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
+                &ldquo;{deleteConfirm.content}&rdquo;
+              </p>
+            </div>
+            <div className="flex border-t border-gray-100">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 py-3 text-sm font-bold text-red-600 hover:bg-red-50 border-l border-gray-100 transition-colors"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Deal Confirm Modal */}
       {confirmDeal && (
@@ -551,4 +809,9 @@ export default function ChatRoomView({
       )}
     </div>
   );
+}
+
+// Helper to determine if a message can be replied to (used in context menu render)
+function canReplyFor(msg: ChatMessageData): boolean {
+  return msg.type !== "system" && !msg.isDeleted;
 }

@@ -347,6 +347,9 @@ export const chatMessagesTable = pgTable(
     offerPrice: numeric({ precision: 12, scale: 2 }),
     offerQuantity: numeric({ precision: 12, scale: 2 }),
     isRead: boolean().notNull().default(false),
+    isEdited: boolean().notNull().default(false),
+    isDeleted: boolean().notNull().default(false),
+    replyToId: integer(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

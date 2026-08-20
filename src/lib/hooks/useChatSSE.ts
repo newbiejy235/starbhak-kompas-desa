@@ -6,6 +6,8 @@ import {
   getChatMessages,
   sendChatMessage,
   markMessagesAsRead,
+  editMessage,
+  deleteMessage,
 } from "@/actions/chat";
 
 interface ChatRoomData {
@@ -30,7 +32,7 @@ interface ChatRoomData {
   farmerAddress: string | null;
 }
 
-interface ChatMessageData {
+export interface ChatMessageData {
   id: number;
   roomId: number;
   senderId: number;
@@ -39,6 +41,9 @@ interface ChatMessageData {
   offerPrice: string | null;
   offerQuantity: string | null;
   isRead: boolean;
+  isEdited: boolean;
+  isDeleted: boolean;
+  replyToId: number | null;
   createdAt: Date;
   senderName: string;
   senderFoto: string | null;
@@ -93,7 +98,6 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
         );
         if (add.length === 0) return prev;
 
-        // Match each new real message to a temp, remove matched temp
         const usedTemps = new Set<number>();
         const matchedTemps = new Set<number>();
         for (const msg of add) {
@@ -119,6 +123,19 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
       lastMsgIdRef.current = maxId;
 
       markMessagesAsRead(roomId, userId).catch(() => {});
+    });
+
+    es.addEventListener("edit_delete", (e) => {
+      const changes = JSON.parse(e.data) as { id: number; content: string; isEdited: boolean; isDeleted: boolean }[];
+      if (!changes || changes.length === 0) return;
+
+      setMessages((prev) =>
+        prev.map((m) => {
+          const change = changes.find((c) => c.id === m.id);
+          if (!change) return m;
+          return { ...m, content: change.content, isEdited: change.isEdited, isDeleted: change.isDeleted };
+        }),
+      );
     });
 
     es.addEventListener("read", (e) => {
@@ -189,7 +206,7 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
   }, [loading, connectSSE, cleanup]);
 
   const sendMessage = useCallback(
-    async (content: string, type: string = "text", offerPrice?: number, offerQuantity?: number) => {
+    async (content: string, type: string = "text", offerPrice?: number, offerQuantity?: number, replyToId?: number) => {
       if (!userId || !roomId) return;
 
       setMessages((prev) => [
@@ -203,6 +220,9 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
           offerPrice: offerPrice !== undefined ? String(offerPrice) : null,
           offerQuantity: offerQuantity !== undefined ? String(offerQuantity) : null,
           isRead: false,
+          isEdited: false,
+          isDeleted: false,
+          replyToId: replyToId ?? null,
           createdAt: new Date(),
           senderName: userFullName,
           senderFoto: null,
@@ -216,10 +236,49 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
         type as "text" | "offer" | "counter_offer" | "accept" | "reject" | "system",
         offerPrice,
         offerQuantity,
+        replyToId,
       );
     },
     [roomId, userId, userFullName],
   );
 
-  return { room, messages, loading, connectionStatus, sendMessage };
+  const handleEditMessage = useCallback(
+    async (messageId: number, newContent: string) => {
+      const result = await editMessage(messageId, userId, newContent);
+      if (result.success) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId ? { ...m, content: newContent, isEdited: true } : m,
+          ),
+        );
+      }
+      return result;
+    },
+    [userId],
+  );
+
+  const handleDeleteMessage = useCallback(
+    async (messageId: number) => {
+      const result = await deleteMessage(messageId, userId);
+      if (result.success) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId ? { ...m, content: "Pesan telah dihapus", isDeleted: true } : m,
+          ),
+        );
+      }
+      return result;
+    },
+    [userId],
+  );
+
+  return {
+    room,
+    messages,
+    loading,
+    connectionStatus,
+    sendMessage,
+    editMessage: handleEditMessage,
+    deleteMessage: handleDeleteMessage,
+  };
 }

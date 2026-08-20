@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { getClientUser, clearSession, updateSessionRole } from "@/lib/auth/client";
 import { becomePetaniAction } from "@/actions/auth";
+import { getUnreadNotificationCount } from "@/actions/notification";
+import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 
 export default function UserHeader() {
@@ -40,6 +42,12 @@ export default function UserHeader() {
     },
     null,
   );
+
+  const { data: unreadCount } = useFetch(
+    () => (user ? getUnreadNotificationCount(user.id) : Promise.resolve(0)),
+    [user?.id, pathname],
+  );
+  const unread = Number(unreadCount ?? 0);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -109,6 +117,11 @@ export default function UserHeader() {
             }`}
           >
             <Bell size={20} />
+            {unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full">
+                {unread > 99 ? "99+" : unread}
+              </span>
+            )}
           </Link>
           <div className="relative" ref={menuRef}>
             <button

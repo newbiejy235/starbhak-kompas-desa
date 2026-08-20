@@ -4,7 +4,7 @@ import {
   chatMessagesTable,
   usersTable,
 } from "@/db/schema";
-import { eq, and, gt, inArray } from "drizzle-orm";
+import { eq, and, gt, inArray, or } from "drizzle-orm";
 
 const POLL_INTERVAL_MS = 1500;
 const HEARTBEAT_INTERVAL_MS = 15000;
@@ -38,6 +38,7 @@ export async function GET(request: Request) {
   let currentLastId = lastId;
   let closed = false;
   const mySentMessageIds = new Set<number>();
+  const seenEditDeleteIds = new Set<number>();
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -67,6 +68,9 @@ export async function GET(request: Request) {
               offerPrice: chatMessagesTable.offerPrice,
               offerQuantity: chatMessagesTable.offerQuantity,
               isRead: chatMessagesTable.isRead,
+              isEdited: chatMessagesTable.isEdited,
+              isDeleted: chatMessagesTable.isDeleted,
+              replyToId: chatMessagesTable.replyToId,
               createdAt: chatMessagesTable.createdAt,
               senderName: usersTable.fullName,
             })
@@ -81,7 +85,6 @@ export async function GET(request: Request) {
             .orderBy(chatMessagesTable.createdAt);
 
           if (newMsgs.length > 0) {
-            // Track my sent messages for read receipts
             for (const msg of newMsgs) {
               if (msg.senderId === userId) {
                 mySentMessageIds.add(msg.id);
@@ -90,6 +93,37 @@ export async function GET(request: Request) {
             send("messages", newMsgs);
             const maxId = newMsgs.reduce((max, m) => Math.max(max, m.id), currentLastId);
             currentLastId = maxId;
+          }
+
+          // Poll edit/delete status for messages visible in this room
+          if (currentLastId > 0) {
+            const editDeleteMsgs = await db
+              .select({
+                id: chatMessagesTable.id,
+                content: chatMessagesTable.content,
+                isEdited: chatMessagesTable.isEdited,
+                isDeleted: chatMessagesTable.isDeleted,
+              })
+              .from(chatMessagesTable)
+              .where(
+                and(
+                  eq(chatMessagesTable.roomId, roomId),
+                  or(
+                    eq(chatMessagesTable.isEdited, true),
+                    eq(chatMessagesTable.isDeleted, true),
+                  ),
+                ),
+              );
+
+            if (editDeleteMsgs.length > 0) {
+              const changes = editDeleteMsgs.filter((m) => !seenEditDeleteIds.has(m.id));
+              if (changes.length > 0) {
+                send("edit_delete", changes);
+                for (const m of changes) {
+                  seenEditDeleteIds.add(m.id);
+                }
+              }
+            }
           }
 
           // Poll read status for my sent messages
@@ -112,7 +146,6 @@ export async function GET(request: Request) {
             if (readStatuses.length > 0) {
               const readIds = readStatuses.map((r) => r.id);
               send("read", { messageIds: readIds });
-              // Remove from tracking set
               for (const id of readIds) {
                 mySentMessageIds.delete(id);
               }

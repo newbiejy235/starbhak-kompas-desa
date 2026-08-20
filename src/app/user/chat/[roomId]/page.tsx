@@ -16,7 +16,7 @@ export default function UserChatRoomPage() {
   const userFullName = currentUser?.fullName ?? "Anda";
   const rid = Number(roomId);
 
-  const { room, messages, loading, sendMessage } = useChatSSE(rid, userId, userFullName);
+  const { room, messages, loading, sendMessage, editMessage, deleteMessage } = useChatSSE(rid, userId, userFullName);
 
   const handleAddToCart = (price: number, quantity: number) => {
     if (!room) return;
@@ -36,6 +36,8 @@ export default function UserChatRoomPage() {
       onSendMessage={sendMessage}
       onAddToCart={handleAddToCart}
       onBack={() => router.push("/user/chat")}
+      onEditMessage={editMessage}
+      onDeleteMessage={deleteMessage}
     />
   );
 }
