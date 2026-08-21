@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { MapPin, ShoppingCart, Star } from "lucide-react";
+import { MapPin, Eye, Star } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
-import { addToCart } from "@/lib/cart";
-import { useState } from "react";
 
 export interface ProductCardData {
   id: number;
   name: string;
   price: string;
+  minPrice: string | null;
+  maxPrice: string | null;
   stock: string;
   unit: string;
   location: string;
@@ -34,25 +33,13 @@ const categoryGradient: Record<string, string> = {
 };
 
 export default function ProductCard({ data }: ProductCardProps) {
-  const router = useRouter();
-  const [added, setAdded] = useState(false);
-
   if (!data) return null;
   const img = formatImage(data.image);
   const gradient =
     categoryGradient[data.categoryName ?? ""] || "from-[#025246] to-[#047857]";
   const initial = data.name?.charAt(0)?.toUpperCase() || "P";
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(data.id);
-    setAdded(true);
-    setTimeout(() => {
-      setAdded(false);
-      router.push("/user/cart");
-    }, 500);
-  };
+  const hasRange = data.minPrice && data.maxPrice && Number(data.minPrice) !== Number(data.maxPrice);
 
   return (
     <Link
@@ -99,21 +86,16 @@ export default function ProductCard({ data }: ProductCardProps) {
         <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
           <div>
             <div className="text-lg font-extrabold text-[#025246] h-6">
-              {formatRupiah(data.price)}
+              {hasRange
+                ? `${formatRupiah(data.minPrice)} - ${formatRupiah(data.maxPrice)}`
+                : formatRupiah(data.price)}
             </div>
             <div className="text-[10px] text-gray-500">
-              per {data.unit} · stok {formatNumber(data.stock)} {data.unit}
+              {hasRange ? "bisa nego · " : ""}per {data.unit} · stok {formatNumber(data.stock)} {data.unit}
             </div>
           </div>
-          <span
-            onClick={handleAddToCart}
-            role="button"
-            tabIndex={0}
-            className={`w-10 h-10 text-white rounded-full flex items-center justify-center group-hover:scale-105 transition-all shadow-md cursor-pointer ${
-              added ? "bg-[#00AA5B]" : "bg-[#025246] group-hover:bg-[#024036]"
-            }`}
-          >
-            <ShoppingCart size={18} />
+          <span className="w-10 h-10 text-white bg-[#025246] group-hover:bg-[#024036] rounded-full flex items-center justify-center group-hover:scale-105 transition-all shadow-md cursor-pointer">
+            <Eye size={18} />
           </span>
         </div>
       </div>

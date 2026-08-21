@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import {
   Users,
@@ -20,35 +18,19 @@ import {
   getMonthlyOrders,
 } from "@/actions/admin";
 import { formatRupiah, formatNumber } from "@/lib/format";
-import { LoadingState } from "@/components/shared/States";
-import { useFetch } from "@/lib/hooks";
 
-export default function AdminDashboard() {
-  const { data, loading } = useFetch(
-    async () => {
-      const [stats, topCommodities, salesByCategory, monthlyRevenue, monthlyOrders] =
-        await Promise.all([
-          getDashboardStats(),
-          getTopCommodities(5),
-          getSalesPerCategory(),
-          getMonthlyRevenue(),
-          getMonthlyOrders(),
-        ]);
-      return {
-        stats,
-        topCommodities,
-        salesByCategory,
-        monthlyRevenue,
-        monthlyOrders,
-      };
-    },
-    [],
-  );
-
-  if (loading || !data) return <LoadingState />;
-
-  const { stats, topCommodities, salesByCategory, monthlyRevenue, monthlyOrders } =
-    data;
+// Menjadi Server Component (async) 
+// Tidak ada lagi "use client" atau useFetch!
+export default async function AdminDashboard() {
+  // Semua request data dijalankan paralel secara real-time di server
+  const [stats, topCommodities, salesByCategory, monthlyRevenue, monthlyOrders] =
+    await Promise.all([
+      getDashboardStats(),
+      getTopCommodities(5),
+      getSalesPerCategory(),
+      getMonthlyRevenue(),
+      getMonthlyOrders(),
+    ]);
 
   const cards = [
     { label: "Total Pendapatan Fee", value: formatRupiah(stats.totalFeeRevenue), icon: Wallet, color: "bg-[#025246]" },
@@ -64,6 +46,7 @@ export default function AdminDashboard() {
   const maxCategory = Math.max(...salesByCategory.map((c) => Number(c.totalRevenue)), 1);
 
   const monthLabel = (m: string) => {
+    if (!m) return "";
     const [y, mo] = m.split("-");
     return new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString("id-ID", { month: "short" });
   };

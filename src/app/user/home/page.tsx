@@ -7,6 +7,7 @@ import ProductCard from "@/components/userpage/ProductCard";
 import { LoadingState, EmptyState } from "@/components/shared/States";
 import { getPublicCommodities, getCategories } from "@/actions/commodity";
 import { useFetch } from "@/lib/hooks";
+import Link from "next/link";
 import type {
   PublicCommodity,
   CategoryRow,
@@ -67,6 +68,7 @@ function HomeContent() {
 
       <div className="mb-8">
         <h2 className="text-xl font-bold text-[#111111] mb-4">Kategori</h2>
+        <Link href="/user/tes-upload">tes</Link>
         <div className="flex gap-3 overflow-x-auto pb-2">
           <button
             onClick={() => router.push("/user/home")}

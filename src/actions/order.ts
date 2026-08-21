@@ -7,6 +7,7 @@ import {
   commoditiesTable,
   usersTable,
   notificationsTable,
+  ImageUpload,
 } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -162,7 +163,7 @@ export async function getUserOrders(buyerId: number) {
       notes: ordersTable.notes,
       createdAt: ordersTable.createdAt,
       commodityName: commoditiesTable.name,
-      commodityImage: commoditiesTable.image,
+      commodityImage: ImageUpload.secureUrl,
       farmerName: usersTable.fullName,
       farmerId: usersTable.id,
       paymentStatus: paymentsTable.status,
@@ -170,6 +171,7 @@ export async function getUserOrders(buyerId: number) {
     })
     .from(ordersTable)
     .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(usersTable, eq(usersTable.id, ordersTable.farmerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
     .where(eq(ordersTable.buyerId, buyerId))
@@ -193,7 +195,7 @@ export async function getFarmerOrders(farmerId: number) {
       notes: ordersTable.notes,
       createdAt: ordersTable.createdAt,
       commodityName: commoditiesTable.name,
-      commodityImage: commoditiesTable.image,
+      commodityImage: ImageUpload.secureUrl,
       buyerName: usersTable.fullName,
       buyerId: usersTable.id,
       buyerNoTelp: usersTable.noTelp,
@@ -202,6 +204,7 @@ export async function getFarmerOrders(farmerId: number) {
     })
     .from(ordersTable)
     .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(usersTable, eq(usersTable.id, ordersTable.buyerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
     .where(eq(ordersTable.farmerId, farmerId))
@@ -228,7 +231,7 @@ export async function getOrderById(orderId: number) {
       farmerId: ordersTable.farmerId,
       commodityId: ordersTable.commodityId,
       commodityName: commoditiesTable.name,
-      commodityImage: commoditiesTable.image,
+      commodityImage: ImageUpload.secureUrl,
       commodityUnit: commoditiesTable.unit,
       buyerName: buyerUser.fullName,
       farmerName: farmerUser.fullName,
@@ -240,6 +243,7 @@ export async function getOrderById(orderId: number) {
     })
     .from(ordersTable)
     .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(buyerUser, eq(buyerUser.id, ordersTable.buyerId))
     .innerJoin(farmerUser, eq(farmerUser.id, ordersTable.farmerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))

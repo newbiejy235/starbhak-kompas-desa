@@ -12,9 +12,11 @@ import {
   Minus,
   Plus,
   ShieldCheck,
+  MessageCircle,
 } from "lucide-react";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
+import { getOrCreateChatRoom } from "@/actions/chat";
 import ProductCard from "@/components/userpage/ProductCard";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { LoadingState, EmptyState, formatImage } from "@/components/shared/States";
@@ -76,18 +78,9 @@ export default function ProductDetail() {
   const isAvailable =
     product.status === "available" || product.status === "verified";
 
-  const checkout = () => {
-    const user = getClientUser();
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-    const params = new URLSearchParams({
-      commodityId: String(product.id),
-      quantity: String(quantity),
-    });
-    router.push(`/user/checkout?${params.toString()}`);
-  };
+  const minPrice = product.minPrice ? Number(product.minPrice) : null;
+  const maxPrice = product.maxPrice ? Number(product.maxPrice) : null;
+  const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
   const handleAddToCart = () => {
     const user = getClientUser();
@@ -97,6 +90,18 @@ export default function ProductDetail() {
     }
     addToCart(product.id, quantity);
     router.push("/user/cart");
+  };
+
+  const handleNego = async () => {
+    const user = getClientUser();
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    const result = await getOrCreateChatRoom(user.id, product.farmerId, product.id);
+    if (result) {
+      router.push(`/user/chat/${result.roomId}`);
+    }
   };
 
   return (
@@ -141,9 +146,22 @@ export default function ProductDetail() {
             </h1>
             <p className="text-xs text-gray-500 mb-4">{product.categoryName}</p>
 
-            <div className="text-3xl font-extrabold text-[#025246] mb-4">
-              {formatRupiah(product.price)}
-              <span className="text-sm font-medium text-gray-500"> / {product.unit}</span>
+            <div className="mb-4">
+              {hasPriceRange ? (
+                <div>
+                  <div className="text-3xl font-extrabold text-[#025246]">
+                    {formatRupiah(minPrice)} - {formatRupiah(maxPrice)}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Harga bisa nego / {product.unit}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-3xl font-extrabold text-[#025246]">
+                  {formatRupiah(product.price)}
+                  <span className="text-sm font-medium text-gray-500"> / {product.unit}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-3 mb-6">
@@ -167,9 +185,12 @@ export default function ProductDetail() {
             </div>
 
             {product.description && (
-              <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                {product.description}
-              </p>
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-gray-800 mb-2">Deskripsi Produk</h3>
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                  {product.description}
+                </p>
+              </div>
             )}
 
             {isAvailable && stock > 0 ? (
@@ -201,12 +222,22 @@ export default function ProductDetail() {
                   >
                     Masukkan ke Keranjang
                   </button>
-                  <button
-                    onClick={checkout}
-                    className="rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
-                  >
-                    Beli Sekarang
-                  </button>
+                  {hasPriceRange ? (
+                    <button
+                      onClick={handleNego}
+                      className="rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle size={18} />
+                      Nego Harga
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAddToCart}
+                      className="rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+                    >
+                      Beli Sekarang
+                    </button>
+                  )}
                 </div>
               </>
             ) : (

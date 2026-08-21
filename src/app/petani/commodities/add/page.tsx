@@ -7,6 +7,7 @@ import { getCategories, createCommodity } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
+import ImageUploadField from "@/components/shared/ImageUploadField";
 
 export default function AddCommodity() {
   const router = useRouter();
@@ -104,6 +105,17 @@ export default function AddCommodity() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Minimum Nego (Rp)</label>
+            <input type="number" name="minPrice" min="0" placeholder="10000" className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Maksimum Nego (Rp)</label>
+            <input type="number" name="maxPrice" min="0" placeholder="15000" className={inputCls} />
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Lokasi *</label>
             <input name="location" required placeholder="Contoh: Cibinong, Bogor" className={inputCls} />
           </div>
@@ -113,15 +125,7 @@ export default function AddCommodity() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">
-            URL Gambar (opsional)
-          </label>
-          <input name="image" placeholder="https://... atau /images/..." className={inputCls} />
-          <p className="text-[11px] text-gray-400 mt-1">
-            Jika kosong, sistem menampilkan placeholder otomatis.
-          </p>
-        </div>
+        <ImageUploadField />
 
         {state && !state.success && (
           <p className="text-sm text-red-500">{state.message}</p>

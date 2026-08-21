@@ -1,11 +1,16 @@
-import { integer, pgTable, varchar, text, timestamp, numeric, boolean, pgEnum, index,
+import {
+  integer,
+  pgTable,
+  varchar,
+  text,
+  timestamp,
+  numeric,
+  boolean,
+  pgEnum,
+  index,
 } from "drizzle-orm/pg-core";
 
-export const userRoleEnum = pgEnum("user_role", [
-  "admin",
-  "petani",
-  "pembeli",
-]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
 
 export const userStatusEnum = pgEnum("user_status", [
   "pending",
@@ -107,12 +112,16 @@ export const commoditiesTable = pgTable(
     name: varchar({ length: 150 }).notNull(),
     description: text(),
     price: numeric({ precision: 12, scale: 2 }).notNull(),
+    minPrice: numeric({ precision: 12, scale: 2 }),
+    maxPrice: numeric({ precision: 12, scale: 2 }),
     stock: numeric({ precision: 12, scale: 2 }).notNull(),
     unit: varchar({ length: 30 }).notNull().default("kg"),
     quality: varchar({ length: 50 }).notNull().default("A"),
     location: varchar({ length: 150 }).notNull(),
     harvestEstimate: timestamp({ withTimezone: true }),
-    image: text(),
+    image: integer().references(() => ImageUpload.id, {
+      onDelete: "set null",
+    }),
     status: commodityStatusEnum().notNull().default("pending"),
     rating: numeric({ precision: 3, scale: 2 }).notNull().default("0"),
     reviewCount: integer().notNull().default(0),
@@ -233,6 +242,165 @@ export const feeSettingsTable = pgTable("fee_settings_table", {
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 
+export const ImageUpload = pgTable("ImageUpload", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  publicId: varchar("public_id", { length: 255 }).notNull(),
+  secureUrl: text("secure_url").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatbotSessionStatusEnum = pgEnum("chatbot_session_status", [
+  "ACTIVE",
+  "ESCALATED",
+  "CLOSED",
+]);
+
+export const chatbotSessionsTable = pgTable(
+  "chatbot_sessions_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer().references(() => usersTable.id, { onDelete: "set null" }),
+    guestSessionToken: varchar({ length: 255 }),
+    productId: integer().references(() => commoditiesTable.id, {
+      onDelete: "set null",
+    }),
+    status: chatbotSessionStatusEnum().notNull().default("ACTIVE"),
+    fallbackCount: integer().notNull().default(0),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("chatbot_sessions_user_idx").on(table.userId)],
+);
+
+export const chatbotMessagesTable = pgTable(
+  "chatbot_messages_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    sessionId: integer()
+      .notNull()
+      .references(() => chatbotSessionsTable.id, { onDelete: "cascade" }),
+    sender: varchar({ length: 10 }).notNull(),
+    content: text().notNull(),
+    intentDetected: varchar({ length: 50 }),
+    kbArticleId: integer().references(() => chatbotKbArticlesTable.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("chatbot_messages_session_idx").on(table.sessionId)],
+);
+
+export const chatbotKbArticlesTable = pgTable(
+  "chatbot_kb_articles_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    title: varchar({ length: 200 }).notNull(),
+    category: varchar({ length: 50 }).notNull(),
+    triggerKeywords: text(),
+    answerContent: text().notNull(),
+    isActive: boolean().notNull().default(true),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+);
+
+export const chatRoomStatusEnum = pgEnum("chat_room_status", [
+  "active",
+  "closed",
+]);
+
+export const chatRoomsTable = pgTable(
+  "chat_rooms_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    buyerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    farmerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    commodityId: integer()
+      .notNull()
+      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+    status: chatRoomStatusEnum().notNull().default("active"),
+    lastMessage: text(),
+    lastMessageAt: timestamp({ withTimezone: true }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("chat_rooms_buyer_idx").on(table.buyerId),
+    index("chat_rooms_farmer_idx").on(table.farmerId),
+    index("chat_rooms_commodity_idx").on(table.commodityId),
+  ],
+);
+
+export const chatMessageTypeEnum = pgEnum("chat_message_type", [
+  "text",
+  "offer",
+  "counter_offer",
+  "accept",
+  "reject",
+  "system",
+]);
+
+export const chatMessagesTable = pgTable(
+  "chat_messages_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    roomId: integer()
+      .notNull()
+      .references(() => chatRoomsTable.id, { onDelete: "cascade" }),
+    senderId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    type: chatMessageTypeEnum().notNull().default("text"),
+    content: text().notNull(),
+    offerPrice: numeric({ precision: 12, scale: 2 }),
+    offerQuantity: numeric({ precision: 12, scale: 2 }),
+    isRead: boolean().notNull().default(false),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("chat_messages_room_idx").on(table.roomId),
+    index("chat_messages_sender_idx").on(table.senderId),
+  ],
+);
+
+export const negotiationStatusEnum = pgEnum("negotiation_status", [
+  "pending",
+  "accepted",
+  "rejected",
+  "expired",
+]);
+
+export const negotiationOffersTable = pgTable(
+  "negotiation_offers_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    roomId: integer()
+      .notNull()
+      .references(() => chatRoomsTable.id, { onDelete: "cascade" }),
+    commodityId: integer()
+      .notNull()
+      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+    buyerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    farmerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    price: numeric({ precision: 12, scale: 2 }).notNull(),
+    quantity: numeric({ precision: 12, scale: 2 }).notNull(),
+    unit: varchar({ length: 30 }).notNull().default("kg"),
+    status: negotiationStatusEnum().notNull().default("pending"),
+    acceptedAt: timestamp({ withTimezone: true }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("negotiation_room_idx").on(table.roomId),
+    index("negotiation_buyer_idx").on(table.buyerId),
+    index("negotiation_farmer_idx").on(table.farmerId),
+  ],
+);
+
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;
@@ -242,3 +410,6 @@ export type Order = typeof ordersTable.$inferSelect;
 export type Payment = typeof paymentsTable.$inferSelect;
 export type Review = typeof reviewsTable.$inferSelect;
 export type Notification = typeof notificationsTable.$inferSelect;
+export type ChatRoom = typeof chatRoomsTable.$inferSelect;
+export type ChatMessage = typeof chatMessagesTable.$inferSelect;
+export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;

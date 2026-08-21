@@ -1,6 +1,7 @@
 export type CartEntry = {
   commodityId: number;
   quantity: number;
+  negotiatedPrice?: number;
 };
 
 const CART_KEY = "kd_cart";
@@ -22,13 +23,16 @@ export function saveCart(items: CartEntry[]) {
   localStorage.setItem(CART_KEY, JSON.stringify(items));
 }
 
-export function addToCart(commodityId: number, quantity = 1) {
+export function addToCart(commodityId: number, quantity = 1, negotiatedPrice?: number) {
   const items = getCart();
   const existing = items.find((i) => i.commodityId === commodityId);
   if (existing) {
     existing.quantity += quantity;
+    if (negotiatedPrice !== undefined) {
+      existing.negotiatedPrice = negotiatedPrice;
+    }
   } else {
-    items.push({ commodityId, quantity });
+    items.push({ commodityId, quantity, negotiatedPrice });
   }
   saveCart(items);
 }

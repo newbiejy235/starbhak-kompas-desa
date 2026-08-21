@@ -9,6 +9,7 @@ import {
   categoriesTable,
   feeSettingsTable,
   notificationsTable,
+  ImageUpload,
 } from "@/db/schema";
 import { eq, desc, asc, sql } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth/auth.service";
@@ -143,7 +144,7 @@ export async function getAllCommoditiesAdmin() {
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -154,6 +155,7 @@ export async function getAllCommoditiesAdmin() {
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .orderBy(desc(commoditiesTable.createdAt));
 }
 
@@ -304,54 +306,36 @@ export async function toggleFee(
 }
 
 export async function getDashboardStats() {
-  const [totalUsers] = await db.select({ count: sql<number>`count(*)::int` }).from(usersTable);
-  const [totalFarmers] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(usersTable)
-    .where(eq(usersTable.role, "petani"));
-  const [totalBuyers] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(usersTable)
-    .where(eq(usersTable.role, "pembeli"));
-  const [totalCommodities] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(commoditiesTable);
-  const [pendingCommodities] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(commoditiesTable)
-    .where(eq(commoditiesTable.status, "pending"));
-  const [pendingUsers] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(usersTable)
-    .where(eq(usersTable.status, "pending"));
-  const [totalOrders] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(ordersTable);
-  const [totalPaidPayments] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(paymentsTable)
-    .where(eq(paymentsTable.status, "paid"));
+  // OPTIMASI: Jalankan semua query ke database secara BERSAMAAN (Paralel) 
+  // biar loadingnya super ngebut, nggak nunggu satu-satu.
+  const [
+    [totalUsers],
+    [totalFarmers],
+    [totalBuyers],
+    [totalCommodities],
+    [pendingCommodities],
+    [pendingUsers],
+    [totalOrders],
+    [totalPaidPayments],
+    feeRevenueRows,
+    transactionVolumeRows,
+    pendingOrdersRows,
+  ] = await Promise.all([
+    db.select({ count: sql<number>`count(*)::int` }).from(usersTable),
+    db.select({ count: sql<number>`count(*)::int` }).from(usersTable).where(eq(usersTable.role, "petani")),
+    db.select({ count: sql<number>`count(*)::int` }).from(usersTable).where(eq(usersTable.role, "pembeli")),
+    db.select({ count: sql<number>`count(*)::int` }).from(commoditiesTable),
+    db.select({ count: sql<number>`count(*)::int` }).from(commoditiesTable).where(eq(commoditiesTable.status, "pending")),
+    db.select({ count: sql<number>`count(*)::int` }).from(usersTable).where(eq(usersTable.status, "pending")),
+    db.select({ count: sql<number>`count(*)::int` }).from(ordersTable),
+    db.select({ count: sql<number>`count(*)::int` }).from(paymentsTable).where(eq(paymentsTable.status, "paid")),
+    db.select({ total: sql<string>`coalesce(sum(${paymentsTable.fee}), 0)` }).from(paymentsTable).where(eq(paymentsTable.status, "paid")),
+    db.select({ total: sql<string>`coalesce(sum(${paymentsTable.amount}), 0)` }).from(paymentsTable).where(eq(paymentsTable.status, "paid")),
+    db.select({ count: sql<number>`count(*)::int` }).from(ordersTable).where(eq(ordersTable.status, "pending")),
+  ]);
 
-  const feeRevenueRows = await db
-    .select({
-      total: sql<string>`coalesce(sum(${paymentsTable.fee}), 0)`,
-    })
-    .from(paymentsTable)
-    .where(eq(paymentsTable.status, "paid"));
   const totalFeeRevenue = Number(feeRevenueRows[0]?.total ?? 0);
-
-  const transactionVolumeRows = await db
-    .select({
-      total: sql<string>`coalesce(sum(${paymentsTable.amount}), 0)`,
-    })
-    .from(paymentsTable)
-    .where(eq(paymentsTable.status, "paid"));
   const totalTransactionVolume = Number(transactionVolumeRows[0]?.total ?? 0);
-
-  const pendingOrdersRows = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(ordersTable)
-    .where(eq(ordersTable.status, "pending"));
 
   return {
     totalUsers: Number(totalUsers?.count ?? 0),

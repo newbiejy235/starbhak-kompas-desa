@@ -5,6 +5,7 @@ import {
   commoditiesTable,
   categoriesTable,
   usersTable,
+  ImageUpload,
 } from "@/db/schema";
 import {
   eq,
@@ -55,11 +56,13 @@ export async function getPublicCommodities(params?: {
       id: commoditiesTable.id,
       name: commoditiesTable.name,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -72,6 +75,7 @@ export async function getPublicCommodities(params?: {
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(and(...conditions))
     .orderBy(desc(commoditiesTable.createdAt));
 }
@@ -86,11 +90,13 @@ export async function getCommoditiesByIds(ids: number[]) {
       categoryId: commoditiesTable.categoryId,
       name: commoditiesTable.name,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -100,6 +106,7 @@ export async function getCommoditiesByIds(ids: number[]) {
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(inArray(commoditiesTable.id, uniqueIds));
 }
 
@@ -111,12 +118,14 @@ export async function getCommodityById(id: number) {  const [row] = await db
       name: commoditiesTable.name,
       description: commoditiesTable.description,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       harvestEstimate: commoditiesTable.harvestEstimate,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -132,6 +141,7 @@ export async function getCommodityById(id: number) {  const [row] = await db
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(eq(commoditiesTable.id, id));
 
   return row ?? null;
@@ -144,19 +154,23 @@ export async function getFarmerCommodities(farmerId: number) {
       name: commoditiesTable.name,
       description: commoditiesTable.description,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       categoryId: commoditiesTable.categoryId,
       harvestEstimate: commoditiesTable.harvestEstimate,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
+      imageId: commoditiesTable.image,
       status: commoditiesTable.status,
       createdAt: commoditiesTable.createdAt,
       categoryName: categoriesTable.name,
     })
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(eq(commoditiesTable.farmerId, farmerId))
     .orderBy(desc(commoditiesTable.createdAt));
 }
@@ -174,12 +188,17 @@ export async function createCommodity(
   const description = (data.get("description") as string)?.trim() || "";
   const categoryId = Number(data.get("categoryId"));
   const price = Number(data.get("price"));
+  const minPriceRaw = data.get("minPrice") as string | null;
+  const maxPriceRaw = data.get("maxPrice") as string | null;
+  const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+  const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
   const stock = Number(data.get("stock"));
   const unit = (data.get("unit") as string) || "kg";
   const quality = (data.get("quality") as string) || "A";
   const location = (data.get("location") as string)?.trim() || "";
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
-  const image = (data.get("image") as string)?.trim() || "";
+  const imageRaw = (data.get("image") as string)?.trim() || "";
+  const image = imageRaw ? Number(imageRaw) : null;
 
   if (!name || !categoryId || !price || !stock || !location) {
     return { success: false, message: "Lengkapi semua field wajib" };
@@ -192,6 +211,8 @@ export async function createCommodity(
       name,
       description,
       price: String(price),
+      minPrice: minPrice ? String(minPrice) : null,
+      maxPrice: maxPrice ? String(maxPrice) : null,
       stock: String(stock),
       unit,
       quality,
@@ -237,12 +258,17 @@ export async function updateCommodity(
   const description = (data.get("description") as string)?.trim() || "";
   const categoryId = Number(data.get("categoryId"));
   const price = Number(data.get("price"));
+  const minPriceRaw = data.get("minPrice") as string | null;
+  const maxPriceRaw = data.get("maxPrice") as string | null;
+  const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+  const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
   const stock = Number(data.get("stock"));
   const unit = (data.get("unit") as string) || "kg";
   const quality = (data.get("quality") as string) || "A";
   const location = (data.get("location") as string)?.trim() || "";
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
-  const image = (data.get("image") as string)?.trim() || "";
+  const imageRaw = (data.get("image") as string)?.trim() || "";
+  const image = imageRaw ? Number(imageRaw) : null;
   const status = (data.get("status") as string) || undefined;
 
   if (!name || !categoryId || !price || !stock || !location) {
@@ -257,6 +283,8 @@ export async function updateCommodity(
         description,
         categoryId,
         price: String(price),
+        minPrice: minPrice ? String(minPrice) : null,
+        maxPrice: maxPrice ? String(maxPrice) : null,
         stock: String(stock),
         unit,
         quality,
@@ -341,11 +369,13 @@ export async function getRelatedCommodities(
       id: commoditiesTable.id,
       name: commoditiesTable.name,
       price: commoditiesTable.price,
+      minPrice: commoditiesTable.minPrice,
+      maxPrice: commoditiesTable.maxPrice,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
-      image: commoditiesTable.image,
+      image: ImageUpload.secureUrl,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
       categoryName: categoriesTable.name,
@@ -354,6 +384,7 @@ export async function getRelatedCommodities(
     .from(commoditiesTable)
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(
       and(
         eq(commoditiesTable.categoryId, categoryId),
