@@ -1,18 +1,16 @@
 'use client'
 
-import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import LazyOnScroll from '@/utils/Lazyonscroll'
 
 
 import Navbar from '@/components/landingpage/Navbar'
 import DotPattern from '@/components/ui/DotPattern'
+import { DotAnimation } from '@/components/ui/DotAnimation'
 import FadeAnimation from '@/components/animation/Animation'
 import PageLoader from '@/components/landingpage/PageLoader'
 import AnimatedHeading from '@/components/animation/headinglandingpage'
 import BentoGridStats from '@/components/landingpage/berandaCard/cardBeranda'
-import { DotAnimation } from '@/components/ui/DotAnimation'
-import { FiturUtamaSec } from '@/components/landingpage/kebutuhanplatform/KebutuhanPlatform'
 
 const ScrollReveal = dynamic(() => import('@/components/animation/ScrollReveal'), { ssr: false })
 const PartnerSection = dynamic(() => import('@/components/landingpage/mitra/Mitra'))
@@ -20,10 +18,12 @@ const About = dynamic(() => import('@/components/landingpage/about/About').then(
 const AlurWebsite = dynamic(() => import('@/components/landingpage/about/WebsiteFlow').then(mod => mod.AlurWebsite))
 const KomoditasMarquee = dynamic(() => import('@/components/landingpage/about/komoditasList').then(mod => mod.KomoditasMarquee), { ssr: false })
 const CardBenefit = dynamic(() => import('@/components/landingpage/cardBenefit/card'))
-const CardMembership = dynamic(() => import('@/components/landingpage/cardEndorse/membership'))
+const CardMembership = dynamic(() => import('@/components/landingpage/cardEndorse/membership').then(mod => mod.default))
 const Testimonial = dynamic(() => import('@/components/landingpage/testimonial/testi'))
 const Footer = dynamic(() => import('@/components/landingpage/Footer'))
 const Keamanan = dynamic(() => import('@/components/landingpage/keamanan/KeamananSection').then(mod => mod.KeamananSec))
+const FiturUtama = dynamic(() => import('@/components/landingpage/kebutuhanplatform/KebutuhanPlatform').then(mod => mod.FiturUtamaSec))
+const FAQSection = dynamic(() => import('@/components/landingpage/faq/Pertanyaanajukan').then(mod => mod.FAQSection))
 
 export default function KompasDesaPage() {
   return (
@@ -76,12 +76,12 @@ export default function KompasDesaPage() {
             </section>
 
             {/* SECTION BAWAH (LAZY LOAD ON SCROLL) */}
-            <LazyOnScroll minHeight="150px">
+            <LazyOnScroll minHeight="200px">
               <PartnerSection />
             </LazyOnScroll>
 
             <section id="tentang" className="bg-white w-full scroll-mt-24">
-              <LazyOnScroll minHeight="400px">
+              <LazyOnScroll minHeight="850px">
                 <ScrollReveal>
                   <FadeAnimation direction="up">
                     <About />
@@ -91,7 +91,7 @@ export default function KompasDesaPage() {
             </section>
 
             <section id="alurweb" className="bg-white w-full scroll-mt-24">
-              <LazyOnScroll minHeight="400px">
+              <LazyOnScroll minHeight="650px">
                 <ScrollReveal>
                   <AlurWebsite />
                 </ScrollReveal>
@@ -99,7 +99,7 @@ export default function KompasDesaPage() {
             </section>
 
             <section id="komoditaslist" className="bg-white w-full scroll-mt-24">
-              <LazyOnScroll minHeight="250px">
+              <LazyOnScroll minHeight="700px">
                 <ScrollReveal>
                   <KomoditasMarquee />
                 </ScrollReveal>
@@ -107,7 +107,7 @@ export default function KompasDesaPage() {
             </section>
 
             <section id="keamanan" className="bg-white w-full scroll-mt-24">
-              <LazyOnScroll minHeight="250px">
+              <LazyOnScroll minHeight="550px">
                 <ScrollReveal>
                   <Keamanan />
                 </ScrollReveal>
@@ -116,9 +116,9 @@ export default function KompasDesaPage() {
 
 
             <section id="fiturutama" className="bg-white w-full scroll-mt-24">
-              <LazyOnScroll minHeight="250px">
+              <LazyOnScroll minHeight="650px">
                 <ScrollReveal>
-                  <FiturUtamaSec />
+                  <FiturUtama />
                 </ScrollReveal>
               </LazyOnScroll>
             </section>
@@ -126,7 +126,7 @@ export default function KompasDesaPage() {
 
 
             <section id="layanan" className="bg-white w-full py-6 sm:py-10 scroll-mt-24">
-              <LazyOnScroll minHeight="500px">
+              <LazyOnScroll minHeight="850px">
                 <ScrollReveal>
                   <FadeAnimation direction="up">
                     <CardBenefit />
@@ -135,23 +135,36 @@ export default function KompasDesaPage() {
               </LazyOnScroll>
             </section>
 
-            <section id="testimoni" className="bg-white w-full py-6 sm:py-12 scroll-mt-24">
-              <LazyOnScroll minHeight="500px">
+            <section id="membership" className="bg-white w-full py-6 sm:py-12 scroll-mt-24">
+              <LazyOnScroll minHeight="900px">
                 <ScrollReveal>
                   <FadeAnimation direction="up">
                     <div id="membership-section" className="flex flex-col gap-8 sm:gap-12">
                       <CardMembership />
-                      <Testimonial />
                     </div>
                   </FadeAnimation>
                 </ScrollReveal>
               </LazyOnScroll>
             </section>
 
+
+            <section id="faq" className="bg-white w-full py-6 sm:py-12 scroll-mt-24">
+              <LazyOnScroll minHeight="900px">
+                <ScrollReveal>
+                  <FadeAnimation direction="up">
+                    <FAQSection />
+                  </FadeAnimation>
+                </ScrollReveal>
+              </LazyOnScroll>
+            </section>
+
+            <section id="testimonial" className="bg-white w-full scroll-mt-24">
+              <Testimonial />
+            </section>
           </main>
 
           <div id="kontak" className="relative z-20 w-full">
-            <LazyOnScroll minHeight="300px">
+            <LazyOnScroll minHeight="450px">
               <Footer />
             </LazyOnScroll>
           </div>

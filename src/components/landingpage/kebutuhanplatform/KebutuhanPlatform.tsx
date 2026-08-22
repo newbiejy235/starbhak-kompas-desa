@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Sparkles, ShoppingBag, Truck, Handshake, ArrowUpRight } from 'lucide-react'
+import { ShoppingBag, Truck, Handshake, ArrowUpRight } from 'lucide-react'
 
 export function FiturUtamaSec() {
   const services = [
@@ -31,11 +31,12 @@ export function FiturUtamaSec() {
 
   return (
     <section className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
-      {/* Background Soft Glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-emerald-50/50 blur-[120px] rounded-full pointer-events-none -z-10" />
-
+      <div
+        className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full pointer-events-none -z-10"
+        style={{ background: "radial-gradient(closest-side, rgba(16,185,129,0.14), transparent)" }}
+      />
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
 
           <h2 className="max-w-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] text-3xl sm:text-3xl md:text-3xl text-center">

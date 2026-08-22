@@ -30,7 +30,11 @@ export function About() {
   return (
     <section className="relative overflow-hidden bg-[#F7F9F8] text-[#18211F]">
       {/* Decorative Background */}
-      <div aria-hidden="true" className="pointer-events-none absolute right-[-120px] top-[140px] h-[420px] w-[420px] rounded-full bg-[#025246]/[0.035] blur-3xl" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-120px] top-[140px] h-[420px] w-[420px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(2,82,70,0.06), transparent 70%)" }}
+      />
       <div className="mx-auto max-w-[1280px] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
         {/* ================= HEADER ================= */}
         <div className="mb-14 flex lg:mb-20 items-center justify-center">

@@ -3,12 +3,7 @@
 import { Menu, X, ChevronDown } from "lucide-react"
 import { useState, useEffect, useSyncExternalStore, useRef } from "react"
 import Link from "next/link"
-import { Inter } from "next/font/google"
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-})
+import Image from "next/image"
 
 function subscribe(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange)
@@ -51,8 +46,15 @@ export default function Navbar() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   useEffect(() => {
+    let ticking = false
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        setIsScrolled(window.scrollY > 20)
+        ticking = false
+      })
     }
 
     // Tutup dropdown saat klik di luar
@@ -62,7 +64,7 @@ export default function Navbar() {
       }
     }
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       window.removeEventListener("scroll", handleScroll)
@@ -82,17 +84,27 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`${inter.className} fixed left-1/2 -translate-x-1/2 z-[999] w-[95%] md:w-[90%] lg:w-[1112px]
-        px-8 flex items-center justify-between gap-6 rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
-        ${isScrolled
-            ? "top-4 py-3 bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
-            : "top-6 py-3 bg-white border border-[#dddddd] shadow-none"
-          }`}
+        className={`
+    fixed left-1/2 -translate-x-1/2 z-[999]
+    px-8 flex items-center justify-between gap-6 rounded-2xl
+    transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
+
+    ${isScrolled
+            ? "top-4 w-[90%] md:w-[85%] lg:w-[1112px] py-3 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
+            : "top-6 w-[95%] md:w-[92%] lg:w-[1220px] py-4 bg-white shadow-none"
+          }
+  `}
       >
         <div className="flex items-center gap-6">
-          <div className="font-bold text-2xl lg:text-[23px] tracking-tight whitespace-nowrap">
-            <span className="text-[#025246]">Kompas`</span>
-            <span className="text-[#D7BE44]">Desa</span>
+          <div className="font-bold text-xl lg:text-[23px] tracking-tight whitespace-nowrap flex items-center gap-3">
+            <Image
+              src="/logo-kompas-desa/kompas_desa_icon_color.png"
+              width={30}
+              height={30}
+              alt="Kompas Desa"
+              className="w-[25px] h-[25px] object-contain"
+            />
+            <span>KompasDesa</span>
           </div>
           <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
         </div>
@@ -101,23 +113,40 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-8 lg:gap-12 font-semibold text-base">
           {navLinks.map((link) => {
             if (link.hasDropdown) {
+              const isTentangActive =
+                activeLink === "#tentang" || activeLink.startsWith("#layanan-")
+
               return (
                 <div key={link.href} className="relative" ref={dropdownRef}>
                   <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className={`flex items-center gap-1.5 relative pb-1 transition-colors duration-300 ${activeLink.startsWith("#layanan")
-                      ? "text-[#025246]"
-                      : "text-[#1D1D1D] hover:text-[#025246]"
+                    onClick={() => {
+                      setIsDropdownOpen(!isDropdownOpen)
+                      setActiveLink("#tentang")
+                    }}
+                    className={`flex items-center gap-1.5 relative pb-1 transition-colors duration-300
+          after:content-['']
+          after:absolute
+          after:left-0
+          after:-bottom-0.5
+          after:h-[2.5px]
+          after:bg-[#025246]
+          after:rounded-full
+          after:transition-all
+          after:duration-300
+          ${isTentangActive
+                        ? "text-[#025246] after:w-full"
+                        : "text-[#1D1D1D] hover:text-[#025246] after:w-0 hover:after:w-full"
                       }`}
                   >
                     {link.label}
+
                     <ChevronDown
                       size={16}
-                      className={`transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                      className={`transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 
-                  {/* Dropdown Menu */}
                   {isDropdownOpen && (
                     <div className="absolute top-full left-0 mt-3 w-56 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                       {link.options?.map((option) => (
@@ -157,7 +186,6 @@ export default function Navbar() {
 
         <div className="flex items-center gap-6">
           <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
-
           {dashboardHref ? (
             <Link href={dashboardHref}>
               <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-xl hover:bg-[#024036] hover:scale-105 transition-all duration-300 cursor-pointer">
@@ -166,7 +194,7 @@ export default function Navbar() {
             </Link>
           ) : (
             <Link href="/auth/login">
-              <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-base lg:text-lg px-6 py-2 rounded-full hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30">
+              <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-base lg:text-lg px-6 py-2 rounded-xl hover:bg-[#024036] hover:scale-105 transition-all duration-300 shadow-md shadow-[#025246]/30 cursor-pointer">
                 Masuk
               </button>
             </Link>
@@ -194,14 +222,13 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       <div
-        className={`${inter.className} fixed top-0 right-0 h-full w-72 bg-white/95 backdrop-blur-xl z-[999] shadow-2xl
+        className={`fixed top-0 right-0 h-full w-72 bg-white/95 backdrop-blur-xl z-[999] shadow-2xl
         transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden overflow-y-auto
         ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex justify-between items-center p-6 border-b border-gray-200/50">
           <span className="font-bold text-xl tracking-tight">
-            <span className="text-[#025246]">Kompas&apos; </span>
-            <span className="text-[#D7BE44]">Desa</span>
+            <span>KompasDesa</span>
           </span>
 
           <button

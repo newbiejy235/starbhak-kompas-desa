@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ShieldCheck, Eye, BadgeCheck, KeyRound, Sparkles } from 'lucide-react'
+import { ShieldCheck, Eye, BadgeCheck, KeyRound } from 'lucide-react'
 
 export function KeamananSec() {
   const features = [
@@ -25,7 +25,7 @@ export function KeamananSec() {
     },
     {
       icon: KeyRound,
-      title: 'Keamanan Akun Bcrypt',
+      title: 'Keamanan Akun Terproteksi',
       description: 'Kata sandi pengguna dienkripsi menggunakan algoritma Bcrypt dengan Salt otomatis.',
       tag: 'Bcrypt Hashing',
     },
@@ -34,7 +34,10 @@ export function KeamananSec() {
   return (
     <section className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
       {/* Background Radial Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-emerald-50/60 blur-[100px] rounded-full pointer-events-none -z-10" />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full pointer-events-none -z-10"
+        style={{ background: "radial-gradient(closest-side, rgba(16,185,129,0.16), transparent)" }}
+      />
 
       <div className="max-w-6xl mx-auto">
         {/* Header */}

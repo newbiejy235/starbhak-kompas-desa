@@ -16,7 +16,7 @@ export default function PageLoader({ children }: Props) {
     const timer = setTimeout(() => {
       setIsVisible(false);
       document.body.style.overflow = "auto";
-    }, 1600);
+    }, 800);
 
     return () => {
       clearTimeout(timer);
@@ -40,7 +40,7 @@ export default function PageLoader({ children }: Props) {
               borderBottomRightRadius: "50%",
               y: "-100%",
             }}
-            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
           >
             <motion.div
               className="text-4xl md:text-6xl font-bold flex"
@@ -68,7 +68,7 @@ export default function PageLoader({ children }: Props) {
         className="relative z-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 1.4 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
       >
         {children}
       </motion.div>

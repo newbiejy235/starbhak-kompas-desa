@@ -53,6 +53,9 @@ export default function BentoGridStats() {
           className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
           width={1000}
           height={1000}
+          sizes="(max-width: 768px) 100vw, 66vw"
+          loading="eager"
+          fetchPriority="high"
         />
         {/* Subtle Ambient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-75 group-hover:opacity-85 transition-opacity duration-500" />
@@ -104,7 +107,7 @@ export default function BentoGridStats() {
 
         <div>
           <p className="text-4xl sm:text-5xl font-black text-[#111827] tracking-tight group-hover:translate-x-1 transition-transform duration-300 flex">
-            <Counter end={200} duration={6300} suffix="" />
+            <Counter end={200} duration={2200} suffix="" />
             <p className="text-emerald-800">+</p>
           </p>
           <p className="text-sm font-medium text-gray-500 mt-1">Petani Lokal Terdaftar</p>
@@ -119,7 +122,10 @@ export default function BentoGridStats() {
         className="h-[210px] rounded-[2.5rem] bg-gradient-to-br from-[#025246] via-[#02443a] to-[#012d26] p-6 flex flex-col justify-between shadow-[0_12px_35px_rgba(2,82,70,0.25)] hover:shadow-[0_22px_45px_rgba(2,82,70,0.4)] transition-all duration-500 group relative overflow-hidden cursor-pointer"
       >
         {/* Animated Background Ambient Glow */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-emerald-400/20 rounded-full blur-3xl group-hover:scale-150 group-hover:bg-emerald-400/30 transition-all duration-700" />
+        <div
+          className="absolute -top-12 -right-12 w-40 h-40 rounded-full group-hover:scale-150 transition-transform duration-700"
+          style={{ background: "radial-gradient(circle, rgba(52,211,153,0.4), transparent 70%)" }}
+        />
 
         <div className="flex items-center justify-between relative z-10">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-md border border-white/15 group-hover:bg-white group-hover:text-[#025246] group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
@@ -134,7 +140,7 @@ export default function BentoGridStats() {
 
         <div className="relative z-10">
           <p className="text-4xl sm:text-5xl font-black text-white tracking-tight group-hover:translate-x-1 transition-transform duration-300 flex">
-            <Counter end={1200} duration={7000} suffix="" />
+            <Counter end={1200} duration={2600} suffix="" />
             <p className="text-emerald-300">+</p>
           </p>
           <p className="text-sm font-medium text-emerald-100/70 mt-1">Ton Hasil Panen Terjual</p>
@@ -154,6 +160,8 @@ export default function BentoGridStats() {
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
           width={1000}
           height={1000}
+          sizes="(max-width: 768px) 100vw, 33vw"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="absolute bottom-4 left-5 right-5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">

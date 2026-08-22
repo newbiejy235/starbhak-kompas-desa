@@ -21,7 +21,7 @@ export default function AnimatedHeading({
       opacity: 1,
       transition: {
         staggerChildren: 0.08, 
-        delayChildren: 2,   
+        delayChildren: 0.6,   
       },
     },
   };
