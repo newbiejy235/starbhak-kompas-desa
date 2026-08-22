@@ -8,7 +8,7 @@ interface CounterProps {
   suffix?: string
 }
 
-export default function Counter({ end, duration = 4000, suffix = "" }: CounterProps) {
+export default function Counter({ end, duration, suffix = "" }: CounterProps) {
   const [count, setCount] = useState<number>(0)
   const [hasAnimated, setHasAnimated] = useState<boolean>(false)
   const elementRef = useRef<HTMLSpanElement | null>(null)
@@ -42,10 +42,11 @@ export default function Counter({ end, duration = 4000, suffix = "" }: CounterPr
 
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime
+      if (!duration) duration = 2000
       const progress = Math.min((currentTime - startTime) / duration, 1)
-      
-      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
-      
+
+      const easeProgress = 1 - Math.pow(1 - progress, 3)
+
       setCount(Math.floor(easeProgress * end))
 
       if (progress < 1) {
@@ -60,7 +61,8 @@ export default function Counter({ end, duration = 4000, suffix = "" }: CounterPr
 
   return (
     <span ref={elementRef}>
-      {count.toLocaleString()}
+      {/* Menggunakan "en-US" untuk pemisah koma (1,000) */}
+      {count.toLocaleString("en-US")}
       {suffix}
     </span>
   )

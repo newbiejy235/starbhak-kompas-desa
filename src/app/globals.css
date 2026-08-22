@@ -9,6 +9,18 @@
   display: none;          
 }
 
+
 html {
   scroll-behavior: smooth
 }
+
+@theme {
+  --font-jakarta: var(--font-jakarta-sans);
+}
+
+/* Landing Page  */
+.landing-theme ::selection {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+

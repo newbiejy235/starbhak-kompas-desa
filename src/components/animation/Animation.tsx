@@ -16,7 +16,7 @@ export default function FadeAnimation({
   delay = 0 
 }: Props) {
   const { ref, inView } = useInView({
-    triggerOnce: false,
+    triggerOnce: true,
     threshold: 0.2,     
   });
 

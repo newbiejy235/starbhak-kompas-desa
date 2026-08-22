@@ -1,7 +1,12 @@
+'use client'
+
+import { Check, Sprout, Store } from 'lucide-react'
+
 export default function CardMembership() {
   const membershipPlans = [
     {
       title: "Petani",
+      icon: Sprout,
       subtitle: "Tanpa Biaya",
       price: "Pendaftaran",
       period: "",
@@ -19,10 +24,11 @@ export default function CardMembership() {
     },
     {
       title: "Pelanggan",
+      icon: Store,
       subtitle: "Diskon 30%",
       price: "Pembelian selama 2 bulan",
       period: "",
-      isPopular: true, 
+      isPopular: true,
       href: "/auth/register",
       buttonText: "Daftar Sekarang",
       benefits: [
@@ -38,77 +44,86 @@ export default function CardMembership() {
   ];
 
   return (
-    <section className="bg-white w-full py-12 lg:py-20 px-4 sm:px-6 flex flex-col items-center font-sans overflow-hidden">
-      <div className="text-center mb-10 lg:mb-14">
-        <h2 className="text-2xl sm:text-[32px] font-bold text-[#111111] mb-2 sm:mb-3">
+    <section className="w-full bg-[#fafdfc] py-20 lg:py-28 px-4 sm:px-6 flex flex-col items-center font-sans overflow-hidden">
+      <div className="text-center max-w-2xl mx-auto mb-16 lg:mb-20">
+        <h2 className="max-w-3xl text-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-3xl md:text-4xl">
           Daftar <span className="text-[#025246]">Sekarang</span>
         </h2>
-        <p className="text-[#9E9E9E] text-[13px] sm:text-sm max-w-xl mx-auto px-2">
+        <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
           Jadilah bagian dari ekosistem pertanian digital yang menghubungkan petani dan pembeli dalam satu platform.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-[900px] w-full items-center justify-center">
-        {membershipPlans.map((plan, index) => (
-          <div
-            key={index}
-            className={`bg-white rounded-3xl p-6 sm:p-8 relative flex flex-col h-full justify-between transition-all duration-300 ${
-              plan.isPopular
-                ? "border-2 border-[#025246] shadow-[0_10px_30px_rgba(2,82,70,0.15)] md:scale-105 z-10 mt-4 md:mt-0"
-                : "border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
-            }`}
-          >
-            {plan.isPopular && (
-              <div className="absolute top-0 right-6 sm:right-8 -translate-y-1/2 bg-[#025246] text-white text-[10px] sm:text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
-                Paling Populer
-              </div>
-            )}
-
-            <div>
-              <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#EBF3ED] flex-shrink-0" />
-                <div>
-                  <h3 className="text-[20px] sm:text-[22px] font-bold text-[#111111]">
-                    {plan.title}
-                  </h3>
+      {/* Cards Container */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 max-w-[900px] w-full items-stretch justify-center">
+        {membershipPlans.map((plan, index) => {
+          const Icon = plan.icon;
+          return (
+            <div
+              key={index}
+              className={`group relative flex flex-col rounded-[2rem] p-8 sm:p-10 transition-all duration-300 ${plan.isPopular
+                ? "border-2 border-[#025246] bg-white shadow-2xl shadow-[#025246]/10 md:scale-105 z-10"
+                : "border border-slate-200 bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1"
+                }`}
+            >
+              {/* Badge Populer */}
+              {plan.isPopular && (
+                <div className="absolute -top-4 inset-x-0 flex justify-center">
+                  <span className="rounded-full bg-[#025246] px-5 py-1.5 text-xs font-bold uppercase tracking-widest text-white shadow-sm">
+                    Paling Populer
+                  </span>
                 </div>
+              )}
+
+              {/* Card Header (Icon & Title) */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#E4F1EB] text-[#025246] transition-transform duration-300 group-hover:scale-110">
+                  <Icon className="h-7 w-7" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#1f1f1f]">
+                  {plan.title}
+                </h3>
               </div>
-              
-              <div className="text-center mb-5 sm:mb-6">
-                <div className="text-[22px] sm:text-[26px] font-extrabold text-[#025246]">
+
+              {/* Price / Subtitle */}
+              <div className="mb-6">
+                <div className="text-[28px] sm:text-[32px] font-extrabold text-[#025246] tracking-tight leading-none">
                   {plan.subtitle}
                 </div>
-                <div className="text-[13px] sm:text-[14px] text-[#555555] font-medium mt-1">
+                <div className="text-sm sm:text-base text-[#75938f] font-medium mt-2">
                   {plan.price}
                 </div>
               </div>
 
-              <hr className="border-gray-100 mb-5 sm:mb-6" />
+              <hr className="border-slate-100 mb-8" />
 
-              <ul className="space-y-3 sm:space-y-4 mb-8">
+              {/* Benefits List */}
+              <ul className="mb-10 flex-1 space-y-4">
                 {plan.benefits.map((benefit, bIndex) => (
-                  <li key={bIndex} className="flex items-start gap-3 text-[13px] sm:text-[14px] text-[#444444]">
-                    <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-[#025246] font-bold">
-                      ✓
+                  <li key={bIndex} className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E4F1EB] text-[#025246]">
+                      <Check className="h-3 w-3" strokeWidth={3} />
                     </div>
-                    <span className="leading-relaxed">{benefit}</span>
+                    <span className="text-sm sm:text-[15px] text-[#4a5f5c] leading-snug">
+                      {benefit}
+                    </span>
                   </li>
                 ))}
               </ul>
-            </div>
 
-            <a 
-              href={plan.href}
-              className={`w-full py-3 sm:py-3.5 px-6 rounded-xl font-semibold text-[13px] sm:text-sm transition-all duration-200 text-center block mt-auto ${
-                plan.isPopular
-                  ? "bg-[#025246] text-white hover:bg-[#024036] shadow-md shadow-[#025246]/20"
-                  : "border border-[#025246] text-[#025246] hover:bg-[#EBF3ED]"
-              }`}
-            >
-              {plan.buttonText}
-            </a>
-          </div>
-        ))}
+              {/* Action Button */}
+              <a
+                href={plan.href}
+                className={`mt-auto inline-flex w-full items-center justify-center rounded-xl px-5 py-4 text-sm sm:text-[15px] font-bold transition-all duration-300 ${plan.isPopular
+                  ? "bg-[#025246] text-white hover:bg-[#013e35] hover:shadow-lg hover:-translate-y-0.5"
+                  : "border-2 border-[#025246] bg-transparent text-[#025246] hover:bg-[#025246] hover:text-white"
+                  }`}
+              >
+                {plan.buttonText}
+              </a>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

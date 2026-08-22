@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const jakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jakarta-sans",
   display: "swap",
+  preload: true,
 });
 
-
 export const metadata: Metadata = {
-  title: "Kompas Desa",
+  title: "Kompas Desa — Platform Digital Pertanian Desa",
   description: "Website Kompas Desa",
   icons: {
-    icon: "/images/joni.svg", 
+    icon: "/logo-kompas-desa/kompas_logo_icon.png",
   },
 };
 
@@ -24,10 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      lang="id"
+      className={`${jakartaSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="min-h-full flex flex-col font-jakarta selection:bg-[#025246] selection:text-white">
         {children}
       </body>
     </html>
