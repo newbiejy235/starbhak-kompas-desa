@@ -38,6 +38,12 @@ export default function Counter({ end, duration, suffix = "" }: CounterProps) {
   useEffect(() => {
     if (!hasAnimated) return
 
+    // Hormati prefers-reduced-motion: langsung tampilkan nilai akhir (PRD 9.1)
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const id = requestAnimationFrame(() => setCount(end))
+      return () => cancelAnimationFrame(id)
+    }
+
     let startTime: number | null = null
 
     const animate = (currentTime: number) => {

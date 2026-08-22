@@ -46,7 +46,8 @@ export default function CommodityFormPopup({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    const id = requestAnimationFrame(() => {
       getCategories().then(setCategories);
       setServerError(null);
       if (commodity) {
@@ -56,11 +57,12 @@ export default function CommodityFormPopup({
         setPreview("");
         setImageId("");
       }
-    }
+    });
+    return () => cancelAnimationFrame(id);
   }, [open, commodity]);
 
   const inputCls =
-    "w-full rounded-lg border border-[#E5E7EB] px-4 py-3 text-sm focus:outline-none focus:border-[#025246] bg-white placeholder:text-gray-400";
+    "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 bg-white placeholder:text-gray-400 transition";
 
   const fmtDate = commodity?.harvestEstimate
     ? new Date(commodity.harvestEstimate).toISOString().slice(0, 10)
@@ -133,11 +135,12 @@ export default function CommodityFormPopup({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-lg hover:bg-gray-100 active:scale-90 transition-all"
+              aria-label="Tutup"
             >
               <ArrowLeft size={20} className="text-gray-600" />
             </button>
-            <h2 className="text-lg font-bold text-[#111111]">
+            <h2 className="text-lg font-bold text-gray-900">
               {isEdit ? "Edit Komoditas" : "Tambah Komoditas"}
             </h2>
           </div>
@@ -334,14 +337,14 @@ export default function CommodityFormPopup({
                         setImageId("");
                         setPreview("");
                       }}
-                      className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700"
+                      className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger/80 active:scale-95 transition-all"
                     >
                       <Trash2 size={13} /> Hapus
                     </button>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1 text-xs text-[#025246] hover:text-[#013e34]"
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark active:scale-95 transition-all"
                     >
                       <ImagePlus size={13} /> Ganti
                     </button>
@@ -352,7 +355,7 @@ export default function CommodityFormPopup({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#025246] hover:text-[#025246] transition-colors disabled:opacity-50"
+                  className="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-primary hover:text-primary hover:bg-primary/[0.03] active:scale-[0.99] transition-all duration-200 disabled:opacity-50"
                 >
                   {uploading ? (
                     <Loader2 size={22} className="animate-spin" />
@@ -377,8 +380,8 @@ export default function CommodityFormPopup({
             </div>
 
             {serverError && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                <p className="text-sm text-red-600">{serverError}</p>
+              <div className="rounded-lg bg-danger/5 border border-danger/20 px-4 py-3 animate-shake">
+                <p className="text-sm text-danger">{serverError}</p>
               </div>
             )}
           </div>
@@ -387,7 +390,7 @@ export default function CommodityFormPopup({
             <button
               type="submit"
               disabled={isSubmitting || uploading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#025246] py-3.5 text-sm font-bold text-white hover:bg-[#013e34] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>

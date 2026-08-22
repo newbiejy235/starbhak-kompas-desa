@@ -26,12 +26,27 @@ import {
   removeFromCart,
 } from "@/lib/cart";
 import { useFetch } from "@/lib/hooks";
-import { LoadingState, EmptyState, formatImage } from "@/components/shared/States";
+import { EmptyState, formatImage } from "@/components/shared/States";
 import type { CommodityDetail } from "@/lib/types/market";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 type DeliveryMethod = "pickup" | "expedition";
 
 const PLATFORM_FEE = 2000;
+
+function CartSkeleton() {
+  return (
+    <div className="max-w-6xl mx-auto grid lg:grid-cols-10 gap-6">
+      <div className="lg:col-span-7 space-y-6">
+        <Skeleton className="h-64 rounded-card" />
+        <Skeleton className="h-48 rounded-card" />
+      </div>
+      <div className="lg:col-span-3">
+        <Skeleton className="h-72 rounded-card" />
+      </div>
+    </div>
+  );
+}
 
 export default function CartPage() {
   const router = useRouter();
@@ -101,23 +116,23 @@ export default function CartPage() {
     router.push(`/user/checkout?${params.toString()}`);
   };
 
-  if (loading) return <LoadingState />;
+  if (loading) return <CartSkeleton />;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto animate-fade-up">
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#025246] mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-6"
       >
         <ChevronLeft size={16} /> Kembali
       </button>
 
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-[#00AA5B] text-white rounded-xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-success text-white rounded-xl flex items-center justify-center shadow-sm">
           <ShoppingBag size={20} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#111111]">Keranjang Belanja</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Keranjang Belanja</h1>
           <p className="text-sm text-gray-500">
             {totalItems > 0
               ? `${totalItems} kg komoditas di keranjang`
@@ -133,7 +148,7 @@ export default function CartPage() {
         >
           <Link
             href="/user/home"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#025246] px-6 py-3 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-95 transition-all duration-200"
           >
             <Sprout size={18} /> Lihat Komoditas
           </Link>
@@ -141,9 +156,9 @@ export default function CartPage() {
       ) : (
         <div className="grid lg:grid-cols-10 gap-6 items-start">
           <div className="lg:col-span-7 space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="font-bold text-[#111111]">
+                <h2 className="font-bold text-gray-900">
                   Daftar Komoditas
                   <span className="ml-2 text-sm font-medium text-gray-400">
                     ({totalItems} kg)
@@ -157,7 +172,7 @@ export default function CartPage() {
                   const lineTotal = unitPrice * item.quantity;
                   const isNegotiated = item.negotiatedPrice !== undefined;
                   return (
-                    <li key={item.product.id} className="flex items-center gap-4 px-6 py-5">
+                    <li key={item.product.id} className="flex items-center gap-4 px-6 py-5 hover:bg-primary/[0.02] transition-colors">
                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                         {img ? (
                           <Image
@@ -169,7 +184,7 @@ export default function CartPage() {
                             unoptimized
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center text-white text-2xl font-black">
+                          <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-black">
                             {item.product.name?.charAt(0)?.toUpperCase()}
                           </div>
                         )}
@@ -182,12 +197,12 @@ export default function CartPage() {
                           Petani: {item.product.farmerName}
                         </p>
                         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                          <MapPin size={12} className="text-[#00AA5B]" />
+                          <MapPin size={12} className="text-success" />
                           {item.product.location}
                         </p>
                         <div className="flex items-center justify-between mt-3 gap-3">
                           <div>
-                            <span className={`text-sm font-extrabold ${isNegotiated ? "text-[#00AA5B]" : "text-[#025246]"}`}>
+                            <span className={`text-sm font-extrabold ${isNegotiated ? "text-success" : "text-primary"}`}>
                               {formatRupiah(unitPrice)}
                               <span className="text-[11px] font-medium text-gray-400">
                                 {" "}
@@ -195,7 +210,7 @@ export default function CartPage() {
                               </span>
                             </span>
                             {isNegotiated && (
-                              <span className="ml-2 text-[10px] bg-[#00AA5B]/10 text-[#00AA5B] px-1.5 py-0.5 rounded-full font-medium">
+                              <span className="ml-2 text-[10px] bg-success/10 text-success px-1.5 py-0.5 rounded-full font-medium">
                                 Harga Nego
                               </span>
                             )}
@@ -205,7 +220,8 @@ export default function CartPage() {
                               type="button"
                               onClick={() => changeQuantity(item.product.id, -1)}
                               disabled={item.quantity <= 1}
-                              className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-[#025246] disabled:opacity-40"
+                              className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary active:scale-90 disabled:opacity-40 transition-all"
+                              aria-label="Kurangi jumlah"
                             >
                               <Minus size={14} />
                             </button>
@@ -216,7 +232,8 @@ export default function CartPage() {
                               type="button"
                               onClick={() => changeQuantity(item.product.id, 1)}
                               disabled={item.quantity >= Number(item.product.stock)}
-                              className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-[#025246] disabled:opacity-40"
+                              className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary active:scale-90 disabled:opacity-40 transition-all"
+                              aria-label="Tambah jumlah"
                             >
                               <Plus size={14} />
                             </button>
@@ -227,7 +244,7 @@ export default function CartPage() {
                           <button
                             type="button"
                             onClick={() => removeItem(item.product.id)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="p-2 rounded-lg text-gray-400 hover:text-danger hover:bg-danger/10 active:scale-90 transition-all"
                             aria-label={`Hapus ${item.product.name}`}
                           >
                             <Trash2 size={18} />
@@ -240,16 +257,16 @@ export default function CartPage() {
               </ul>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <h2 className="font-bold text-[#111111] mb-4 flex items-center gap-2">
-                <Truck size={18} className="text-[#025246]" />
+            <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
+              <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Truck size={18} className="text-primary" />
                 Pilih Metode Pengiriman
               </h2>
               <div className="relative">
                 <select
                   value={deliveryMethod}
                   onChange={(e) => setDeliveryMethod(e.target.value as DeliveryMethod)}
-                  className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm text-gray-800 focus:outline-none focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/10"
+                  className="w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm text-gray-800 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                 >
                   <option value="pickup">Ambil Sendiri / Pick Up</option>
                   <option value="expedition">Jasa Ekspedisi</option>
@@ -260,8 +277,8 @@ export default function CartPage() {
                 />
               </div>
 
-              <div className="mt-4 flex items-start gap-3 rounded-xl bg-gray-50 p-4">
-                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center text-[#025246] flex-shrink-0">
+              <div className="mt-4 flex items-start gap-3 rounded-xl bg-gray-50 p-4 animate-fade-in">
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center text-primary flex-shrink-0">
                   {deliveryMethod === "pickup" ? <Store size={18} /> : <Truck size={18} />}
                 </div>
                 <div className="text-sm">
@@ -279,7 +296,7 @@ export default function CartPage() {
               </div>
 
               {deliveryMethod === "expedition" && (
-                <div className="mt-4">
+                <div className="mt-4 animate-fade-up">
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">
                     Alamat Pengiriman *
                   </label>
@@ -289,7 +306,7 @@ export default function CartPage() {
                     placeholder="Nama penerima, alamat lengkap, kode pos"
                     required
                     rows={3}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]"
+                    className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                   />
                 </div>
               )}
@@ -297,8 +314,8 @@ export default function CartPage() {
           </div>
 
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:sticky lg:top-4">
-              <h2 className="font-bold text-[#111111] mb-4">Ringkasan Belanja</h2>
+            <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 lg:sticky lg:top-24">
+              <h2 className="font-bold text-gray-900 mb-4">Ringkasan Belanja</h2>
               <div className="space-y-3 text-sm mb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Subtotal ({totalItems} kg)</span>
@@ -314,7 +331,7 @@ export default function CartPage() {
                 </div>
                 <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
                   <span className="font-bold text-gray-800">Total Harga</span>
-                  <span className="text-xl font-extrabold text-[#025246]">
+                  <span className="text-xl font-extrabold text-primary">
                     {formatRupiah(total)}
                   </span>
                 </div>
@@ -322,12 +339,12 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={checkout}
-                className="w-full rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+                className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift"
               >
                 Bayar Sekarang
               </button>
               <p className="text-[11px] text-gray-400 text-center mt-3 flex items-center justify-center gap-1">
-                <Check size={12} className="text-[#00AA5B]" />
+                <Check size={12} className="text-success" />
                 Pembayaran aman & transaksi terlindungi
               </p>
             </div>

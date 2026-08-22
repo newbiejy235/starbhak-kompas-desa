@@ -10,7 +10,7 @@ import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
 import ProductCard from "@/components/userpage/ProductCard";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { LoadingState, EmptyState, formatImage } from "@/components/shared/States";
+import { EmptyState, formatImage } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
 import { getClientUser } from "@/lib/auth/client";
 import { addToCart } from "@/lib/cart";
@@ -20,6 +20,19 @@ import type {
   ReviewForCommodity,
   RelatedCommodity,
 } from "@/lib/types/market";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function DetailSkeleton() {
+  return (
+    <div className="max-w-6xl mx-auto space-y-8">
+      <Skeleton className="h-96 rounded-card" />
+      <div className="grid md:grid-cols-2 gap-6">
+        <Skeleton className="h-48 rounded-card" />
+        <Skeleton className="h-48 rounded-card" />
+      </div>
+    </div>
+  );
+}
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +66,7 @@ export default function ProductDetail() {
   const related = data?.related ?? [];
   const reviews = data?.reviews ?? [];
 
-  if (loading) return <LoadingState />;
+  if (loading) return <DetailSkeleton />;
 
   if (!product) {
     return (
@@ -96,21 +109,28 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto animate-fade-up">
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#025246] mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-6"
       >
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-hidden">
         <div className="grid md:grid-cols-2">
-          <div className="aspect-[4/3] bg-gray-100 relative">
+          <div className="aspect-[4/3] bg-gray-100 relative group overflow-hidden">
             {img ? (
-              <Image src={img} alt={product.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" unoptimized />
+              <Image
+                src={img}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-smooth"
+                unoptimized
+              />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
                 <span className="text-8xl font-black text-white/90">
                   {product.name?.charAt(0)?.toUpperCase()}
                 </span>
@@ -132,7 +152,7 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#111111] mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {product.name}
             </h1>
             <p className="text-xs text-gray-500 mb-4">{product.categoryName}</p>
@@ -140,7 +160,7 @@ export default function ProductDetail() {
             <div className="mb-4">
               {hasPriceRange ? (
                 <div>
-                  <div className="text-3xl font-extrabold text-[#025246]">
+                  <div className="text-3xl font-extrabold text-primary">
                     {formatRupiah(minPrice)} - {formatRupiah(maxPrice)}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
@@ -148,24 +168,24 @@ export default function ProductDetail() {
                   </p>
                 </div>
               ) : (
-                <div className="text-3xl font-extrabold text-[#025246]">
+                <div className="text-3xl font-extrabold text-primary">
                   {formatRupiah(product.price)}
                   <span className="text-sm font-medium text-gray-500"> / {product.unit}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6">
               <span className="inline-flex items-center gap-1.5 text-xs bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-gray-600">
-                <MapPin size={14} className="text-[#025246]" />
+                <MapPin size={14} className="text-primary" />
                 {product.location}
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-gray-600">
-                <ShieldCheck size={14} className="text-[#025246]" />
+                <ShieldCheck size={14} className="text-primary" />
                 Kualitas {product.quality}
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-gray-600">
-                <Truck size={14} className="text-[#025246]" />
+                <Truck size={14} className="text-primary" />
                 Stok {formatNumber(product.stock)} {product.unit}
               </span>
               {product.harvestEstimate && (
@@ -191,14 +211,16 @@ export default function ProductDetail() {
                   <div className="flex items-center border border-gray-200 rounded-full">
                     <button
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      className="p-2 text-gray-500 hover:text-[#025246]"
+                      className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
+                      aria-label="Kurangi jumlah"
                     >
                       <Minus size={18} />
                     </button>
                     <span className="w-10 text-center font-bold">{quantity}</span>
                     <button
                       onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
-                      className="p-2 text-gray-500 hover:text-[#025246]"
+                      className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
+                      aria-label="Tambah jumlah"
                     >
                       <Plus size={18} />
                     </button>
@@ -209,14 +231,14 @@ export default function ProductDetail() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={handleAddToCart}
-                    className="rounded-2xl border-2 border-[#025246] py-4 text-sm font-bold text-[#025246] hover:bg-[#025246]/5 transition-colors"
+                    className="rounded-2xl border-2 border-primary py-4 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                   >
                     Masukkan ke Keranjang
                   </button>
                   {hasPriceRange ? (
                     <button
                       onClick={handleNego}
-                      className="rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors flex items-center justify-center gap-2"
+                      className="rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lift"
                     >
                       <MessageCircle size={18} />
                       Nego Harga
@@ -224,7 +246,7 @@ export default function ProductDetail() {
                   ) : (
                     <button
                       onClick={handleAddToCart}
-                      className="rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+                      className="rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift"
                     >
                       Beli Sekarang
                     </button>
@@ -241,13 +263,13 @@ export default function ProductDetail() {
       </div>
 
       <div className="mt-8 grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-[#025246]/10 rounded-full flex items-center justify-center">
-              <Store size={22} className="text-[#025246]" />
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <Store size={22} className="text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-[#111111]">{product.farmerName}</h3>
+              <h3 className="font-bold text-gray-900">{product.farmerName}</h3>
               <p className="text-xs text-gray-500">Petani di {product.location}</p>
             </div>
           </div>
@@ -266,14 +288,14 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h3 className="font-bold text-[#111111] mb-4">Ulasan Pembeli</h3>
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Ulasan Pembeli</h3>
           {reviews.length === 0 ? (
             <p className="text-sm text-gray-500">Belum ada ulasan untuk komoditas ini.</p>
           ) : (
-            <div className="space-y-4 max-h-72 overflow-y-auto">
+            <div className="space-y-4 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
               {reviews.map((r) => (
-                <div key={r.id} className="border-b border-gray-100 pb-4 last:border-0">
+                <div key={r.id} className="border-b border-gray-100 pb-4 last:border-0 animate-fade-up">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-semibold text-gray-800">{r.buyerName}</span>
                     <span className="flex items-center gap-0.5 text-amber-500">
@@ -292,10 +314,16 @@ export default function ProductDetail() {
 
       {related.length > 0 && (
         <div className="mt-10">
-          <h2 className="text-xl font-bold text-[#111111] mb-6">Produk Lainnya</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Produk Lainnya</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {related.map((item) => (
-              <ProductCard key={item.id} data={item} />
+            {related.map((item, i) => (
+              <div
+                key={item.id}
+                className="animate-fade-up"
+                style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
+              >
+                <ProductCard data={item} />
+              </div>
             ))}
           </div>
         </div>

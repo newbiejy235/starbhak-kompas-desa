@@ -11,12 +11,22 @@ export default function PageLoader({ children }: Props) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    // Hormati prefers-reduced-motion: lewati loader (PRD 9.1)
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const id = requestAnimationFrame(() => setIsVisible(false));
+      return () => cancelAnimationFrame(id);
+    }
+
     document.body.style.overflow = "hidden";
 
     const timer = setTimeout(() => {
       setIsVisible(false);
       document.body.style.overflow = "auto";
+<<<<<<< HEAD
     }, 800);
+=======
+    }, 1000);
+>>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
 
     return () => {
       clearTimeout(timer);
@@ -40,7 +50,11 @@ export default function PageLoader({ children }: Props) {
               borderBottomRightRadius: "50%",
               y: "-100%",
             }}
+<<<<<<< HEAD
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+=======
+            transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
+>>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
           >
             <motion.div
               className="text-4xl md:text-6xl font-bold flex"
@@ -53,7 +67,7 @@ export default function PageLoader({ children }: Props) {
                 opacity: 0
               }}
               transition={{
-                duration: 0.8,
+                duration: 0.6,
                 ease: [0.76, 0, 0.24, 1],
               }}
             >
@@ -68,7 +82,11 @@ export default function PageLoader({ children }: Props) {
         className="relative z-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+<<<<<<< HEAD
         transition={{ duration: 0.5, delay: 0.6 }}
+=======
+        transition={{ duration: 0.5, delay: 0.9 }}
+>>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
       >
         {children}
       </motion.div>

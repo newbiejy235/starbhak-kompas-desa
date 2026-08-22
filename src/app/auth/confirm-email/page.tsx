@@ -32,9 +32,10 @@ export default function ConfirmEmail() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F6F6F6] p-4 md:p-6">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row min-h-[600px]">
-        
-        <div className="hidden md:flex md:w-1/2 items-center justify-center bg-gradient-to-br from-[#025246] to-[#047857] p-10 relative overflow-hidden">
+      {/* Kartu elevated + entrance fade-up (PRD 8.2 & 9.2) */}
+      <div className="w-full max-w-5xl bg-white rounded-card shadow-lift overflow-hidden flex flex-col md:flex-row min-h-[600px] animate-fade-up">
+
+        <div className="hidden md:flex md:w-1/2 items-center justify-center bg-gradient-to-br from-primary to-emerald-700 p-10 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
              <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full mix-blend-overlay blur-2xl"></div>
              <div className="absolute bottom-10 right-10 w-48 h-48 bg-[#D7BE44] rounded-full mix-blend-overlay blur-3xl"></div>
@@ -42,7 +43,7 @@ export default function ConfirmEmail() {
 
           <Image
             src="/Konrifmasi email(1).svg"
-            alt="Image"
+            alt="Ilustrasi verifikasi email"
             width={380}
             height={380}
             className="object-contain relative z-10"
@@ -51,9 +52,9 @@ export default function ConfirmEmail() {
         </div>
 
         <div className="w-full md:w-1/2 p-8 sm:p-12 md:p-16 flex flex-col justify-center">
-          
+
           <div className="flex justify-center mb-8 md:hidden">
-            <div className="bg-gradient-to-br from-[#025246] to-[#047857] p-6 rounded-full">
+            <div className="bg-gradient-to-br from-primary to-emerald-700 p-6 rounded-full">
               <Image
                 src="/Konrifmasi email(1).svg"
                 alt="Ilustrasi Verifikasi"
@@ -65,11 +66,11 @@ export default function ConfirmEmail() {
             </div>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#111111] mb-2 tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-neutral-900 mb-2 tracking-tight">
             Verifikasi Email
           </h1>
 
-          <p className="text-[14px] text-gray-500 mb-8 leading-relaxed">
+          <p className="text-sm text-gray-500 mb-8 leading-relaxed">
             Masukkan 6 digit kode OTP yang telah kami kirimkan ke email Anda untuk memverifikasi akun.
           </p>
 
@@ -84,13 +85,11 @@ export default function ConfirmEmail() {
                 value={digit}
                 onChange={(e) => handleChange(e.target.value, i)}
                 onKeyDown={(e) => handleKeyDown(e, i)}
-                className="
-                  w-full h-12 sm:h-14 text-center text-lg font-bold
-                  rounded-xl border border-gray-200 bg-gray-50
-                  text-[#111111] placeholder:text-gray-300
-                  focus:outline-none focus:border-[#025246] focus:bg-white focus:ring-4 focus:ring-[#025246]/10
-                  transition-all shadow-sm
-                "
+                aria-label={`Digit OTP ${i + 1}`}
+                // Kotak OTP pop halus saat terisi (PRD 9.3: playful ringan)
+                className={`w-full h-12 sm:h-14 text-center text-lg font-bold rounded-xl border bg-gray-50 text-neutral-900 placeholder:text-gray-300 focus:outline-none shadow-sm transition-all duration-200 ease-out focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/15 ${
+                  digit ? "border-primary scale-105" : "border-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -98,15 +97,16 @@ export default function ConfirmEmail() {
           <div className="flex flex-col gap-3">
             <button
               type="button"
-              className="w-full rounded-2xl border-2 border-[#025246] bg-transparent py-3 sm:py-3.5 text-sm font-bold text-[#025246] hover:bg-[#EBF3ED] transition-all duration-300"
+              className="w-full rounded-2xl border-2 border-primary bg-transparent py-3 sm:py-3.5 text-sm font-bold text-primary hover:bg-primary/5 transition-all duration-150 ease-smooth active:scale-[0.97]"
             >
               Kirim OTP
             </button>
-            
+
             <button
               onClick={kodeOtp}
               type="button"
-              className="w-full rounded-2xl bg-[#025246] py-3.5 sm:py-4 text-sm font-bold text-white hover:bg-[#024036] hover:shadow-lg hover:shadow-[#025246]/30 hover:-translate-y-0.5 transition-all duration-300"
+              // Micro-interaction press + hover lift (PRD 9.2)
+              className="w-full rounded-2xl bg-primary py-3.5 sm:py-4 text-sm font-bold text-white shadow-soft transition-all duration-150 ease-smooth hover:bg-primary-dark hover:scale-[1.02] active:scale-[0.97]"
             >
               Verifikasi Sekarang
             </button>

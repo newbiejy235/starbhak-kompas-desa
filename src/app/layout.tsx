@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Kompas Desa — Platform Digital Pertanian Desa",
   description: "Website Kompas Desa",
   icons: {
-    icon: "/logo-kompas-desa/kompas_logo_icon.png",
+    icon: "/images/joni.svg", 
   },
 };
 

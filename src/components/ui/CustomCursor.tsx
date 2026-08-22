@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
+const emptySubscribe = () => () => {};
+
 export function CustomCursor() {
-  const [isMounted, setIsMounted] = useState(false);
+  // Hydration-safe mount check tanpa setState di effect
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   // Mengatur koordinat posisi mouse
   const cursorX = useMotionValue(-100);
@@ -16,7 +24,6 @@ export function CustomCursor() {
   const cursorYSpring = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    setIsMounted(true);
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);

@@ -14,12 +14,27 @@ import {
   ROLE_LABEL,
   BUSINESS_TYPE_LABEL,
 } from "@/lib/format";
-import { LoadingState, EmptyState } from "@/components/shared/States";
+import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { BadgeCheck, Ban, Pencil, Trash2, X, Mail, Phone } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { AdminUser } from "@/lib/types/market";
 import type { ActionState } from "@/lib/types/auth";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function UsersSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-64" />
+      <div className="flex gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-9 w-24 rounded-full" />
+        ))}
+      </div>
+      <Skeleton className="h-96 rounded-card" />
+    </div>
+  );
+}
 
 export default function AdminUsers() {
   const admin = getClientUser();
@@ -60,7 +75,7 @@ export default function AdminUsers() {
     null,
   );
 
-  if (loading) return <LoadingState />;
+  if (loading) return <UsersSkeleton />;
 
   const list: AdminUser[] = users ?? [];
   const filtered = list.filter((u) => {
@@ -70,11 +85,20 @@ export default function AdminUsers() {
   });
 
   const inputCls =
-    "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]";
+    "w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
+
+  const chipCls = (active: boolean, dark = false) =>
+    `px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 active:scale-95 ${
+      active
+        ? dark
+          ? "bg-gray-800 text-white border-gray-800"
+          : "bg-primary text-white border-primary shadow-sm"
+        : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+    }`;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-[#111111] mb-2">Manajemen Pengguna</h1>
+    <div className="animate-fade-up">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Manajemen Pengguna</h1>
       <p className="text-sm text-gray-500 mb-6">
         Verifikasi akun, perbarui informasi, dan atur status akun.
       </p>
@@ -86,14 +110,7 @@ export default function AdminUsers() {
           { id: "pembeli", label: "Pembeli" },
           { id: "admin", label: "Admin" },
         ].map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${filter === f.id
-                ? "bg-[#025246] text-white border-[#025246]"
-                : "bg-white text-gray-600 border-gray-200 hover:border-[#025246]"
-              }`}
-          >
+          <button key={f.id} onClick={() => setFilter(f.id)} className={chipCls(filter === f.id)}>
             {f.label}
           </button>
         ))}
@@ -107,10 +124,7 @@ export default function AdminUsers() {
           <button
             key={f.id}
             onClick={() => setStatusFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${statusFilter === f.id
-                ? "bg-gray-800 text-white border-gray-800"
-                : "bg-white text-gray-600 border-gray-200 hover:border-gray-800"
-              }`}
+            className={chipCls(statusFilter === f.id, true)}
           >
             {f.label}
           </button>
@@ -120,7 +134,7 @@ export default function AdminUsers() {
       {filtered.length === 0 ? (
         <EmptyState title="Tidak Ada Pengguna" message="Tidak ada pengguna yang cocok dengan filter." />
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-x-auto">
           <table className="w-full min-w-[800px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left text-xs text-gray-500 uppercase">
@@ -133,10 +147,10 @@ export default function AdminUsers() {
             </thead>
             <tbody>
               {filtered.map((u) => (
-                <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                <tr key={u.id} className="border-b border-gray-50 hover:bg-primary/[0.03] transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#025246] text-white flex items-center justify-center font-bold flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold flex-shrink-0">
                         {u.fullName?.charAt(0)?.toUpperCase()}
                       </div>
                       <div>
@@ -169,7 +183,7 @@ export default function AdminUsers() {
                       {u.status === "pending" && (
                         <button
                           onClick={() => setStatus(u.id, "verified")}
-                          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-600 hover:text-white transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-success bg-success/10 hover:bg-success hover:text-white active:scale-95 transition-all"
                         >
                           <BadgeCheck size={14} /> Verifikasi
                         </button>
@@ -177,7 +191,7 @@ export default function AdminUsers() {
                       {u.status === "verified" && (
                         <button
                           onClick={() => setStatus(u.id, "suspended")}
-                          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-600 hover:text-white transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-danger bg-danger/10 hover:bg-danger hover:text-white active:scale-95 transition-all"
                         >
                           <Ban size={14} /> Tangguhkan
                         </button>
@@ -185,20 +199,21 @@ export default function AdminUsers() {
                       {u.status === "suspended" && (
                         <button
                           onClick={() => setStatus(u.id, "verified")}
-                          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-600 hover:text-white transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-success bg-success/10 hover:bg-success hover:text-white active:scale-95 transition-all"
                         >
                           <BadgeCheck size={14} /> Pulihkan
                         </button>
                       )}
                       <button
                         onClick={() => setEditing(u)}
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-[#025246] bg-[#025246]/10 hover:bg-[#025246] hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-primary bg-primary/10 hover:bg-primary hover:text-white active:scale-95 transition-all"
                       >
                         <Pencil size={14} /> Edit
                       </button>
                       <button
                         onClick={() => remove(u.id)}
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-red-600 hover:text-white transition-colors"
+                        aria-label="Hapus pengguna"
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-danger hover:text-white active:scale-95 transition-all"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -212,11 +227,19 @@ export default function AdminUsers() {
       )}
 
       {editing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+            onClick={() => setEditing(null)}
+          />
+          <div className="relative bg-white rounded-card shadow-lift w-full max-w-lg p-6 sm:p-8 animate-scale-in">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-[#111111]">Edit Pengguna</h2>
-              <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-xl font-bold text-gray-900">Edit Pengguna</h2>
+              <button
+                onClick={() => setEditing(null)}
+                className="text-gray-400 hover:text-gray-600 active:scale-90 transition-all"
+                aria-label="Tutup"
+              >
                 <X size={22} />
               </button>
             </div>
@@ -265,7 +288,7 @@ export default function AdminUsers() {
               </div>
 
               {state && (
-                <p className={`text-sm ${state.success ? "text-green-600" : "text-red-500"}`}>
+                <p className={`text-sm animate-fade-in ${state.success ? "text-success" : "text-danger"}`}>
                   {state.message}
                 </p>
               )}
@@ -274,14 +297,14 @@ export default function AdminUsers() {
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
-                  className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+                  className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:scale-[0.98] transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 rounded-2xl bg-[#025246] py-3 text-sm font-bold text-white hover:bg-[#024036] disabled:opacity-50"
+                  className="flex-1 rounded-2xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   {isPending ? "Menyimpan..." : "Simpan"}
                 </button>

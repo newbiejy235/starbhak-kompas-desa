@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic'
 import LazyOnScroll from '@/utils/Lazyonscroll'
+import { MotionConfig } from 'framer-motion'
+import Link from 'next/link'
 
 
 import Navbar from '@/components/landingpage/Navbar'
@@ -22,12 +24,12 @@ const CardMembership = dynamic(() => import('@/components/landingpage/cardEndors
 const Testimonial = dynamic(() => import('@/components/landingpage/testimonial/testi'))
 const Footer = dynamic(() => import('@/components/landingpage/Footer'))
 const Keamanan = dynamic(() => import('@/components/landingpage/keamanan/KeamananSection').then(mod => mod.KeamananSec))
-const FiturUtama = dynamic(() => import('@/components/landingpage/kebutuhanplatform/KebutuhanPlatform').then(mod => mod.FiturUtamaSec))
-const FAQSection = dynamic(() => import('@/components/landingpage/faq/Pertanyaanajukan').then(mod => mod.FAQSection))
+const ChatWidget = dynamic(() => import('@/components/shared/chatbot/ChatWidget'), { ssr: false })
 
 export default function KompasDesaPage() {
   return (
-    <>
+    // Semua animasi framer menghormati preferensi reduced motion (PRD 9.1)
+    <MotionConfig reducedMotion="user">
       <div className="relative z-999 w-full">
         <Navbar />
       </div>
@@ -60,13 +62,19 @@ export default function KompasDesaPage() {
                     </p>
 
                     <div className="flex items-center gap-3 mt-4">
-                      <button className="inline-flex items-center gap-2 bg-[#025246] hover:bg-[#013e35] px-5 py-2.5 text-white font-bold text-sm rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group">
+                      <Link
+                        href="/auth/register"
+                        className="inline-flex items-center gap-2 bg-[#025246] hover:bg-[#013e35] px-5 py-2.5 text-white font-bold text-sm rounded-xl transition-all duration-200 ease-smooth shadow-sm hover:shadow-md hover:scale-[1.03] active:scale-[0.97] cursor-pointer group"
+                      >
                         <span>Daftar</span>
-                      </button>
+                      </Link>
 
-                      <button className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50/60 text-[#025246] font-semibold text-sm px-5 py-2.5 rounded-xl border border-black/10 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer">
+                      <a
+                        href="#komoditaslist"
+                        className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50/60 text-[#025246] font-semibold text-sm px-5 py-2.5 rounded-xl border border-black/10 transition-all duration-200 ease-smooth shadow-sm hover:shadow-md hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+                      >
                         <span>Cari Komoditas</span>
-                      </button>
+                      </a>
                     </div>
 
                     <BentoGridStats />
@@ -169,7 +177,9 @@ export default function KompasDesaPage() {
             </LazyOnScroll>
           </div>
         </div>
+
+        <ChatWidget />
       </PageLoader>
-    </>
+    </MotionConfig>
   )
 }

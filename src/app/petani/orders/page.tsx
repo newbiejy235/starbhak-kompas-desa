@@ -3,11 +3,24 @@
 import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime, ORDER_STATUS_LABEL } from "@/lib/format";
-import { LoadingState, EmptyState } from "@/components/shared/States";
+import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { MapPin, Store } from "lucide-react";
+import { MapPin, Store, ArrowRight, XCircle } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { FarmerOrder } from "@/lib/types/market";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function OrdersSkeleton() {
+  return (
+    <div className="max-w-5xl mx-auto space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-64 mb-6" />
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Skeleton key={i} className="h-52 rounded-card" />
+      ))}
+    </div>
+  );
+}
 
 export default function PetaniOrders() {
   const user = getClientUser();
@@ -18,7 +31,7 @@ export default function PetaniOrders() {
     [user?.id],
   );
 
-  if (loading) return <LoadingState />;
+  if (loading) return <OrdersSkeleton />;
 
   const list = orders ?? [];
 
@@ -39,8 +52,8 @@ export default function PetaniOrders() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-[#111111] mb-2">Pesanan Masuk</h1>
+    <div className="max-w-5xl mx-auto animate-fade-up">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Pesanan Masuk</h1>
       <p className="text-sm text-gray-500 mb-6">Kelola dan proses pesanan dari pembeli.</p>
 
       {list.length === 0 ? (
@@ -50,10 +63,14 @@ export default function PetaniOrders() {
         />
       ) : (
         <div className="space-y-4">
-          {list.map((o) => {
+          {list.map((o, i) => {
             const next = nextStatus(o.status);
             return (
-              <div key={o.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div
+                key={o.id}
+                className="bg-white rounded-card border border-gray-200/80 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth overflow-hidden animate-fade-up"
+                style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
+              >
                 <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                   <div>
                     <p className="text-xs text-gray-500">{formatDateTime(o.createdAt)}</p>
@@ -64,7 +81,7 @@ export default function PetaniOrders() {
 
                 <div className="px-5 py-4 grid sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#025246] to-[#047857] text-white flex items-center justify-center text-xl font-black flex-shrink-0">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xl font-black flex-shrink-0">
                       {o.commodityName?.charAt(0)?.toUpperCase()}
                     </div>
                     <div>
@@ -80,14 +97,14 @@ export default function PetaniOrders() {
 
                   <div className="text-sm text-gray-600 space-y-1">
                     <p className="flex items-center gap-2">
-                      <Store size={14} className="text-[#025246]" /> {o.buyerName}
+                      <Store size={14} className="text-primary" /> {o.buyerName}
                       <span className="text-xs text-gray-400">({o.buyerNoTelp})</span>
                     </p>
                     <p className="flex items-center gap-2">
-                      <MapPin size={14} className="text-[#025246]" />
+                      <MapPin size={14} className="text-primary" />
                       {o.deliveryMethod === "pickup" ? "Pick Up" : o.deliveryAddress}
                     </p>
-                    <p className="font-bold text-[#025246] text-base">
+                    <p className="font-bold text-primary text-base">
                       Total: {formatRupiah(o.totalPrice)}
                     </p>
                   </div>
@@ -105,9 +122,9 @@ export default function PetaniOrders() {
                   <div className="px-5 pb-5">
                     <button
                       onClick={() => advance(o.id, next)}
-                      className="w-full sm:w-auto rounded-xl bg-[#025246] px-6 py-3 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+                      className="inline-flex items-center gap-2 w-full sm:w-auto rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-sm"
                     >
-                      Ubah ke &quot;{ORDER_STATUS_LABEL[next]}&quot;
+                      Ubah ke &quot;{ORDER_STATUS_LABEL[next]}&quot; <ArrowRight size={16} />
                     </button>
                   </div>
                 )}
@@ -115,9 +132,9 @@ export default function PetaniOrders() {
                   <div className="px-5 pb-5">
                     <button
                       onClick={() => advance(o.id, "cancelled")}
-                      className="w-full sm:w-auto rounded-xl border border-red-200 px-6 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+                      className="inline-flex items-center gap-2 w-full sm:w-auto rounded-xl border border-danger/30 px-6 py-3 text-sm font-bold text-danger hover:bg-danger/5 active:scale-[0.98] transition-all duration-200"
                     >
-                      Batalkan Pesanan
+                      <XCircle size={16} /> Batalkan Pesanan
                     </button>
                   </div>
                 )}

@@ -12,7 +12,7 @@ export default function CardMembership() {
       period: "",
       isPopular: false,
       href: "/auth/register/petani",
-      buttonText: "Daftar Gratis",
+      buttonText: "Daftar Sekarang",
       benefits: [
         "Membuat Profil",
         "Mengelola Data Lahan & Tanaman",
@@ -28,8 +28,13 @@ export default function CardMembership() {
       subtitle: "Diskon 30%",
       price: "Pembelian selama 2 bulan",
       period: "",
+<<<<<<< HEAD
       isPopular: true,
       href: "/auth/register",
+=======
+      isPopular: true, 
+      href: "/auth/register/user",
+>>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
       buttonText: "Daftar Sekarang",
       benefits: [
         "Mencari & Memfilter Komoditas",

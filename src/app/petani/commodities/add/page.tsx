@@ -26,25 +26,25 @@ export default function AddCommodity() {
   );
 
   const inputCls =
-    "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]";
+    "w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
 
   const categoryList = categories ?? [];
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto animate-fade-up">
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#025246] mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-6"
       >
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <h1 className="text-2xl font-bold text-[#111111] mb-1 flex items-center gap-2">
-        <PackagePlus className="text-[#025246]" /> Tambah Komoditas
+      <h1 className="text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+        <PackagePlus className="text-primary" /> Tambah Komoditas
       </h1>
       <p className="text-sm text-gray-500 mb-6">Unggah informasi hasil panen Anda.</p>
 
-      <form action={formAction} className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8 space-y-4">
+      <form action={formAction} className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 sm:p-8 space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1.5">Nama Komoditas *</label>
           <input name="name" required placeholder="Contoh: Beras Pandan Wangi" className={inputCls} />
@@ -128,13 +128,13 @@ export default function AddCommodity() {
         <ImageUploadField />
 
         {state && !state.success && (
-          <p className="text-sm text-red-500">{state.message}</p>
+          <p className="text-sm text-danger animate-shake">{state.message}</p>
         )}
 
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors disabled:opacity-50"
+          className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Menyimpan..." : "Simpan Komoditas"}
         </button>
