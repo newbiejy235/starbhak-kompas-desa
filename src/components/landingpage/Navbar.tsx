@@ -90,8 +90,8 @@ export default function Navbar() {
     transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
 
     ${isScrolled
-            ? "top-4 w-[90%] md:w-[85%] lg:w-[1112px] py-3 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
-            : "top-6 w-[95%] md:w-[92%] lg:w-[1220px] py-4 bg-white shadow-none"
+            ? "top-3 sm:top-4 w-[92%] sm:w-[88%] md:w-[85%] lg:w-[1112px] py-2.5 md:py-3 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
+            : "top-6 w-[95%] md:w-[92%] lg:w-[1200px] py-4 bg-white shadow-none"
           }
   `}
       >
@@ -106,7 +106,6 @@ export default function Navbar() {
             />
             <span>KompasDesa</span>
           </div>
-          <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
         </div>
 
         {/* Desktop Nav Links */}
@@ -185,7 +184,6 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="hidden md:block h-8 w-[1.5px] bg-gray-300"></div>
           {dashboardHref ? (
             <Link href={dashboardHref}>
               <button className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-xl hover:bg-[#024036] hover:scale-105 transition-all duration-300 cursor-pointer">

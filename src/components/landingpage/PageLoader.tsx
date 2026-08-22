@@ -22,11 +22,7 @@ export default function PageLoader({ children }: Props) {
     const timer = setTimeout(() => {
       setIsVisible(false);
       document.body.style.overflow = "auto";
-<<<<<<< HEAD
-    }, 800);
-=======
     }, 1000);
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
 
     return () => {
       clearTimeout(timer);
@@ -35,58 +31,80 @@ export default function PageLoader({ children }: Props) {
   }, []);
 
   return (
-    <div className="relative w-full">
-      <AnimatePresence>
+    <div className="relative w-full overflow-hidden">
+      <AnimatePresence mode="wait">
         {isVisible && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#025246]"
-            initial={{
-              borderBottomLeftRadius: "0%",
-              borderBottomRightRadius: "0%",
-              y: "0%",
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#f4f6f6]"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.6,
+              ease: [0.76, 0, 0.24, 1],
             }}
-            exit={{
-              borderBottomLeftRadius: "50%",
-              borderBottomRightRadius: "50%",
-              y: "-100%",
-            }}
-<<<<<<< HEAD
-            transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-=======
-            transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
           >
+            {/* Brand */}
             <motion.div
-              className="text-4xl md:text-6xl font-bold flex"
-              initial={{ opacity: 0, filter: "blur(12px)", scale: 1.05, y: 0 }}
-              animate={{ opacity: 1, filter: "blur(0px)", scale: 1, y: 0 }}
-
+              className="flex flex-col items-center"
+              initial={{
+                opacity: 0,
+                scale: 0.92,
+                y: 15,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+              }}
               exit={{
-                y: "-42vh",
-                scale: 0.55,
-                opacity: 0
+                opacity: 0,
+                scale: 1.04,
+                y: -5,
               }}
               transition={{
                 duration: 0.6,
-                ease: [0.76, 0, 0.24, 1],
+                ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <span className="text-white">Kompas`</span>
-              <span className="text-[#D7BE44]">Desa</span>
+              <div className="flex text-4xl md:text-6xl font-bold tracking-tight text-black">
+                <span>KompasDesa</span>
+              </div>
+
+              <div className="relative mt-5 h-[2px] w-24 overflow-hidden rounded-full bg-[#025246]/10">
+                <motion.div
+                  className="absolute left-0 top-0 h-full bg-[#025246]"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{
+                    duration: 5, // Catatan: Animasinya 5 detik, tapi loading screen hilang di 1 detik (setTimeout). Kalau mau full, sesuaikan timer di atas.
+                    delay: 0.15,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Website */}
       <motion.div
         className="relative z-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-<<<<<<< HEAD
-        transition={{ duration: 0.5, delay: 0.6 }}
-=======
-        transition={{ duration: 0.5, delay: 0.9 }}
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
+        initial={{
+          opacity: 0,
+          scale: 1.015,
+          y: 8,
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.8,
+          delay: 0.35,
+          ease: [0.22, 1, 0.36, 1],
+        }}
       >
         {children}
       </motion.div>

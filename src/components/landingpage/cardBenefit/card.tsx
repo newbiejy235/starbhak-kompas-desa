@@ -1,36 +1,37 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function CardBenefit() {
-  const [activeTab, setActiveTab] = useState("petani")
+  const [activeTab, setActiveTab] = useState<"petani" | "pembeli">("petani")
 
   const benefitsPetani = [
     {
       number: "01",
       title: "Akses Pasar Lebih Luas",
-      description: "Jangkau lebih banyak mitra pembeli dari berbagai wilayah untuk memperluas peluang penjualan hasil panen.",
-      image: "/images/landingpage/benefit/Statistik.svg"
+      description: "Jangkau mitra pembeli dari berbagai wilayah untuk memperluas peluang penjualan hasil panen.",
+      image: "/images/landingpage/benefit/Statistik.svg",
     },
     {
       number: "02",
       title: "Peluang Penjualan Meningkat",
       description: "Proses distribusi hasil panen menjadi lebih cepat, terorganisir, dan mudah dipantau.",
-      image: "/images/landingpage/benefit/Distribusi.svg"
+      image: "/images/landingpage/benefit/Distribusi.svg",
     },
     {
       number: "03",
       title: "Kelola Produk dengan Mudah",
-      description: "Bertransaksi dengan jaringan mitra pembeli yang telah melalui proses verifikasi untuk meningkatkan kepercayaan.",
-      image: "/images/landingpage/benefit/Verify.svg"
+      description: "Bertransaksi dengan jaringan mitra pembeli terverifikasi untuk meningkatkan kepercayaan.",
+      image: "/images/landingpage/benefit/Verify.svg",
     },
     {
       number: "04",
       title: "Tingkatkan Pendapatan",
-      description: "Pantau aktivitas penjualan dan distribusi hasil panen melalui laporan yang tersusun secara rapi.",
-      image: "/images/landingpage/benefit/TingkatPendapatan.svg"
-    }
+      description: "Pantau aktivitas penjualan dan distribusi melalui laporan yang tersusun secara rapi.",
+      image: "/images/landingpage/benefit/TingkatPendapatan.svg",
+    },
   ]
 
   const benefitsPembeli = [
@@ -38,116 +39,121 @@ export default function CardBenefit() {
       number: "01",
       title: "Temukan Produk Berkualitas",
       description: "Dapatkan hasil panen segar langsung dari petani terpercaya.",
-      image: "/images/landingpage/benefit/ProdukBerkualitas.svg"
+      image: "/images/landingpage/benefit/ProdukBerkualitas.svg",
     },
     {
       number: "02",
       title: "Pencarian Lebih Mudah",
       description: "Cari produk berdasarkan kategori, lokasi, atau kebutuhan dengan cepat.",
-      image: "/images/landingpage/benefit/Pencarian.svg"
+      image: "/images/landingpage/benefit/Pencarian.svg",
     },
     {
       number: "03",
       title: "Pemesanan Praktis",
       description: "Lakukan pemesanan hasil panen dengan proses yang mudah dan efisien.",
-      image: "/images/landingpage/benefit/Pemesanan.svg"
+      image: "/images/landingpage/benefit/Pemesanan.svg",
     },
     {
       number: "04",
       title: "Terhubung Langsung dengan Petani",
       description: "Temukan hasil panen langsung dari petani dalam satu platform yang mudah dan terpercaya.",
-      image: "/images/landingpage/benefit/Relasi.svg"
-    }
+      image: "/images/landingpage/benefit/Relasi.svg",
+    },
   ]
 
   const activeBenefits = activeTab === "petani" ? benefitsPetani : benefitsPembeli
 
   return (
-    <section className="bg-white min-h-screen py-16 px-5 flex flex-col items-center font-sans overflow-hidden">
-      <div className="text-center mb-8">
-        <h2 className="text-[32px] font-bold text-[#111111] mb-3">
-          Keuntungan yang Akan <span className="text-[#025246]">Anda Peroleh</span>
+    <section className="w-full bg-[#f8faf9] py-20 px-4 sm:px-6 flex flex-col items-center">
+      {/* Header */}
+      <div className="text-center max-w-2xl mx-auto mb-10">
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1a1a1a]">
+          Keuntungan <span className="text-[#025246]">Bergabung</span>
         </h2>
-        <p className="text-[#9E9E9E] text-sm">
-          Nikmati kemudahan distribusi hasil panen dalam satu platform yang terintegrasi.
+        <p className="mt-3 text-sm sm:text-base text-slate-500">
+          Nikmati berbagai kemudahan dan nilai tambah yang dirancang khusus untuk mengoptimalkan potensi Anda.
         </p>
       </div>
 
-      <div className="flex items-center bg-gray-100 p-1 rounded-full mb-12 border border-gray-200">
+      {/* Animated Tab Switcher */}
+      <div className="inline-flex bg-slate-200/60 p-1.5 rounded-2xl mb-12 border border-slate-200/80 relative">
         <button
+          type="button"
           onClick={() => setActiveTab("petani")}
-          className="relative px-6 py-2 rounded-full text-sm font-semibold"
+          className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 ${activeTab === "petani" ? "text-white" : "text-slate-600 hover:text-slate-900"
+            }`}
         >
           {activeTab === "petani" && (
             <motion.div
               layoutId="activeTabPill"
-              className="absolute inset-0 bg-[#025246] rounded-full shadow-md"
+              className="absolute inset-0 bg-[#025246] rounded-xl shadow-md"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}
-          <span className={`relative z-10 transition-colors duration-300 ${activeTab === "petani" ? "text-white" : "text-gray-500 hover:text-gray-700"}`}>
-            Petani
-          </span>
+          <span className="relative z-10">Petani</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("pembeli")}
-          className="relative px-6 py-2 rounded-full text-sm font-semibold"
+          className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 ${activeTab === "pembeli" ? "text-white" : "text-slate-600 hover:text-slate-900"
+            }`}
         >
           {activeTab === "pembeli" && (
             <motion.div
               layoutId="activeTabPill"
-              className="absolute inset-0 bg-[#025246] rounded-full shadow-md"
+              className="absolute inset-0 bg-[#025246] rounded-xl shadow-md"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
           )}
-          <span className={`relative z-10 transition-colors duration-300 ${activeTab === "pembeli" ? "text-white" : "text-gray-500 hover:text-gray-700"}`}>
-            Pembeli
-          </span>
+          <span className="relative z-10">Pembeli</span>
         </button>
       </div>
 
-      <div className="max-w-[920px] w-full min-h-[400px]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full"
-          >
-            {activeBenefits.map((benefit, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl p-8 relative shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col justify-between min-h-[180px] hover:shadow-[0_8px_25px_rgba(0,0,0,0.1)] transition-shadow duration-300"
-              >
-                <div className="flex justify-between items-start mb-5">
-                  <div className="w-15 h-15 rounded-full bg-[#EBF3ED] flex items-center justify-center overflow-hidden p-2.5">
-                    <img
-                      src={benefit.image}
-                      alt={benefit.title}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="bg-[#EBF3ED] text-[#025246] px-[14px] py-[6px] rounded-lg font-bold text-sm">
-                    {benefit.number}
-                  </div>
+      {/* Grid Utama */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.25 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-[880px] w-full items-stretch"
+        >
+          {activeBenefits.map((benefit) => (
+            <div
+              key={`${activeTab}-${benefit.number}`}
+              className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 hover:border-[#025246]/40 transition-colors duration-200 flex flex-col justify-between h-full shadow-sm hover:shadow-md"
+            >
+              {/* Bagian Atas: Icon & Nomor Badge */}
+              <div className="flex items-center justify-between mb-5 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-[#eaf4f0] flex items-center justify-center p-2.5 shrink-0">
+                  <Image
+                    src={benefit.image}
+                    alt={benefit.title}
+                    width={33}
+                    height={33}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-
-                <div>
-                  <h3 className="text-[18px] font-bold text-[#111111] mb-2">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-[13px] text-[#666666] leading-relaxed m-0">
-                    {benefit.description}
-                  </p>
-                </div>
+                <span className="text-xs font-bold text-[#025246] bg-[#eaf4f0] px-3 py-1.5 rounded-md">
+                  {benefit.number}
+                </span>
               </div>
-            ))}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+
+              {/* Bagian Bawah: Judul & Teks */}
+              <div className="flex-1 flex flex-col justify-start">
+                <h3 className="text-base sm:text-lg font-bold text-[#1a1a1a] mb-1.5">
+                  {benefit.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  {benefit.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </section>
   )
 }

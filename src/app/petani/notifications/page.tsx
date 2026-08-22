@@ -3,19 +3,22 @@
 import { getUserNotifications, markNotificationsRead } from "@/actions/notification";
 import { getClientUser } from "@/lib/auth/client";
 import { formatDateTime } from "@/lib/format";
-<<<<<<< HEAD
-import { LoadingState, EmptyState } from "@/components/shared/States";
-import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
-=======
 import { EmptyState } from "@/components/shared/States";
-import { Bell, CheckCheck, Package, CreditCard, Star, Info, type LucideIcon } from "lucide-react";
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
+// PERBAIKAN 1: Menambahkan MessageCircle ke dalam impor
+import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import Link from "next/link";
 import type { NotificationRow } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-const typeIcon: Record<string, LucideIcon> = { order: Package, payment: CreditCard, review: Star, system: Info, chat: MessageCircle };
+const typeIcon: Record<string, LucideIcon> = {
+  order: Package,
+  payment: CreditCard,
+  review: Star,
+  system: Info,
+  chat: MessageCircle
+};
+
 const typeColor: Record<string, string> = {
   order: "bg-blue-50 text-blue-600",
   payment: "bg-success/10 text-success",
@@ -82,35 +85,18 @@ export default function PetaniNotifications() {
         <div className="space-y-3">
           {list.map((n, i) => {
             const Icon = typeIcon[n.type] ?? Bell;
-            const card = (
+
+            // PERBAIKAN 2: Langsung return elemen JSX tanpa menyimpannya ke variabel 'card' yang tidak dipanggil
+            return (
               <div
                 key={n.id}
-                className={`bg-white rounded-card border p-5 flex gap-4 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth animate-fade-up ${
-                  n.isRead ? "border-gray-200/80 opacity-70" : "border-primary/30"
-                }`}
+                className={`bg-white rounded-card border p-5 flex gap-4 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth animate-fade-up ${n.isRead ? "border-gray-200/80 opacity-70" : "border-primary/30"
+                  }`}
                 style={{ animationDelay: `${Math.min(i * 50, 400)}ms`, animationFillMode: "backwards" }}
               >
                 <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${typeColor[n.type] ?? "bg-gray-100 text-gray-500"}`}>
                   <Icon size={20} />
                 </div>
-<<<<<<< HEAD
-                 <div className="min-w-0 flex-1">
-                   <div className="flex items-center justify-between gap-2">
-                     <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
-                     {!n.isRead && <span className="w-2.5 h-2.5 bg-[#025246] rounded-full flex-shrink-0" />}
-                   </div>
-                   <p className="text-sm text-gray-600 mt-1">{n.message}</p>
-                   <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
-                 </div>
-               </div>
-            );
-            return n.type === "chat" ? (
-              <Link key={n.id} href="/petani/chat" className="block hover:opacity-90 transition-opacity">
-                {card}
-              </Link>
-            ) : (
-              <div key={n.id}>{card}</div>
-=======
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
@@ -120,7 +106,6 @@ export default function PetaniNotifications() {
                   <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
                 </div>
               </div>
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
             );
           })}
         </div>

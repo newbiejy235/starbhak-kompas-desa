@@ -162,3 +162,29 @@ body {
     scroll-behavior: auto !important;
   }
 }
+/* Floating orbs animation - pure CSS instead of framer-motion */
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.15; }
+  25% { transform: translate(40px, -30px) scale(1.3); opacity: 0.35; }
+  50% { transform: translate(-20px, 20px) scale(0.85); opacity: 0.2; }
+  75% { transform: translate(10px, -10px) scale(1.1); opacity: 0.3; }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.15; }
+  25% { transform: translate(-50px, 40px) scale(1.2); opacity: 0.35; }
+  50% { transform: translate(30px, -10px) scale(0.9); opacity: 0.2; }
+  75% { transform: translate(-20px, 15px) scale(1.15); opacity: 0.3; }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.15; }
+  25% { transform: translate(30px, -40px) scale(1.35); opacity: 0.4; }
+  50% { transform: translate(-40px, 30px) scale(0.8); opacity: 0.2; }
+  75% { transform: translate(15px, -20px) scale(1.1); opacity: 0.3; }
+}
+
+.float1 { animation: float1 12s ease-in-out infinite; }
+.float2 { animation: float2 15s ease-in-out infinite; }
+.float3 { animation: float3 10s ease-in-out infinite; }
+
