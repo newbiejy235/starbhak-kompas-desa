@@ -10,7 +10,6 @@ export default function NotFound() {
       <div className="absolute top-[15%] right-[10%] w-40 h-40 sm:w-56 sm:h-56 bg-[#DCEFE7] rounded-full blur-[70px] opacity-60 pointer-events-none animate-drift"></div>
       <div className="absolute bottom-[20%] left-[8%] w-32 h-32 sm:w-48 sm:h-48 bg-[#F0E8DC] rounded-full blur-[60px] opacity-50 pointer-events-none animate-drift-reverse"></div>
 
-
       <div className="absolute top-[25%] left-[15%] w-2 h-2 rounded-full bg-[#025246]/30 animate-particle"></div>
       <div className="absolute top-[60%] right-[18%] w-2.5 h-2.5 rounded-full bg-[#025246]/25 animate-particle-slow"></div>
       <div className="absolute top-[35%] right-[30%] w-1.5 h-1.5 rounded-full bg-[#E0A34E]/40 animate-particle"></div>

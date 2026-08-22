@@ -48,7 +48,6 @@ export default function Counter({ end, duration, suffix = "" }: CounterProps) {
       const easeProgress = 1 - Math.pow(1 - progress, 3)
 
       setCount(Math.floor(easeProgress * end))
-
       if (progress < 1) {
         requestAnimationFrame(animate)
       } else {
