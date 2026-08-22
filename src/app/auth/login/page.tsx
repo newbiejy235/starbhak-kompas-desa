@@ -4,7 +4,7 @@ import { useState, useEffect, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, User, EyeOff, Eye } from "lucide-react";
+import { ChevronLeft, User, EyeOff, Eye, Loader2 } from "lucide-react";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
@@ -29,13 +29,13 @@ export default function Login() {
   }, [state, router]);
 
   return (
-
     <div className="h-[100dvh] w-full flex items-center justify-center bg-[#F8F8F8] p-2 sm:p-4 overflow-hidden">
-      
-      <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-sm">
+
+      {/* Kartu elevated dengan entrance fade-up halus (PRD 8.2 & 9.2) */}
+      <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-lift animate-fade-up">
       <div className="hidden md:flex relative w-[45%] lg:w-1/2 h-full rounded-[1.5rem] overflow-hidden flex-col">
           <Image
-            src="/images/login/serbser.jpg" 
+            src="/images/login/serbser.jpg"
             alt="Kompas Desa Background"
             fill
             className="object-cover"
@@ -82,12 +82,12 @@ export default function Login() {
 
         <div className="w-full md:w-[55%] lg:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-4">
           <div className="flex flex-col h-full justify-center max-w-[420px] mx-auto w-full">
-            
+
             <div className="flex flex-col items-center text-center mb-6 lg:mb-8">
-              <div className="bg-[#025246] p-3 rounded-xl text-white mb-4">
+              <div className="bg-primary p-3 rounded-xl text-white mb-4 shadow-soft">
                 <User size={28} strokeWidth={2} />
               </div>
-              <h2 className="text-[24px] lg:text-[28px] font-bold text-gray-900 mb-1.5 lg:mb-2">
+              <h2 className="text-[24px] lg:text-[28px] font-bold text-neutral-900 mb-1.5 lg:mb-2">
                 Masuk ke Akun
               </h2>
               <p className="text-[12px] lg:text-[13px] text-gray-400">
@@ -98,10 +98,12 @@ export default function Login() {
             <form action={formAction} className="flex flex-col gap-4 lg:gap-5">
               {state.message && (
                 <div
+                  role="alert"
+                  // Notifikasi hasil login slide-down; shake jika gagal (PRD 8.2)
                   className={`text-center text-[12px] lg:text-[13px] font-medium rounded-xl px-4 py-2.5 ${
                     state.success
-                      ? "bg-[#539D5F]/10 text-[#2e7d32]"
-                      : "bg-red-50 text-red-600"
+                      ? "bg-green-50 text-green-700 animate-slide-down"
+                      : "bg-red-50 text-red-600 animate-shake"
                   }`}
                 >
                   {state.message}
@@ -109,36 +111,40 @@ export default function Login() {
               )}
 
               <div className="flex flex-col">
-                <label className="text-[12px] lg:text-[13px] font-semibold text-[#4B5563] mb-1.5 lg:mb-2">
+                <label htmlFor="email" className="text-[12px] lg:text-[13px] font-semibold text-[#4B5563] mb-1.5 lg:mb-2">
                   Email
                 </label>
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
+                  // Focus glow border primary 200ms (PRD 9.2)
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-gray-400 focus:border-primary focus:ring-4 focus:ring-primary/15"
                   required
                 />
               </div>
 
               <div className="flex flex-col">
-                <label className="text-[12px] lg:text-[13px] font-semibold text-[#4B5563] mb-1.5 lg:mb-2">
+                <label htmlFor="password" className="text-[12px] lg:text-[13px] font-semibold text-[#4B5563] mb-1.5 lg:mb-2">
                   Kata Sandi
                 </label>
                 <div className="relative">
                   <input
+                    id="password"
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 pr-12 text-sm text-gray-900 outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246] transition-all"
+                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 pr-12 text-sm text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-gray-400 focus:border-primary focus:ring-4 focus:ring-primary/15"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors active:scale-90 transition-transform"
                   >
                     {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                   </button>
@@ -149,7 +155,7 @@ export default function Login() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 rounded-sm border-gray-300 text-[#025246] focus:ring-[#025246]"
+                    className="w-3.5 h-3.5 rounded-sm border-gray-300 text-primary focus:ring-primary"
                   />
                   <span className="text-[12px] lg:text-[13px] text-gray-500">
                     Ingat Saya
@@ -157,7 +163,7 @@ export default function Login() {
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-[12px] lg:text-[13px] font-medium text-[#539D5F] hover:underline"
+                  className="text-[12px] lg:text-[13px] font-medium text-primary hover:underline"
                 >
                   Lupa kata sandi?
                 </Link>
@@ -166,8 +172,10 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={pending}
-                className="w-full bg-[#025246] hover:bg-[#013f36] text-white font-semibold text-[13px] lg:text-[14px] rounded-xl py-3 lg:py-3.5 mt-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                // Micro-interaction press + loading spinner halus (PRD 8.2 & 9.2)
+                className="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold text-[13px] lg:text-[14px] rounded-xl py-3 lg:py-3.5 mt-2 shadow-soft transition-all duration-150 ease-smooth hover:scale-[1.02] active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none"
               >
+                {pending && <Loader2 size={16} className="animate-spin" aria-hidden />}
                 {pending ? "Memproses..." : "Masuk"}
               </button>
             </form>
@@ -176,7 +184,7 @@ export default function Login() {
               Belum punya akun?{" "}
               <Link
                 href="/auth/register"
-                className="text-[#539D5F] font-medium hover:underline"
+                className="text-primary font-medium hover:underline"
               >
                 Daftar
               </Link>
@@ -186,14 +194,14 @@ export default function Login() {
               Dengan masuk, Anda menyetujui<br />
               <Link
                 href="#"
-                className="text-[#539D5F] font-medium underline decoration-gray-400 decoration-dotted underline-offset-4 hover:decoration-[#539D5F] transition-colors"
+                className="text-primary font-medium underline decoration-gray-400 decoration-dotted underline-offset-4 hover:decoration-primary transition-colors"
               >
                 Syarat & Ketentuan
               </Link>
               {" "}dan{" "}
               <Link
                 href="#"
-                className="text-[#539D5F] font-medium underline decoration-gray-400 decoration-dotted underline-offset-4 hover:decoration-[#539D5F] transition-colors"
+                className="text-primary font-medium underline decoration-gray-400 decoration-dotted underline-offset-4 hover:decoration-primary transition-colors"
               >
                 Kebijakan Privasi Kompas{"'"}Desa
               </Link>

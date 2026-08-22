@@ -23,7 +23,7 @@ export default function CardMembership() {
       price: "Pembelian selama 2 bulan",
       period: "",
       isPopular: true, 
-      href: "/auth/register",
+      href: "/auth/register/user",
       buttonText: "Daftar Sekarang",
       benefits: [
         "Mencari & Memfilter Komoditas",

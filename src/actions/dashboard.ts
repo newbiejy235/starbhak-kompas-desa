@@ -131,7 +131,7 @@ async function computeStats(
 export async function getSalesChart(farmerId: number, range: string) {
   const now = new Date();
   let startDate: Date;
-  let periods: { label: string; start: Date; end: Date }[] = [];
+  const periods: { label: string; start: Date; end: Date }[] = [];
 
   if (range === "30d") {
     startDate = new Date(now);

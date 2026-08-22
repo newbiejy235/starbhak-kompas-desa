@@ -150,7 +150,8 @@ export default function PetaniChatRoomPage() {
   }, [userId, rid]);
 
   useEffect(() => {
-    refresh(true);
+    const id = requestAnimationFrame(() => refresh(true));
+    return () => cancelAnimationFrame(id);
   }, [refresh]);
 
   useEffect(() => {

@@ -7,11 +7,27 @@ import {
   formatDateTime,
   PAYMENT_METHOD_LABEL,
 } from "@/lib/format";
-import { LoadingState, EmptyState } from "@/components/shared/States";
+import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { Download } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { TransactionRow } from "@/lib/types/market";
+import CountUp from "@/components/ui/CountUp";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function TransactionsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-56" />
+      <div className="grid sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 rounded-card" />
+        ))}
+      </div>
+      <Skeleton className="h-96 rounded-card" />
+    </div>
+  );
+}
 
 export default function AdminTransactions() {
   const [filter, setFilter] = useState("all");
@@ -21,7 +37,7 @@ export default function AdminTransactions() {
     [],
   );
 
-  if (loading) return <LoadingState />;
+  if (loading) return <TransactionsSkeleton />;
 
   const list: TransactionRow[] = transactions ?? [];
   const filtered = list.filter((t) => filter === "all" || t.status === filter);
@@ -66,34 +82,42 @@ export default function AdminTransactions() {
   };
 
   return (
-    <div>
+    <div className="animate-fade-up">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-2xl font-bold text-[#111111] mb-1">Data Transaksi</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Data Transaksi</h1>
           <p className="text-sm text-gray-500">
             Seluruh transaksi penjualan hasil panen di platform.
           </p>
         </div>
         <button
           onClick={exportCSV}
-          className="inline-flex items-center gap-2 bg-[#025246] text-white px-5 py-3 rounded-xl text-sm font-bold hover:bg-[#024036] transition-colors"
+          className="inline-flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-xl text-sm font-bold hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift"
         >
           <Download size={18} /> Unduh Laporan (Excel/CSV)
         </button>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6 mt-4">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5">
           <p className="text-sm text-gray-500">Total Nilai Transaksi</p>
-          <p className="text-2xl font-extrabold text-[#025246]">{formatRupiah(totalAmount)}</p>
+          <CountUp
+            value={totalAmount}
+            prefix="Rp "
+            className="text-2xl font-extrabold text-primary"
+          />
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5">
           <p className="text-sm text-gray-500">Total Fee Platform</p>
-          <p className="text-2xl font-extrabold text-gray-800">{formatRupiah(totalFee)}</p>
+          <CountUp
+            value={totalFee}
+            prefix="Rp "
+            className="text-2xl font-extrabold text-gray-800"
+          />
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5">
           <p className="text-sm text-gray-500">Jumlah Transaksi</p>
-          <p className="text-2xl font-extrabold text-gray-800">{filtered.length}</p>
+          <CountUp value={filtered.length} className="text-2xl font-extrabold text-gray-800" />
         </div>
       </div>
 
@@ -108,10 +132,10 @@ export default function AdminTransactions() {
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 active:scale-95 ${
               filter === f.id
-                ? "bg-[#025246] text-white border-[#025246]"
-                : "bg-white text-gray-600 border-gray-200 hover:border-[#025246]"
+                ? "bg-primary text-white border-primary shadow-sm"
+                : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
             }`}
           >
             {f.label}
@@ -122,7 +146,7 @@ export default function AdminTransactions() {
       {filtered.length === 0 ? (
         <EmptyState title="Tidak Ada Transaksi" message="Tidak ada transaksi yang cocok dengan filter." />
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 text-left text-xs text-gray-500 uppercase">
@@ -139,7 +163,7 @@ export default function AdminTransactions() {
             </thead>
             <tbody>
               {filtered.map((t) => (
-                <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                <tr key={t.id} className="border-b border-gray-50 hover:bg-primary/[0.03] transition-colors">
                   <td className="px-5 py-4 font-semibold text-gray-800">{t.referenceCode}</td>
                   <td className="px-5 py-4 text-gray-600">{t.orderCode}</td>
                   <td className="px-5 py-4 font-medium text-gray-800">{t.commodityName}</td>
@@ -147,7 +171,7 @@ export default function AdminTransactions() {
                   <td className="px-5 py-4 text-gray-600">
                     {PAYMENT_METHOD_LABEL[t.method] ?? t.method}
                   </td>
-                  <td className="px-5 py-4 font-extrabold text-[#025246]">{formatRupiah(t.amount)}</td>
+                  <td className="px-5 py-4 font-extrabold text-primary">{formatRupiah(t.amount)}</td>
                   <td className="px-5 py-4 text-gray-600">{formatRupiah(t.fee)}</td>
                   <td className="px-5 py-4"><StatusBadge status={t.status} /></td>
                   <td className="px-5 py-4 text-xs text-gray-500">{formatDateTime(t.createdAt)}</td>

@@ -4,12 +4,23 @@ import { useActionState } from "react";
 import { getProfile, updateProfile } from "@/actions/profile";
 import { getClientUser } from "@/lib/auth/client";
 import { formatDate, ROLE_LABEL, BUSINESS_TYPE_LABEL } from "@/lib/format";
-import { LoadingState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { CircleUser, Mail, Phone, MapPin, UserRound } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { AuthUser } from "@/lib/types/market";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function ProfileSkeleton() {
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-28 rounded-card" />
+      <Skeleton className="h-36 rounded-card" />
+      <Skeleton className="h-96 rounded-card" />
+    </div>
+  );
+}
 
 export default function PetaniProfile() {
   const user = getClientUser();
@@ -29,19 +40,19 @@ export default function PetaniProfile() {
     null,
   );
 
-  if (loading || !profile) return <LoadingState />;
+  if (loading || !profile) return <ProfileSkeleton />;
 
   const p = profile as AuthUser;
 
   const inputCls =
-    "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246]";
+    "w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-[#111111] mb-6">Profil Saya</h1>
+    <div className="max-w-2xl mx-auto animate-fade-up">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profil Saya</h1>
 
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 mb-6 flex items-center gap-4">
-        <div className="w-16 h-16 bg-[#025246] rounded-full flex items-center justify-center text-white text-2xl font-bold">
+      <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 mb-6 flex items-center gap-4">
+        <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md">
           {p.fullName?.charAt(0)?.toUpperCase()}
         </div>
         <div>
@@ -54,19 +65,19 @@ export default function PetaniProfile() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-6 grid sm:grid-cols-2 gap-4 text-sm">
-        <p className="flex items-center gap-2 text-gray-600"><Mail size={16} className="text-[#025246]" /> {p.email}</p>
-        <p className="flex items-center gap-2 text-gray-600"><Phone size={16} className="text-[#025246]" /> {p.noTelp}</p>
-        <p className="flex items-center gap-2 text-gray-600"><CircleUser size={16} className="text-[#025246]" /> {ROLE_LABEL[p.role]}</p>
+      <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-4 mb-6 grid sm:grid-cols-2 gap-4 text-sm">
+        <p className="flex items-center gap-2 text-gray-600"><Mail size={16} className="text-primary" /> {p.email}</p>
+        <p className="flex items-center gap-2 text-gray-600"><Phone size={16} className="text-primary" /> {p.noTelp}</p>
+        <p className="flex items-center gap-2 text-gray-600"><CircleUser size={16} className="text-primary" /> {ROLE_LABEL[p.role]}</p>
         {p.businessType && (
-          <p className="flex items-center gap-2 text-gray-600"><UserRound size={16} className="text-[#025246]" /> {BUSINESS_TYPE_LABEL[p.businessType] ?? p.businessType}</p>
+          <p className="flex items-center gap-2 text-gray-600"><UserRound size={16} className="text-primary" /> {BUSINESS_TYPE_LABEL[p.businessType] ?? p.businessType}</p>
         )}
-        <p className="flex items-center gap-2 text-gray-600 sm:col-span-2"><MapPin size={16} className="text-[#025246]" /> {p.address || "-"}</p>
+        <p className="flex items-center gap-2 text-gray-600 sm:col-span-2"><MapPin size={16} className="text-primary" /> {p.address || "-"}</p>
         <p className="text-xs text-gray-400 sm:col-span-2">Terdaftar sejak {formatDate(p.createdAt)}</p>
       </div>
 
-      <form action={formAction} className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8 space-y-4">
-        <h3 className="font-bold text-[#111111]">Edit Profil</h3>
+      <form action={formAction} className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 sm:p-8 space-y-4">
+        <h3 className="font-bold text-gray-900">Edit Profil</h3>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
@@ -110,7 +121,7 @@ export default function PetaniProfile() {
         </div>
 
         {state && (
-          <p className={`text-sm ${state.success ? "text-green-600" : "text-red-500"}`}>
+          <p className={`text-sm animate-fade-in ${state.success ? "text-success" : "text-danger"}`}>
             {state.message}
           </p>
         )}
@@ -118,7 +129,7 @@ export default function PetaniProfile() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-2xl bg-[#025246] py-4 text-sm font-bold text-white hover:bg-[#024036] transition-colors disabled:opacity-50"
+          className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Menyimpan..." : "Simpan Profil"}
         </button>

@@ -44,7 +44,7 @@ export default function ProductCard({ data }: ProductCardProps) {
   return (
     <Link
       href={`/user/product/${data.id}`}
-      className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col"
+      className="bg-white rounded-card border border-gray-200/80 overflow-hidden shadow-soft hover:shadow-lift hover:-translate-y-1 transition-all duration-300 ease-smooth group flex flex-col h-full"
     >
       <div className="w-full aspect-[4/3] bg-gray-100 relative overflow-hidden">
         {img ? (
@@ -94,7 +94,7 @@ export default function ProductCard({ data }: ProductCardProps) {
               {hasRange ? "bisa nego · " : ""}per {data.unit} · stok {formatNumber(data.stock)} {data.unit}
             </div>
           </div>
-          <span className="w-10 h-10 text-white bg-[#025246] group-hover:bg-[#024036] rounded-full flex items-center justify-center group-hover:scale-105 transition-all shadow-md cursor-pointer">
+          <span className="w-10 h-10 text-white bg-primary group-hover:bg-primary-dark rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-md cursor-pointer">
             <Eye size={18} />
           </span>
         </div>

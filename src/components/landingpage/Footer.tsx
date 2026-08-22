@@ -1,71 +1,132 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
+
+const footerData = {
+  brand: "Kompas'Desa",
+  description:
+    "Menghubungkan petani dengan berbagai pembeli melalui sistem distribusi yang aman, transparan, dan efisien.",
+  columns: [
+    {
+      title: "Jelajahi",
+      links: ["Beranda", "Tentang", "Layanan", "Testimoni", "Kontak"],
+    },
+    {
+      title: "Kemitraan",
+      links: ["Mitra Kami", "Marketplace", "Retail & Distributor", "Hubungi Kami"],
+    },
+    {
+      title: "Bantuan",
+      links: ["Pusat Bantuan", "FAQ", "Hubungi Kami"],
+    },
+    {
+      title: "Informasi",
+      links: ["Kebijakan Privasi", "Syarat & Ketentuan", "Lisensi"],
+    },
+  ],
+};
 
 export default function Footer() {
   return (
-    <footer className="relative z-30 mt-20">
-      <div className="absolute inset-0 bg-[#01473B]"></div>
+    <footer className="relative z-30 bg-[#025246] text-white">
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-10 lg:px-8">
 
-      <div className="relative px-6 py-16 text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between gap-10">
+        {/* ================= Bagian Atas ================= */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
 
-            <div>
-              <h1 className="text-4xl font-bold mb-4">
-                Kompas Desa
-              </h1>
-              
-              <h1>
-                Menghubungkan petani dengan berbagai pembeli melalui sistem distribusi yang aman, transparan, dan efisien.
-              </h1>
+          {/* Kolom Kiri: Brand, Deskripsi & Sosmed */}
+          <div className="lg:col-span-4 lg:pr-8">
+            <h2 className="mb-4 text-3xl font-bold tracking-tight text-white">
+              {footerData.brand}
+            </h2>
+            <p className="mb-6 max-w-sm text-sm leading-relaxed text-white/80">
+              {footerData.description}
+            </p>
 
-              <Image
-                src="/images/landingpage/Footer_Kolaborasi.svg"
-                alt="Ilustrasi"
-                width={280}
-                height={200}
-                className="mb-4"
-              />
+            {/* Ikon Sosial Media (Pure SVG) */}
+            <div className="flex items-center gap-3">
+              {/* WhatsApp */}
+              <a
+                href="#"
+                aria-label="WhatsApp"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-[#025246]"
+              >
+                <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12.012 2c-5.508 0-9.989 4.481-9.989 9.99 0 1.942.553 3.754 1.517 5.295l-1.54 5.625 5.786-1.517c1.481.821 3.197 1.287 5.016 1.287 5.508 0 9.989-4.481 9.989-9.99 0-5.509-4.481-9.99-9.989-9.99zm0 18.232c-1.637 0-3.15-.45-4.453-1.23l-.32-.192-3.307.866.882-3.224-.21-.334c-.87-1.385-1.332-2.997-1.332-4.658 0-4.542 3.695-8.237 8.24-8.237 4.544 0 8.239 3.695 8.239 8.237 0 4.543-3.695 8.238-8.239 8.238z" />
+                </svg>
+              </a>
 
-              <p className="text-white/70 max-w-md">
-                Platform distribusi untuk petani, peternak, dan nelayan.
-              </p>
+              {/* Instagram */}
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-[#025246]"
+              >
+                <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                </svg>
+              </a>
+
+              {/* Medium / Logo M */}
+              <a
+                href="#"
+                aria-label="Medium"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-[#025246]"
+              >
+                <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42c1.87 0 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z" />
+                </svg>
+              </a>
             </div>
-
-            <div className="flex gap-16">
-              <div>
-                <h2 className="font-semibold mb-3">Navigasi</h2>
-                <ul className="space-y-2 text-white/70">
-                  <li>Home</li>
-                  <li>Layanan</li>
-                  <li>Tentang</li>
-                  <li>Kontak</li>
-                </ul>
-              </div>
-
-              <div>
-                <h2 className="font-semibold mb-3">Layanan</h2>
-                <ul className="space-y-2 text-white/70">
-                  <li>Distribusi</li>
-                  <li>Logistik</li>
-                  <li>Kemitraan</li>
-                </ul>
-              </div>
-            </div>
-
           </div>
 
-          <div className="border-t border-white/20 my-10"></div>
-
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-white/60 gap-4">
-            <p>© 2026 Kompas Desa. All rights reserved.</p>
-            <div className="flex gap-6">
-              <span>Privacy Policy</span>
-              <span>Terms of Service</span>
-            </div>
+          {/* Kolom Kanan: 4 Grid Navigasi */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8">
+            {footerData.columns.map((col, idx) => (
+              <div key={idx} className="flex flex-col">
+                <h3 className="mb-4 text-base font-semibold text-white">
+                  {col.title}
+                </h3>
+                <ul className="space-y-3">
+                  {col.links.map((link, linkIdx) => (
+                    <li key={linkIdx}>
+                      <Link
+                        href="#"
+                        className="inline-block text-sm text-white/70 transition-all duration-200 hover:translate-x-1 hover:text-white"
+                      >
+                        {link}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* ================= Bottom Bar ================= */}
+        <div className="mt-16 border-t border-white/15 pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 text-xs sm:text-sm text-white/70 md:flex-row">
+            <Link
+              href="#"
+              className="transition-colors duration-200 hover:text-white"
+            >
+              Privacy Policy
+            </Link>
+
+            <Link
+              href="#"
+              className="transition-colors duration-200 hover:text-white"
+            >
+              Informasi
+            </Link>
+
+            <p className="text-white/60">
+              © {new Date().getFullYear()} KompasDesa. Hak cipta dilindungi.
+            </p>
+          </div>
+        </div>
+
       </div>
     </footer>
   );

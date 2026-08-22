@@ -4,8 +4,22 @@ import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import { getChatRoomsForUser } from "@/actions/chat";
 import ChatList from "@/components/shared/chat/ChatList";
-import { LoadingState } from "@/components/shared/States";
 import { MessageCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function ChatSkeleton() {
+  return (
+    <div className="flex justify-center">
+      <div className="w-full max-w-[640px]">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-hidden h-[calc(100vh-10rem)] p-4 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PetaniChatPage() {
   const user = getClientUser();
@@ -18,26 +32,26 @@ export default function PetaniChatPage() {
     [user?.id],
   );
 
-  if (loading) return <LoadingState />;
+  if (loading) return <ChatSkeleton />;
 
   const totalRooms = rooms?.length || 0;
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center animate-fade-up">
       <div className="w-full max-w-[640px]">
         <div className="mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#025246] to-[#00AA5B] rounded-2xl flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-sm">
               <MessageCircle size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-[#111111]">Pesan</h1>
+              <h1 className="text-xl font-bold text-gray-900">Pesan</h1>
               <p className="text-xs text-gray-500">Percakapan negosiasi dari pembeli</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden h-[calc(100vh-10rem)]">
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-hidden h-[calc(100vh-10rem)]">
           <ChatList
             rooms={rooms || []}
             currentUserId={user?.id || 0}

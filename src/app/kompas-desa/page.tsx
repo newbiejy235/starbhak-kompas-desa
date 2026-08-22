@@ -1,122 +1,173 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+import LazyOnScroll from '@/utils/Lazyonscroll'
+import { MotionConfig } from 'framer-motion'
+import Link from 'next/link'
+
+
 import Navbar from '@/components/landingpage/Navbar'
 import DotPattern from '@/components/ui/DotPattern'
-import Footer from '@/components/landingpage/Footer'
 import FadeAnimation from '@/components/animation/Animation'
-import AnimatedCrops from '@/components/animation/AnimatedCrop'
-import ScrollReveal from '@/components/animation/ScrollReveal'
-import About from '@/components/landingpage/about/About'
 import PageLoader from '@/components/landingpage/PageLoader'
-import CardBenefit from '@/components/landingpage/cardBenefit/card'
-import CardMembership from '@/components/landingpage/cardEndorse/membership'
-import Counter from '@/components/animation/Counter'
-import Testimonial from '@/components/landingpage/testimonial/testi'
-import PlatformFeatures from '@/components/landingpage/FeatureSection/FeatureCard'
+import AnimatedHeading from '@/components/animation/headinglandingpage'
+import BentoGridStats from '@/components/landingpage/berandaCard/cardBeranda'
+import { DotAnimation } from '@/components/ui/DotAnimation'
+import { FiturUtamaSec } from '@/components/landingpage/kebutuhanplatform/KebutuhanPlatform'
+
+const ScrollReveal = dynamic(() => import('@/components/animation/ScrollReveal'), { ssr: false })
+const PartnerSection = dynamic(() => import('@/components/landingpage/mitra/Mitra'))
+const About = dynamic(() => import('@/components/landingpage/about/About').then(mod => mod.About))
+const AlurWebsite = dynamic(() => import('@/components/landingpage/about/WebsiteFlow').then(mod => mod.AlurWebsite))
+const KomoditasMarquee = dynamic(() => import('@/components/landingpage/about/komoditasList').then(mod => mod.KomoditasMarquee), { ssr: false })
+const CardBenefit = dynamic(() => import('@/components/landingpage/cardBenefit/card'))
+const CardMembership = dynamic(() => import('@/components/landingpage/cardEndorse/membership'))
+const Testimonial = dynamic(() => import('@/components/landingpage/testimonial/testi'))
+const Footer = dynamic(() => import('@/components/landingpage/Footer'))
+const Keamanan = dynamic(() => import('@/components/landingpage/keamanan/KeamananSection').then(mod => mod.KeamananSec))
+const ChatWidget = dynamic(() => import('@/components/shared/chatbot/ChatWidget'), { ssr: false })
 
 export default function KompasDesaPage() {
-  const scrollToMembership = () => {
-    const section = document.getElementById('membership-section')
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   return (
-    <>
-      <div className="relative z-[999] w-full">
+    // Semua animasi framer menghormati preferensi reduced motion (PRD 9.1)
+    <MotionConfig reducedMotion="user">
+      <div className="relative z-999 w-full">
         <Navbar />
       </div>
 
       <PageLoader>
-        <div className="relative min-h-screen bg-[#025246] overflow-x-hidden flex flex-col">
+        <div className="relative min-h-screen bg-white overflow-x-hidden flex flex-col">
+          <DotAnimation />
           <DotPattern className="opacity-30" />
 
-          <main className="relative z-25 grow w-full">
-
+          <main className="relative z-25 grow w-full landing-theme">
+            {/* SECTION 1: BERANDA (Dimuat Langsung) */}
             <section
               id="beranda"
-              className="w-full mx-auto px-4 sm:px-6 md:px-12 lg:px-20 pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 flex items-center scroll-mt-24"
+              className="relative w-full min-h-[80vh] mx-auto px-4 sm:px-6 md:px-12 lg:px-20 pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 flex items-center justify-center scroll-mt-24"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 w-full items-center">
+              <div className="w-full max-w-4xl flex justify-center">
                 <FadeAnimation direction="in">
-                  <div className="flex flex-col text-center lg:text-left items-center lg:items-start">
-                    <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal tracking-wide mb-1 sm:mb-2">
-                      Membuka Akses
-                    </h1>
-                    <h2 className="text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-3 sm:mb-4">
-                      Hasil Panen
-                    </h2>
-                    <h3 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal tracking-wide">
-                      ke Pasar yang Lebih Luas
-                    </h3>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="bg-[#E4F1EB] text-[#025246] px-4 py-1.5 text-sm font-semibold mb-4 inline-flex items-center gap-1.5 shadow-sm">
+                      <span>#DariDesaUntukNegeri</span>
+                    </div>
 
-                    <p className="mt-5 sm:mt-6 text-white text-base sm:text-lg md:text-xl leading-relaxed max-w-xl">
-                      Temukan hasil panen segar langsung dari petani, atau perluas jangkauan penjualan ke lebih banyak pembeli melalui satu platform.
+                    <h1 className="text-[#1f1f1f] text-3xl sm:text-4xl md:text-4xl tracking-tight font-bold leading-tight max-w-3xl">
+                      <AnimatedHeading text='Membuka Akses Hasil Panen ke Pasar yang Lebih Luas' />
+                    </h1>
+
+                    <p className="mt-1 text-[#75938f] text-sm sm:text-2xs leading-relaxed max-w-2xl">
+                      Temukan hasil panen segar langsung dari petani, atau diperluas jangkauan
+                      penjualan ke lebih banyak pembeli melalui satu platform.
                     </p>
 
-                    <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 sm:gap-3 mb-6 mt-6 sm:mt-8">
-                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-full shadow-sm">
-                        Sudah terdaftar <span className="text-[#EAB308] font-bold"><Counter end={200} suffix="+" /> Petani</span>
-                      </div>
-                      <div className="bg-white/90 border border-white/20 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium backdrop-blur-sm rounded-full shadow-sm">
-                      <Counter end={1200} suffix="+"></Counter> Ton Hasil Panen Terjual
-                      </div>
-                    </div>
-
-                    <div className="mt-1 flex items-center justify-center lg:justify-start w-full">
-                      <button
-                        onClick={scrollToMembership}
-                        className="w-full sm:w-auto relative px-8 sm:px-10 py-3 rounded-full text-white text-base sm:text-lg font-semibold bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] shadow-[0_8px_20px_rgba(46,125,50,0.4)] hover:shadow-[0_10px_25px_rgba(46,125,50,0.6)] hover:scale-[1.03] transition-all duration-300 text-center"
+                    <div className="flex items-center gap-3 mt-4">
+                      <Link
+                        href="/auth/register"
+                        className="inline-flex items-center gap-2 bg-[#025246] hover:bg-[#013e35] px-5 py-2.5 text-white font-bold text-sm rounded-xl transition-all duration-200 ease-smooth shadow-sm hover:shadow-md hover:scale-[1.03] active:scale-[0.97] cursor-pointer group"
                       >
-                        Berlangganan
-                      </button>
-                    </div>
-                  </div>
-                </FadeAnimation>
+                        <span>Daftar</span>
+                      </Link>
 
-                <FadeAnimation direction="up">
-                  <div className="hidden md:flex w-full max-w-md mx-auto lg:max-w-none justify-center mt-4 lg:mt-0">
-                    <AnimatedCrops />
+                      <a
+                        href="#komoditaslist"
+                        className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50/60 text-[#025246] font-semibold text-sm px-5 py-2.5 rounded-xl border border-black/10 transition-all duration-200 ease-smooth shadow-sm hover:shadow-md hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+                      >
+                        <span>Cari Komoditas</span>
+                      </a>
+                    </div>
+
+                    <BentoGridStats />
                   </div>
                 </FadeAnimation>
               </div>
             </section>
 
-            <section id="tentang" className="bg-white w-full py-6 sm:py-10 scroll-mt-24">
-              <ScrollReveal>
-                <FadeAnimation direction="up">
-                  <About />
-                </FadeAnimation>
-              </ScrollReveal>
+            {/* SECTION BAWAH (LAZY LOAD ON SCROLL) */}
+            <LazyOnScroll minHeight="150px">
+              <PartnerSection />
+            </LazyOnScroll>
+
+            <section id="tentang" className="bg-white w-full scroll-mt-24">
+              <LazyOnScroll minHeight="400px">
+                <ScrollReveal>
+                  <FadeAnimation direction="up">
+                    <About />
+                  </FadeAnimation>
+                </ScrollReveal>
+              </LazyOnScroll>
             </section>
 
+            <section id="alurweb" className="bg-white w-full scroll-mt-24">
+              <LazyOnScroll minHeight="400px">
+                <ScrollReveal>
+                  <AlurWebsite />
+                </ScrollReveal>
+              </LazyOnScroll>
+            </section>
+
+            <section id="komoditaslist" className="bg-white w-full scroll-mt-24">
+              <LazyOnScroll minHeight="250px">
+                <ScrollReveal>
+                  <KomoditasMarquee />
+                </ScrollReveal>
+              </LazyOnScroll>
+            </section>
+
+            <section id="keamanan" className="bg-white w-full scroll-mt-24">
+              <LazyOnScroll minHeight="250px">
+                <ScrollReveal>
+                  <Keamanan />
+                </ScrollReveal>
+              </LazyOnScroll>
+            </section>
+
+
+            <section id="fiturutama" className="bg-white w-full scroll-mt-24">
+              <LazyOnScroll minHeight="250px">
+                <ScrollReveal>
+                  <FiturUtamaSec />
+                </ScrollReveal>
+              </LazyOnScroll>
+            </section>
+
+
+
             <section id="layanan" className="bg-white w-full py-6 sm:py-10 scroll-mt-24">
-              <ScrollReveal>
-                <FadeAnimation direction="up">
-                  <CardBenefit />
-                </FadeAnimation>
-              </ScrollReveal>
+              <LazyOnScroll minHeight="500px">
+                <ScrollReveal>
+                  <FadeAnimation direction="up">
+                    <CardBenefit />
+                  </FadeAnimation>
+                </ScrollReveal>
+              </LazyOnScroll>
             </section>
 
             <section id="testimoni" className="bg-white w-full py-6 sm:py-12 scroll-mt-24">
-              <ScrollReveal>
-                <FadeAnimation direction="up">
-                  <div id="membership-section" className="flex flex-col gap-8 sm:gap-12">
-                    <CardMembership />
-                    <Testimonial />
-                  </div>
-                </FadeAnimation>
-              </ScrollReveal>
+              <LazyOnScroll minHeight="500px">
+                <ScrollReveal>
+                  <FadeAnimation direction="up">
+                    <div id="membership-section" className="flex flex-col gap-8 sm:gap-12">
+                      <CardMembership />
+                      <Testimonial />
+                    </div>
+                  </FadeAnimation>
+                </ScrollReveal>
+              </LazyOnScroll>
             </section>
 
           </main>
 
           <div id="kontak" className="relative z-20 w-full">
-            <Footer />
+            <LazyOnScroll minHeight="300px">
+              <Footer />
+            </LazyOnScroll>
           </div>
         </div>
+
+        <ChatWidget />
       </PageLoader>
-    </>
+    </MotionConfig>
   )
 }

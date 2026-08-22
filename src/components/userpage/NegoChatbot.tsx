@@ -32,9 +32,16 @@ export default function NegoChatbot({
   onClose,
   onDeal,
 }: NegoChatbotProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    {
+      id: "greeting",
+      sender: "BOT",
+      content: `Halo! Saya Asisten Nego untuk *${productName}*.\n\nHarga range: ${formatRupiah(minPrice)} - ${formatRupiah(maxPrice)} / ${unit}\n\nSilakan ajukan harga yang Anda inginkan. Petani ${farmerName} akan mempertimbangkannya.`,
+      timestamp: new Date(),
+    },
+  ]);
   const [input, setInput] = useState("");
-  const [phase, setPhase] = useState<"intro" | "waiting_offer" | "counter" | "deal" | "rejected">("intro");
+  const [phase, setPhase] = useState<"intro" | "waiting_offer" | "counter" | "deal" | "rejected">("waiting_offer");
   const [lastOffer, setLastOffer] = useState<number | null>(null);
   const [counterOffer, setCounterOffer] = useState<number | null>(null);
   const [dealPrice, setDealPrice] = useState<number | null>(null);
@@ -55,12 +62,6 @@ export default function NegoChatbot({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  useEffect(() => {
-    const greeting = `Halo! Saya Asisten Nego untuk *${productName}*.\n\nHarga range: ${formatRupiah(minPrice)} - ${formatRupiah(maxPrice)} / ${unit}\n\nSilakan ajukan harga yang Anda inginkan. Petani ${farmerName} akan mempertimbangkannya.`;
-    addMessage("BOT", greeting);
-    setPhase("waiting_offer");
-  }, []);
 
   const parsePrice = (text: string): number | null => {
     const cleaned = text.replace(/[^0-9]/g, "");
