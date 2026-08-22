@@ -17,12 +17,20 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { clearSession, getClientUser } from "@/lib/auth/client";
+import { getUnreadNotificationCount } from "@/actions/notification";
+import { useFetch } from "@/lib/hooks";
 
 export default function PetaniSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const user = getClientUser();
+
+  const { data: unreadCount } = useFetch(
+    () => (user ? getUnreadNotificationCount(user.id) : Promise.resolve(0)),
+    [user?.id, pathname],
+  );
+  const unread = Number(unreadCount ?? 0);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/petani/dashboard" },
@@ -71,6 +79,11 @@ export default function PetaniSidebar() {
             >
               <item.icon size={20} />
               {item.label}
+              {item.id === "notifications" && unread > 0 && (
+                <span className="ml-auto min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
             </Link>
           );
         })}

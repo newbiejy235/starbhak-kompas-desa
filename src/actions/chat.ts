@@ -7,6 +7,7 @@ import {
   negotiationOffersTable,
   commoditiesTable,
   usersTable,
+  notificationsTable,
   ImageUpload,
 } from "@/db/schema";
 import { eq, and, desc, sql, or, gt } from "drizzle-orm";
@@ -191,6 +192,7 @@ export async function sendChatMessage(
   type: "text" | "offer" | "counter_offer" | "accept" | "reject" | "system" = "text",
   offerPrice?: number,
   offerQuantity?: number,
+  replyToId?: number,
 ) {
   try {
     const [msg] = await db
@@ -202,6 +204,7 @@ export async function sendChatMessage(
         content,
         offerPrice: offerPrice?.toString(),
         offerQuantity: offerQuantity?.toString(),
+        replyToId: replyToId ?? null,
       })
       .returning({ id: chatMessagesTable.id });
 
@@ -214,10 +217,78 @@ export async function sendChatMessage(
       })
       .where(eq(chatRoomsTable.id, roomId));
 
-    return { id: msg.id };
+    const result = { id: msg.id };
+
+    // Notify recipient (best-effort, non-blocking)
+    notifyChatMessage(roomId, senderId, content).catch(() => {});
+
+    return result;
   } catch (error) {
     console.error(error);
     return null;
+  }
+}
+
+export async function notifyChatMessage(
+  roomId: number,
+  senderId: number,
+  content: string,
+) {
+  try {
+    const room = await db
+      .select({
+        buyerId: chatRoomsTable.buyerId,
+        farmerId: chatRoomsTable.farmerId,
+        commodityId: chatRoomsTable.commodityId,
+      })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+
+    if (room.length === 0) return;
+
+    const r = room[0];
+    const recipientId = r.buyerId === senderId ? r.farmerId : r.buyerId;
+
+    // Dedupe: only notify if recipient has no unread message from this sender yet
+    const existing = await db
+      .select({ id: chatMessagesTable.id })
+      .from(chatMessagesTable)
+      .where(
+        and(
+          eq(chatMessagesTable.roomId, roomId),
+          eq(chatMessagesTable.senderId, senderId),
+          eq(chatMessagesTable.isRead, false),
+        ),
+      )
+      .limit(1);
+
+    if (existing.length > 0) return;
+
+    const [commodity] = await db
+      .select({ name: commoditiesTable.name })
+      .from(commoditiesTable)
+      .where(eq(commoditiesTable.id, r.commodityId))
+      .limit(1);
+
+    const [sender] = await db
+      .select({ fullName: usersTable.fullName })
+      .from(usersTable)
+      .where(eq(usersTable.id, senderId))
+      .limit(1);
+
+    const senderName = sender?.fullName ?? "Seseorang";
+    const commodityName = commodity?.name ?? "produk";
+    const preview = content.length > 60 ? `${content.slice(0, 57)}...` : content;
+
+    await db.insert(notificationsTable).values({
+      userId: recipientId,
+      title: `Pesan baru dari ${senderName}`,
+      message: `${commodityName}: ${preview}`,
+      type: "chat",
+    });
+  } catch (error) {
+    console.error("notifyChatMessage error:", error);
   }
 }
 
@@ -363,5 +434,84 @@ export async function getUnreadCount(userId: number) {
   } catch (error) {
     console.error(error);
     return 0;
+  }
+}
+
+export async function editMessage(messageId: number, userId: number, newContent: string) {
+  try {
+    const [msg] = await db
+      .select()
+      .from(chatMessagesTable)
+      .where(
+        and(
+          eq(chatMessagesTable.id, messageId),
+          eq(chatMessagesTable.senderId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (!msg) return { success: false, error: "Message not found or not yours" };
+    if (msg.type !== "text") return { success: false, error: "Only text messages can be edited" };
+
+    await db
+      .update(chatMessagesTable)
+      .set({ content: newContent, isEdited: true })
+      .where(eq(chatMessagesTable.id, messageId));
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to edit message" };
+  }
+}
+
+export async function deleteMessage(messageId: number, userId: number) {
+  try {
+    const [msg] = await db
+      .select()
+      .from(chatMessagesTable)
+      .where(
+        and(
+          eq(chatMessagesTable.id, messageId),
+          eq(chatMessagesTable.senderId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (!msg) return { success: false, error: "Message not found or not yours" };
+
+    await db
+      .update(chatMessagesTable)
+      .set({ isDeleted: true, content: "Pesan telah dihapus" })
+      .where(eq(chatMessagesTable.id, messageId));
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to delete message" };
+  }
+}
+
+export async function getEditedDeletedMessages(roomId: number, lastId: number) {
+  try {
+    const msgs = await db
+      .select({
+        id: chatMessagesTable.id,
+        content: chatMessagesTable.content,
+        isEdited: chatMessagesTable.isEdited,
+        isDeleted: chatMessagesTable.isDeleted,
+      })
+      .from(chatMessagesTable)
+      .where(
+        and(
+          eq(chatMessagesTable.roomId, roomId),
+          gt(chatMessagesTable.id, lastId),
+        ),
+      );
+
+    return msgs.filter((m) => m.isEdited || m.isDeleted);
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }

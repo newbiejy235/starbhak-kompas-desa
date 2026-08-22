@@ -1,13 +1,4 @@
-import {
-  integer,
-  pgTable,
-  varchar,
-  text,
-  timestamp,
-  numeric,
-  boolean,
-  pgEnum,
-  index,
+import {integer,pgTable,varchar,text,timestamp,numeric,boolean,pgEnum,index,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
@@ -356,6 +347,9 @@ export const chatMessagesTable = pgTable(
     offerPrice: numeric({ precision: 12, scale: 2 }),
     offerQuantity: numeric({ precision: 12, scale: 2 }),
     isRead: boolean().notNull().default(false),
+    isEdited: boolean().notNull().default(false),
+    isDeleted: boolean().notNull().default(false),
+    replyToId: integer(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
@@ -378,21 +372,21 @@ export const negotiationOffersTable = pgTable(
     roomId: integer()
       .notNull()
       .references(() => chatRoomsTable.id, { onDelete: "cascade" }),
-    commodityId: integer()
-      .notNull()
-      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
-    buyerId: integer()
-      .notNull()
-      .references(() => usersTable.id, { onDelete: "cascade" }),
-    farmerId: integer()
-      .notNull()
-      .references(() => usersTable.id, { onDelete: "cascade" }),
-    price: numeric({ precision: 12, scale: 2 }).notNull(),
-    quantity: numeric({ precision: 12, scale: 2 }).notNull(),
-    unit: varchar({ length: 30 }).notNull().default("kg"),
-    status: negotiationStatusEnum().notNull().default("pending"),
-    acceptedAt: timestamp({ withTimezone: true }),
-    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  commodityId: integer()
+    .notNull()
+    .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+  buyerId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  farmerId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  price: numeric({ precision: 12, scale: 2 }).notNull(),
+  quantity: numeric({ precision: 12, scale: 2 }).notNull(),
+  unit: varchar({ length: 30 }).notNull().default("kg"),
+  status: negotiationStatusEnum().notNull().default("pending"),
+  acceptedAt: timestamp({ withTimezone: true }),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     index("negotiation_room_idx").on(table.roomId),
