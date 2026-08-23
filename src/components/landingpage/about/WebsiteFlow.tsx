@@ -74,14 +74,12 @@ export function AlurWebsite() {
           transition={{ duration: 0.8 }}
           className="mb-16 flex flex-col items-center text-center lg:mb-20"
         >
-          <h2 className="max-w-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] text-3xl sm:text-3xl md:text-3xl text-center5xl">
-            Langkah mudah menuju <span className="text-[#025246]">pertanian yang lebih maju.</span><br className="hidden sm:block" />
+          <h2 className="max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
+            Cara Kerja <span className="text-[#025246]"> yang Sederhana</span><br className="hidden sm:block" />
 
           </h2>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-[#52605C]">
-            Kami merancang ekosistem yang intuitif. Hanya butuh beberapa langkah
-            untuk mulai menghubungkan hasil bumi desa dengan potensi pasar yang
-            luas.
+            Beberapa langkah sederhana untuk menghubungkan hasil bumi desa dengan pasar yang lebih luas.
           </p>
         </motion.div>
 

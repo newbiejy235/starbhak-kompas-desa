@@ -7,11 +7,11 @@ import DotPattern from "@/components/ui/DotPattern";
 import { DotAnimation } from "@/components/ui/DotAnimation";
 import FadeAnimation from "@/components/animation/Animation";
 import PageLoader from "@/components/landingpage/PageLoader";
-import AnimatedHeading from "@/components/animation/headinglandingpage";
 import BentoGridStats from "@/components/landingpage/berandaCard/cardBeranda";
 import ChatWidget from "@/components/shared/chatbot/ChatWidget";
 
 import Link from "next/link";
+import ScrollToTop from "@/components/landingpage/backtotop/BacktoTop";
 
 const ScrollReveal = dynamic(
   () => import("@/components/animation/ScrollReveal"),
@@ -93,50 +93,14 @@ export default function KompasDesaPage() {
         <div className="relative min-h-screen bg-white overflow-x-hidden flex flex-col">
           <DotAnimation />
           <DotPattern className="opacity-30" />
-
           <main className="relative z-25 grow w-full landing-theme">
 
-            {/* BERANDA */}
-            <section
-              id="beranda"
-              className="relative w-full min-h-[80vh] mx-auto px-4 sm:px-6 md:px-12 lg:px-20 pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 flex items-center justify-center scroll-mt-24"
-            >
-              <div className="w-full max-w-4xl flex justify-center">
-                <FadeAnimation direction="in">
-                  <div className="flex flex-col items-center text-center">
-
-                    <div className="bg-[#E4F1EB] text-[#025246] px-4 py-1.5 text-sm font-semibold mb-4 inline-flex items-center gap-1.5 shadow-sm">
-                      <span>#DariDesaUntukNegeri</span>
-                    </div>
-
-                    <h1 className="text-[#1f1f1f] text-3xl sm:text-4xl md:text-4xl tracking-tight font-bold leading-tight max-w-3xl">
-                      <AnimatedHeading text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas" />
-                    </h1>
-
-                    <p className="mt-1 text-[#75938f] text-sm sm:text-2xs leading-relaxed max-w-2xl">
-                      Temukan hasil panen segar langsung dari petani, atau
-                      diperluas jangkauan penjualan ke lebih banyak pembeli
-                      melalui satu platform.
-                    </p>
-
-                    <div className="flex items-center gap-3 mt-4">
-                      <button className="inline-flex items-center gap-2 bg-[#025246] hover:bg-[#013e35] px-5 py-2.5 text-white font-bold text-sm rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer">
-                        Daftar
-                      </button>
-                      <Link href="../kompas-desa/Komoditas">
-                        <button className="inline-flex items-center gap-2 bg-white hover:bg-emerald-50/60 text-[#025246] font-semibold text-sm px-5 py-2.5 rounded-xl border border-black/10 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer">
-                          Cari Komoditas
-                        </button>
-                      </Link>
-                    </div>
-
-                    <BentoGridStats />
-                  </div>
-                </FadeAnimation>
-              </div>
+            <section id="beranda" className="bg-white w-full scroll-mt-24">
+              <ScrollReveal>
+                <BentoGridStats />
+              </ScrollReveal>
             </section>
 
-            {/* SECTION LAIN */}
             <PartnerSection />
 
             <section id="tentang" className="bg-white w-full scroll-mt-24">
@@ -213,7 +177,7 @@ export default function KompasDesaPage() {
             <Footer />
           </div>
         </div>
-
+        <ScrollToTop />
         <ChatWidget />
       </PageLoader>
     </>

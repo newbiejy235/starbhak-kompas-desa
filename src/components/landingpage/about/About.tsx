@@ -39,8 +39,8 @@ export function About() {
         {/* ================= HEADER ================= */}
         <div className="mb-14 flex lg:mb-20 items-center justify-center">
           <div>
-            <h2 className="max-w-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] text-3xl sm:text-3xl md:text-3xl text-center">
-              Membangun akses, <span className="text-[#025246]">dan Membuka peluang.</span>
+            <h2 className="max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
+              Membangun akses <span className="text-[#025246]">dan Membuka peluang.</span>
 
             </h2>
           </div>
@@ -48,7 +48,6 @@ export function About() {
 
         {/* ================= MAIN CONTENT ================= */}
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-          {/* LEFT : IMAGE */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -75,10 +74,7 @@ export function About() {
               <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4 text-left">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/70">
-                    Dari Desa
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-white">
-                    Potensi lokal, peluang nasional.
+                    Sc: Kabupaten Wonogiri, Jawa Tengah
                   </p>
                 </div>
 
@@ -174,7 +170,7 @@ export function About() {
                   <strong className="font-bold text-[#025246]">
                     KompasDesa hadir untuk membuka akses pasar yang lebih luas
                   </strong>{" "}
-                  dengan mempertemukan petani, pembeli, dan jaringan distribusi
+                  dengan mempertemukan petani dan pembeli
                   melalui pemasaran yang lebih mudah, terarah, transparan, dan
                   efisien.
                 </p>
