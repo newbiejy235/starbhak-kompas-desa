@@ -1,25 +1,37 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import { useState, useEffect, useRef, useActionState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, User, EyeOff, Eye, Loader2 } from "lucide-react";
+import gsap from "gsap";
+import {
+  Compass,
+  Eye,
+  EyeOff,
+  Loader2,
+  ArrowLeft,
+  ArrowRight,
+  User,
+  Lock
+} from "lucide-react";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
-import FadeAnimation from "@/components/animation/Animation";
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  
   const [state, formAction, pending] = useActionState<LoginResult, FormData>(
     loginAction,
     initialState as LoginResult,
   );
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const compassRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (state.success && state.token && state.user && state.redirect) {
@@ -28,188 +40,260 @@ export default function Login() {
     }
   }, [state, router]);
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+      // Animasi Kurva Background
+      tl.from(".bg-curve", { 
+        scaleX: 0, 
+        transformOrigin: "left center", 
+        duration: 1.2 
+      })
+      // Animasi Header Kiri & Kanan
+      .from(".header-item", { 
+        opacity: 0, 
+        y: -20, 
+        stagger: 0.1, 
+        duration: 0.6 
+      }, "-=0.8")
+      // Animasi Teks Kiri
+      .from(".left-anim-item", {
+        opacity: 0,
+        x: -30,
+        stagger: 0.1,
+        duration: 0.8,
+      }, "-=0.6")
+      // Animasi Form Kanan
+      .from(".right-anim-item", {
+        opacity: 0,
+        y: 20,
+        stagger: 0.08,
+        duration: 0.7,
+      }, "-=0.7")
+      // Animasi Footer
+      .from(".footer-anim", {
+        opacity: 0,
+        y: 10,
+        duration: 0.5
+      }, "-=0.4");
+
+      // Animasi Spin Kompas Watermark
+      if (compassRef.current) {
+        gsap.to(compassRef.current, {
+          rotation: 360,
+          duration: 60,
+          repeat: -1,
+          ease: "linear",
+          transformOrigin: "center center",
+        });
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="h-[100dvh] w-full flex items-center justify-center bg-[#F8F8F8] p-2 sm:p-4 overflow-hidden">
+    <div ref={containerRef} className="min-h-screen w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col">
+      
+      {/* SHAPE BACKGROUND: Kurva Asimetris ala Referensi */}
+      <svg 
+        className="bg-curve absolute top-0 left-0 w-full lg:w-[58%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block" 
+        preserveAspectRatio="none" 
+        viewBox="0 0 100 100"
+      >
+        <defs>
+          <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#022c22" /> {/* emerald-950 */}
+            <stop offset="100%" stopColor="#064e3b" /> {/* emerald-900 */}
+          </linearGradient>
+        </defs>
+        {/* Path ini menciptakan bentuk kurva halus menyapu ke kanan seperti desain referensi */}
+        <path d="M0,0 L72,0 C90,35 88,75 58,100 L0,100 Z" fill="url(#emeraldGrad)" />
+      </svg>
 
-      {/* Kartu elevated dengan entrance fade-up halus (PRD 8.2 & 9.2) */}
-      <div className="w-full max-w-[1100px] h-full max-h-[95dvh] lg:max-h-[720px] bg-white rounded-[2rem] p-2 flex shadow-lift animate-fade-up">
-      <div className="hidden md:flex relative w-[45%] lg:w-1/2 h-full rounded-[1.5rem] overflow-hidden flex-col">
-          <Image
-            src="/images/login/serbser.jpg"
-            alt="Kompas Desa Background"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-0 flex flex-col justify-between p-8 text-white">
-
-            <div>
-              <FadeAnimation direction="right">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-[12px] lg:text-[13px] font-medium hover:text-gray-200 transition-colors"
-              >
-                <div className="border border-white rounded-full p-0.5">
-                  <ChevronLeft size={14} strokeWidth={2.5} />
-                </div>
-
-                Kembali ke halaman utama
-              </Link>
-              </FadeAnimation>
-            </div>
-
-            <div className="flex flex-col justify-center ml-15">
-              <h2 className="text-[1.1rem] lg:text-[1.3rem] font-bold tracking-wide mb-1">
-                Selamat Datang Kembali di
-              </h2>
-              <h1 className="text-[2.6rem] lg:text-[3.2rem] font-bold leading-none mb-3 lg:mb-4 tracking-tight">
-                Kompas<span className="text-[#FFD600]">{"'"}Desa</span>
-              </h1>
-              <p className="text-[12px] lg:text-[13px] leading-relaxed text-white/90">
-                Mewujudkan ekosistem pertanian digital yang<br />
-                menghubungkan petani dan pasar secara berkelanjutan.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <p className="text-[11px] lg:text-[12px] font-medium text-white/90">
-                Ikuti kami @kompasdesa.official
-              </p>
-            </div>
+      {/* HEADER NAV */}
+      <header className="relative z-20 w-full flex items-center justify-between px-6 py-6 lg:px-12 xl:px-16">
+        <div className="header-item flex items-center gap-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
+          >
+            <ArrowLeft size={16} />
+            Beranda
+          </Link>
+          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
+            <Compass size={24} className="text-[#E3A93B]" />
+            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
           </div>
         </div>
 
-        <div className="w-full md:w-[55%] lg:w-1/2 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-4">
-          <div className="flex flex-col h-full justify-center max-w-[420px] mx-auto w-full">
+        <div className="header-item flex items-center gap-4">
+          <span className="hidden md:block text-sm font-medium text-neutral-500">
+            Belum mendaftarkan akun?
+          </span>
+          <Link
+            href="/auth/register"
+            className="inline-flex items-center justify-center bg-white border border-neutral-200 text-neutral-800 text-sm font-bold px-6 py-2.5 rounded-full shadow-sm hover:border-emerald-600 hover:text-emerald-700 transition-all duration-200"
+          >
+            Daftar Sekarang
+          </Link>
+        </div>
+      </header>
 
-            <div className="flex flex-col items-center text-center mb-6 lg:mb-8">
-              <div className="bg-primary p-3 rounded-xl text-white mb-4 shadow-soft">
-                <User size={28} strokeWidth={2} />
-              </div>
-              <h2 className="text-[24px] lg:text-[28px] font-bold text-neutral-900 mb-1.5 lg:mb-2">
+      {/* MAIN CONTENT */}
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto">
+        
+        {/* LEFT PANEL - Teks & Kompas */}
+        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center px-6 lg:px-12 xl:px-16 py-12 lg:py-0 text-emerald-950 lg:text-white relative">
+          
+          {/* Watermark Kompas Besar */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5 lg:opacity-10 pointer-events-none mix-blend-overlay">
+            <Compass ref={compassRef} size={500} strokeWidth={0.5} />
+          </div>
+
+          <div className="relative z-10 w-full max-w-[480px]">
+            <div className="left-anim-item inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E3A93B]/10 lg:bg-[#E3A93B]/15 border border-[#E3A93B]/30 text-[#E3A93B] lg:text-[#FCD34D] text-[11px] font-bold tracking-[0.15em] uppercase mb-8 backdrop-blur-sm shadow-sm">
+              <Compass size={14} />
+              Kompas Desa Untuk Negeri
+            </div>
+
+            <h1 className="left-anim-item text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
+              Mulai <br />
+              Perjalanan <br />
+              <span className="text-emerald-600 lg:text-emerald-400">Digitalmu</span>
+            </h1>
+
+            <p className="left-anim-item text-base lg:text-lg text-emerald-800/80 lg:text-emerald-100/80 leading-relaxed font-medium">
+              Masuk untuk mengelola sistem ekosistem pertanian, memantau hasil panen, dan terhubung dengan pasar secara berkelanjutan.
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL - Form Login */}
+        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:px-16 xl:px-24 py-10 relative">
+          <div className="w-full max-w-[440px]">
+            <div className="right-anim-item mb-10 text-center lg:text-left">
+              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Masuk ke Akun
               </h2>
-              <p className="text-[12px] lg:text-[13px] text-gray-400">
-                Hubungkan hasil panen dengan kebutuhan pasar.
+              <p className="text-sm lg:text-base text-neutral-500 font-medium">
+                Akses panel kontrol dan dashboard Anda secara langsung.
               </p>
             </div>
 
-            <form action={formAction} className="flex flex-col gap-4 lg:gap-5">
+            <form action={formAction} className="flex flex-col gap-6">
               {state.message && (
                 <div
                   role="alert"
-                  // Notifikasi hasil login slide-down; shake jika gagal (PRD 8.2)
-                  className={`text-center text-[12px] lg:text-[13px] font-medium rounded-xl px-4 py-2.5 ${
+                  className={`right-anim-item text-center text-[13px] font-semibold rounded-xl px-4 py-3 border ${
                     state.success
-                      ? "bg-green-50 text-green-700 animate-slide-down"
-                      : "bg-red-50 text-red-600 animate-shake"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-red-50 text-red-600 border-red-200"
                   }`}
                 >
                   {state.message}
                 </div>
               )}
 
-              <div className="flex flex-col">
-                <label htmlFor="email" className="text-[12px] lg:text-[13px] font-semibold text-[#4B5563] mb-1.5 lg:mb-2">
-                  Email
+              {/* Input Email */}
+              <div className="right-anim-item flex flex-col gap-2">
+                <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
+                  Email Resmi
                 </label>
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  // Focus glow border primary 200ms (PRD 9.2)
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 text-sm text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-gray-400 focus:border-primary focus:ring-4 focus:ring-primary/15"
-                  required
-                />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <User size={18} strokeWidth={2.5} />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@kompasdesa.id"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-4 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col">
-                <label htmlFor="password" className="text-[12px] lg:text-[13px] font-semibold text-[#4B5563] mb-1.5 lg:mb-2">
+              {/* Input Password */}
+              <div className="right-anim-item flex flex-col gap-2">
+                <label htmlFor="password" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Kata Sandi
                 </label>
-                <div className="relative">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Lock size={18} strokeWidth={2.5} />
+                  </div>
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 lg:py-3 pr-12 text-sm text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-gray-400 focus:border-primary focus:ring-4 focus:ring-primary/15"
+                    placeholder="Masukkan kata sandi akun"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-4 pl-12 pr-12 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors active:scale-90 transition-transform"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors focus:outline-none"
                   >
-                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    {showPassword ? <Eye size={18} strokeWidth={2.5} /> : <EyeOff size={18} strokeWidth={2.5} />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-1">
-                <label className="flex items-center gap-2 cursor-pointer">
+              {/* Action Bawah Form */}
+              <div className="right-anim-item flex items-center justify-between pt-1">
+                <label className="flex cursor-pointer items-center gap-2.5 group">
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 rounded-sm border-gray-300 text-primary focus:ring-primary"
+                    className="h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-600 transition-colors cursor-pointer"
                   />
-                  <span className="text-[12px] lg:text-[13px] text-gray-500">
-                    Ingat Saya
-                  </span>
+                  <span className="text-[13px] font-semibold text-neutral-500 group-hover:text-neutral-700 transition-colors">Ingat Saya</span>
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-[12px] lg:text-[13px] font-medium text-primary hover:underline"
+                  className="text-[13px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition-all"
                 >
                   Lupa kata sandi?
                 </Link>
               </div>
 
-              <button
-                type="submit"
-                disabled={pending}
-                // Micro-interaction press + loading spinner halus (PRD 8.2 & 9.2)
-                className="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold text-[13px] lg:text-[14px] rounded-xl py-3 lg:py-3.5 mt-2 shadow-soft transition-all duration-150 ease-smooth hover:scale-[1.02] active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none"
-              >
-                {pending && <Loader2 size={16} className="animate-spin" aria-hidden />}
-                {pending ? "Memproses..." : "Masuk"}
-              </button>
+              {/* Tombol Utama */}
+              <div className="right-anim-item mt-4">
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FFB800] px-4 py-4 text-[15px] font-extrabold text-neutral-900 shadow-md shadow-amber-500/20 transition-all duration-200 ease-out hover:bg-[#F5B000] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+                >
+                  {pending ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      <span>Memproses...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Masuk</span>
+                      <ArrowRight size={18} strokeWidth={2.5} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
-
-            <p className="text-center text-[12px] lg:text-[13px] text-[#2D2D2D] mt-5 lg:mt-6">
-              Belum punya akun?{" "}
-              <Link
-                href="/auth/register"
-                className="text-primary font-medium hover:underline"
-              >
-                Daftar
-              </Link>
-            </p>
-
-            <div className="text-center text-[10px] lg:text-[11px] text-gray-500 mt-10 lg:mt-auto">
-              Dengan masuk, Anda menyetujui<br />
-              <Link
-                href="#"
-                className="text-primary font-medium underline decoration-gray-400 decoration-dotted underline-offset-4 hover:decoration-primary transition-colors"
-              >
-                Syarat & Ketentuan
-              </Link>
-              {" "}dan{" "}
-              <Link
-                href="#"
-                className="text-primary font-medium underline decoration-gray-400 decoration-dotted underline-offset-4 hover:decoration-primary transition-colors"
-              >
-                Kebijakan Privasi Kompas{"'"}Desa
-              </Link>
-            </div>
-
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="footer-anim relative z-10 w-full text-center py-6 text-[12px] font-medium text-neutral-400">
+        &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
+      </footer>
     </div>
   );
 }

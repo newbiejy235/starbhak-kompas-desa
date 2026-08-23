@@ -11,7 +11,7 @@ interface DotPatternProps {
 }
 
 export default function DotPattern({
-  size = 1,
+  size = 1.8,
   color = "rgba(1, 90, 77, 0.8)",
   spacing = 20,
   fade = true,

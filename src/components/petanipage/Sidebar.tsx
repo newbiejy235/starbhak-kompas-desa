@@ -10,92 +10,6 @@ import {
   CircleUser,
   MessageCircle,
 } from "lucide-react";
-<<<<<<< HEAD
-import { clearSession, getClientUser } from "@/lib/auth/client";
-import { getUnreadNotificationCount } from "@/actions/notification";
-import { useFetch } from "@/lib/hooks";
-
-export default function PetaniSidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const user = getClientUser();
-
-  const { data: unreadCount } = useFetch(
-    () => (user ? getUnreadNotificationCount(user.id) : Promise.resolve(0)),
-    [user?.id, pathname],
-  );
-  const unread = Number(unreadCount ?? 0);
-
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/petani/dashboard" },
-    { id: "chat", label: "Pesan", icon: MessageCircle, href: "/petani/chat" },
-    { id: "add", label: "Tambah Komoditas", icon: PackagePlus, href: "/petani/commodities/add" },
-    { id: "orders", label: "Pesanan Masuk", icon: ShoppingBag, href: "/petani/orders" },
-    { id: "sales", label: "Riwayat Penjualan", icon: History, href: "/petani/sales" },
-    { id: "reviews", label: "Ulasan", icon: Star, href: "/petani/reviews" },
-    { id: "notifications", label: "Notifikasi", icon: Bell, href: "/petani/notifications" },
-    { id: "profile", label: "Profil", icon: CircleUser, href: "/petani/profile" },
-  ];
-
-  const logout = () => {
-    clearSession();
-    router.replace("/auth/login");
-  };
-
-  const content = (
-    <>
-      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-        <Link href="/petani/dashboard" className="text-xl font-bold text-[#025246]">
-          Kompas Desa
-        </Link>
-        <button onClick={() => setIsOpen(false)} className="lg:hidden text-gray-500">
-          <X size={20} />
-        </button>
-      </div>
-      <div className="px-6 py-4 border-b border-gray-100 bg-[#025246]/5">
-        <p className="text-sm font-bold text-gray-800">{user?.fullName}</p>
-        <p className="text-xs text-gray-500">Akun Petani</p>
-      </div>
-      <nav className="p-4 flex flex-col gap-2 flex-grow">
-        {menuItems.map((item) => {
-          const active =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                active
-                  ? "bg-[#025246] text-white"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-[#025246]"
-              }`}
-            >
-              <item.icon size={20} />
-              {item.label}
-              {item.id === "notifications" && unread > 0 && (
-                <span className="ml-auto min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full">
-                  {unread > 99 ? "99+" : unread}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full transition-colors"
-        >
-          <LogOut size={20} />
-          Keluar
-        </button>
-      </div>
-    </>
-  );
-
-=======
 import DashboardSidebar, { type SidebarItem } from "@/components/shared/DashboardSidebar";
 
 const menuItems: SidebarItem[] = [
@@ -110,7 +24,6 @@ const menuItems: SidebarItem[] = [
 ];
 
 export default function PetaniSidebar() {
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
   return (
     <DashboardSidebar
       menuItems={menuItems}
