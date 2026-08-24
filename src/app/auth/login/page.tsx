@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import {
-  Compass,
   Eye,
   EyeOff,
   Loader2,
   ArrowLeft,
-  ArrowRight,
   User,
   Lock
 } from "lucide-react";
@@ -18,6 +16,7 @@ import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
+import Image from "next/image";
 
 export default function Login() {
   const router = useRouter();
@@ -31,7 +30,7 @@ export default function Login() {
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const compassRef = useRef<SVGSVGElement>(null);
+  const floatingElementsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (state.success && state.token && state.user && state.redirect) {
@@ -42,50 +41,52 @@ export default function Login() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // 1. Initial Load Timeline
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      // Animasi Kurva Background
       tl.from(".bg-curve", { 
         scaleX: 0, 
         transformOrigin: "left center", 
         duration: 1.2 
       })
-      // Animasi Header Kiri & Kanan
       .from(".header-item", { 
         opacity: 0, 
         y: -20, 
         stagger: 0.1, 
         duration: 0.6 
       }, "-=0.8")
-      // Animasi Teks Kiri
       .from(".left-anim-item", {
         opacity: 0,
         x: -30,
         stagger: 0.1,
         duration: 0.8,
       }, "-=0.6")
-      // Animasi Form Kanan
       .from(".right-anim-item", {
         opacity: 0,
         y: 20,
         stagger: 0.08,
         duration: 0.7,
       }, "-=0.7")
-      // Animasi Footer
       .from(".footer-anim", {
         opacity: 0,
         y: 10,
         duration: 0.5
       }, "-=0.4");
 
-      // Animasi Spin Kompas Watermark
-      if (compassRef.current) {
-        gsap.to(compassRef.current, {
-          rotation: 360,
-          duration: 60,
-          repeat: -1,
-          ease: "linear",
-          transformOrigin: "center center",
+      // 2. Ambient Floating Elements Animation (Hanya jalan di desktop)
+      const circles = floatingElementsRef.current?.children;
+      if (circles) {
+        Array.from(circles).forEach((circle, i) => {
+          gsap.to(circle, {
+            y: "random(-30, 30)",
+            x: "random(-20, 20)",
+            rotation: "random(-15, 15)",
+            duration: "random(3, 6)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.4,
+          });
         });
       }
     }, containerRef);
@@ -96,7 +97,7 @@ export default function Login() {
   return (
     <div ref={containerRef} className="min-h-screen w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col">
       
-      {/* SHAPE BACKGROUND: Kurva Asimetris ala Referensi */}
+      {/* SHAPE BACKGROUND: Kurva Asimetris (Hanya muncul di Desktop) */}
       <svg 
         className="bg-curve absolute top-0 left-0 w-full lg:w-[58%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block" 
         preserveAspectRatio="none" 
@@ -104,13 +105,19 @@ export default function Login() {
       >
         <defs>
           <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#022c22" /> {/* emerald-950 */}
-            <stop offset="100%" stopColor="#064e3b" /> {/* emerald-900 */}
+            <stop offset="0%" stopColor="#022c22" />
+            <stop offset="100%" stopColor="#064e3b" />
           </linearGradient>
         </defs>
-        {/* Path ini menciptakan bentuk kurva halus menyapu ke kanan seperti desain referensi */}
         <path d="M0,0 L72,0 C90,35 88,75 58,100 L0,100 Z" fill="url(#emeraldGrad)" />
       </svg>
+
+      {/* AMBIENT FLOATING ORBS (Hanya muncul di Desktop) */}
+      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
+        <div className="absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
+        <div className="absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+      </div>
 
       {/* HEADER NAV */}
       <header className="relative z-20 w-full flex items-center justify-between px-6 py-6 lg:px-12 xl:px-16">
@@ -123,7 +130,7 @@ export default function Login() {
             Beranda
           </Link>
           <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
-            <Compass size={24} className="text-[#E3A93B]" />
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
             <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
           </div>
         </div>
@@ -144,36 +151,25 @@ export default function Login() {
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto">
         
-        {/* LEFT PANEL - Teks & Kompas */}
-        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center px-6 lg:px-12 xl:px-16 py-12 lg:py-0 text-emerald-950 lg:text-white relative">
-          
-          {/* Watermark Kompas Besar */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5 lg:opacity-10 pointer-events-none mix-blend-overlay">
-            <Compass ref={compassRef} size={500} strokeWidth={0.5} />
-          </div>
-
+        {/* LEFT PANEL - (HIDDEN DI HP, HANYA MUNCUL DI DESKTOP) */}
+        <div className="hidden lg:flex lg:w-[50%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 py-12 lg:py-0 text-white relative">
           <div className="relative z-10 w-full max-w-[480px]">
-            <div className="left-anim-item inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#E3A93B]/10 lg:bg-[#E3A93B]/15 border border-[#E3A93B]/30 text-[#E3A93B] lg:text-[#FCD34D] text-[11px] font-bold tracking-[0.15em] uppercase mb-8 backdrop-blur-sm shadow-sm">
-              <Compass size={14} />
-              Kompas Desa Untuk Negeri
-            </div>
-
             <h1 className="left-anim-item text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
               Mulai <br />
               Perjalanan <br />
-              <span className="text-emerald-600 lg:text-emerald-400">Digitalmu</span>
+              <span className="text-emerald-400">Digitalmu</span>
             </h1>
 
-            <p className="left-anim-item text-base lg:text-lg text-emerald-800/80 lg:text-emerald-100/80 leading-relaxed font-medium">
+            <p className="left-anim-item text-base lg:text-lg text-emerald-100/80 leading-relaxed font-medium">
               Masuk untuk mengelola sistem ekosistem pertanian, memantau hasil panen, dan terhubung dengan pasar secara berkelanjutan.
             </p>
           </div>
         </div>
 
-        {/* RIGHT PANEL - Form Login */}
+        {/* RIGHT PANEL - Form Login (FULL WIDTH DI HP, 50% DI DESKTOP) */}
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:px-16 xl:px-24 py-10 relative">
           <div className="w-full max-w-[440px]">
-            <div className="right-anim-item mb-10 text-center lg:text-left">
+            <div className="right-anim-item mb-8 text-center lg:text-left">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Masuk ke Akun
               </h2>
@@ -182,7 +178,7 @@ export default function Login() {
               </p>
             </div>
 
-            <form action={formAction} className="flex flex-col gap-6">
+            <form action={formAction} className="flex flex-col gap-5">
               {state.message && (
                 <div
                   role="alert"
@@ -266,11 +262,11 @@ export default function Login() {
               </div>
 
               {/* Tombol Utama */}
-              <div className="right-anim-item mt-4">
+              <div className="right-anim-item mt-2">
                 <button
                   type="submit"
                   disabled={pending}
-                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FFB800] px-4 py-4 text-[15px] font-extrabold text-neutral-900 shadow-md shadow-amber-500/20 transition-all duration-200 ease-out hover:bg-[#F5B000] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-4 text-[15px] font-extrabold text-white shadow-md transition-all duration-200 ease-out hover:bg-[#04382f] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                 >
                   {pending ? (
                     <>
@@ -280,7 +276,6 @@ export default function Login() {
                   ) : (
                     <>
                       <span>Masuk</span>
-                      <ArrowRight size={18} strokeWidth={2.5} className="transition-transform duration-300 group-hover:translate-x-1" />
                     </>
                   )}
                 </button>
