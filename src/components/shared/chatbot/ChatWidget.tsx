@@ -61,11 +61,10 @@ const MessageBubble = memo(function MessageBubble({ msg }: { msg: ChatMessage })
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[80%] px-3 py-2 text-[13px] leading-relaxed break-words whitespace-pre-wrap ${
-          isMe
-            ? "bg-primary text-white rounded-2xl rounded-br-sm"
-            : "bg-gray-100 text-gray-800 rounded-2xl rounded-bl-sm"
-        }`}
+        className={`max-w-[80%] px-3 py-2 text-[13px] leading-relaxed break-words whitespace-pre-wrap ${isMe
+          ? "bg-primary text-white rounded-2xl rounded-br-sm"
+          : "bg-gray-100 text-gray-800 rounded-2xl rounded-bl-sm"
+          }`}
       >
         {msg.content}
       </div>
@@ -101,7 +100,6 @@ export default function ChatWidget() {
   const sessionRef = useRef<number | null>(null);
   const initPromiseRef = useRef<Promise<void> | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -223,8 +221,8 @@ export default function ChatWidget() {
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-primary" />
             </span>
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="text-[13px] font-bold truncate">Asisten KompasDesa</p>
-              <p className="text-[10px] text-white/70">Biasanya langsung membalas</p>
+              <p className="text-[13px] font-bold truncate">Aleksan</p>
+              <p className="text-[10px] text-white/70">Tanya langsung dengan Aleksan</p>
             </div>
             <button
               type="button"
@@ -321,7 +319,6 @@ export default function ChatWidget() {
             className="shrink-0 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-2.5"
           >
             <input
-              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}

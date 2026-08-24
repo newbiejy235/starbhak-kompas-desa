@@ -134,6 +134,22 @@ body {
   color: #ffffff;
 }
 
+/* Tipografi landing page — memakai font self-hosted dari next/font (layout.tsx).
+   Satu-satunya sumber definisi .font-display / .font-body agar tidak ada
+   duplikasi pemuatan Google Fonts. */
+.font-display {
+  font-family: var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+}
+.font-body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Focus state konsisten khusus halaman landing (hanya tampil saat keyboard nav) */
+.landing-page :focus-visible {
+  outline: 2px solid #025246;
+  outline-offset: 2px;
+}
+
 /* Skeleton shimmer overlay — geser via transform agar tetap ringan */
 .skeleton {
   position: relative;

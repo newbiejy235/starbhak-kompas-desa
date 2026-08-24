@@ -38,6 +38,11 @@ export function KomoditasMarquee() {
 
   useGSAP(
     () => {
+      // Hormati prefers-reduced-motion: tampilkan konten statis tanpa animasi
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+      }
+
       // 1. Entrance Animation
       gsap.from(containerRef.current, {
         y: 30,
@@ -138,7 +143,7 @@ export function KomoditasMarquee() {
       {/* Header */}
       <div className="mx-auto mb-14 max-w-7xl px-6 sm:mb-16 lg:mb-20 lg:px-8">
         <div className="flex flex-col items-center text-center">
-          <h2 className="=max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
+          <h2 className="max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
             Beragam komoditas,
             <br />
             <span className="text-[#025246]">satu akses menuju pasar.</span>
@@ -171,19 +176,20 @@ export function KomoditasMarquee() {
       </div>
 
       {/* Footer / CTA */}
-      <Link href="/auth/login">
-        <div className="group mt-16 flex items-center justify-center gap-4 sm:mt-20">
-          <p className="underline decoration-[#025246]/40 decoration-dotted underline-offset-8 transition-colors duration-300 group-hover:text-[#025246] group-hover:decoration-[#025246] font-medium text-slate-600">
-            Cari Komoditas
-          </p>
+      <Link
+        href="/auth/login"
+        className="group mt-16 flex items-center justify-center gap-4 sm:mt-20"
+      >
+        <p className="underline decoration-[#025246]/40 decoration-dotted underline-offset-8 transition-colors duration-300 group-hover:text-[#025246] group-hover:decoration-[#025246] font-medium text-slate-600">
+          Cari Komoditas
+        </p>
 
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E7F0ED] transition-all duration-500 ease-out group-hover:scale-110 group-hover:bg-[#025246]">
-            <ArrowRight
-              className="h-3.5 w-3.5 text-[#025246] transition-transform duration-500 ease-out group-hover:translate-x-0.5 group-hover:text-white"
-              strokeWidth={2.5}
-            />
-          </span>
-        </div>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E7F0ED] transition-all duration-500 ease-out group-hover:scale-110 group-hover:bg-[#025246]">
+          <ArrowRight
+            className="h-3.5 w-3.5 text-[#025246] transition-transform duration-500 ease-out group-hover:translate-x-0.5 group-hover:text-white"
+            strokeWidth={2.5}
+          />
+        </span>
       </Link>
     </section>
   );

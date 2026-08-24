@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Check, Sprout, Store, ArrowRight, ChevronDown } from 'lucide-react'
 
 const petaniBenefits = [
@@ -89,12 +90,6 @@ function BenefitList({ benefits, initialCount = 4, iconBg }: BenefitListProps) {
 export default function CardMembership() {
   return (
     <section className="relative w-full overflow-hidden bg-[#FAFAF9] px-4 py-20 sm:px-6 lg:py-28">
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; }
-        .font-body { font-family: 'Inter', ui-sans-serif, sans-serif; }
-      `}</style>
-
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -147,13 +142,13 @@ export default function CardMembership() {
 
             <BenefitList benefits={petaniBenefits} iconBg="bg-[#E4F1EB]" />
 
-            <a
+            <Link
               href="/auth/register/petani"
               className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#025246] px-6 py-4 font-body text-[15px] font-semibold text-white transition-all duration-300 hover:bg-[#013e35] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#025246] focus-visible:ring-offset-2"
             >
               Daftar sebagai Petani
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
+            </Link>
           </div>
 
           <div className="relative hidden w-16 flex-col items-center justify-center lg:flex">
@@ -193,13 +188,13 @@ export default function CardMembership() {
 
             <BenefitList benefits={pelangganBenefits} iconBg="bg-[#E4F1EB]/70" />
 
-            <a
+            <Link
               href="/auth/register/user"
               className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[#025246] bg-transparent px-6 py-4 font-body text-[15px] font-semibold text-[#025246] transition-all duration-300 hover:bg-[#025246] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#025246] focus-visible:ring-offset-2"
             >
               Daftar sebagai Pelanggan
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

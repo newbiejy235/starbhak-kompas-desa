@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
 interface AnimatedHeadingProps {
   text?: string;
@@ -12,6 +12,7 @@ export default function AnimatedHeading({
   className = "",
 }: AnimatedHeadingProps) {
   const words = text.split(" ");
+  const prefersReducedMotion = useReducedMotion();
 
   const containerVariants: Variants = {
     hidden: {
@@ -44,6 +45,16 @@ export default function AnimatedHeading({
       },
     },
   };
+
+  if (prefersReducedMotion) {
+    return (
+      <h1
+        className={`tracking-tight mb-3 font-bold leading-tight max-w-3xl w-full mx-auto text-center ${className}`}
+      >
+        {text}
+      </h1>
+    );
+  }
 
   return (
     <motion.h1

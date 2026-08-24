@@ -46,12 +46,6 @@ const socialIcons = [
 export default function Footer() {
   return (
     <footer className="relative z-30 bg-white text-[#14231F]">
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700&family=Inter:wght@400;500;600&display=swap');
-        .font-display { font-family: 'Plus Jakarta Sans', ui-sans-serif, sans-serif; }
-        .font-body { font-family: 'Inter', ui-sans-serif, sans-serif; }
-      `}</style>
-
       <div className="mx-auto max-w-7xl px-6 pb-6 pt-16 lg:px-8 lg:pb-6 lg:pt-20">
         {/* ================= Bagian Atas ================= */}
         <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-8">

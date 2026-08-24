@@ -84,7 +84,7 @@ function FaqIllustration() {
 
 function CTABox({ className = "" }: { className?: string }) {
   return (
-    <div className={`rounded-3xl bg-gradient-to-br p-7 sm:p-8 shadow-sm ${className}`}>
+    <div className={`rounded-3xl bg-gradient-to-br from-[#EAF4F0] to-white p-7 sm:p-8 shadow-sm ${className}`}>
       <div className="flex flex-col items-start gap-6">
         <div>
           <div className="flex items-center gap-3 mb-3">
@@ -100,7 +100,7 @@ function CTABox({ className = "" }: { className?: string }) {
           </p>
         </div>
         <a
-          href="#"
+          href="/kompas-desa/contact"
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#025246] px-5 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#013e35] hover:shadow-md hover:-translate-y-1"
         >
           Hubungi Kami
@@ -128,7 +128,7 @@ export function FAQSection() {
 
           <div>
             <div className="mb-8 sm:mb-10">
-              <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#1f1f1f]">
+              <h2 className="text-[30px] sm:text-[34px] md:text-[38px] font-bold leading-tight tracking-tight text-[#1f1f1f]">
                 Pertanyaan Sering Ditanyakan
               </h2>
               <p className="mt-3 text-sm sm:text-base text-[#75938f] leading-relaxed max-w-xl">
@@ -148,6 +148,7 @@ export function FAQSection() {
                     <button
                       onClick={() => toggleFaq(index)}
                       aria-expanded={isOpen}
+                      aria-controls={`faq-panel-${index}`}
                       className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left cursor-pointer select-none"
                     >
                       <span
@@ -167,6 +168,8 @@ export function FAQSection() {
                     </button>
 
                     <div
+                      id={`faq-panel-${index}`}
+                      role="region"
                       className={`grid transition-all duration-300 ease-in-out ${isOpen
                         ? 'grid-rows-[1fr] opacity-100'
                         : 'grid-rows-[0fr] opacity-0'
