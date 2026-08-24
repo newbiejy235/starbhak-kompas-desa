@@ -45,11 +45,11 @@ export default function Counter({ end, duration, suffix = "" }: CounterProps) {
     }
 
     let startTime: number | null = null
+    const animationDuration = duration ?? 2000
 
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime
-      if (!duration) duration = 2000
-      const progress = Math.min((currentTime - startTime) / duration, 1)
+      const progress = Math.min((currentTime - startTime) / animationDuration, 1)
 
       const easeProgress = 1 - Math.pow(1 - progress, 3)
 

@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { ShieldCheck, Eye, BadgeCheck, KeyRound } from 'lucide-react'
 
 export function KeamananSec() {
@@ -35,7 +34,8 @@ export function KeamananSec() {
     <section className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
       {/* Background Radial Glow */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full pointer-events-none -z-10"
+        aria-hidden="true"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full pointer-events-none"
         style={{ background: "radial-gradient(closest-side, rgba(16,185,129,0.16), transparent)" }}
       />
 

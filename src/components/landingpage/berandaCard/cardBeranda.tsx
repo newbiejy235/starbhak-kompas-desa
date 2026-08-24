@@ -62,12 +62,15 @@ export default function BentoGridStats() {
           </p>
 
           <div className="mt-6 flex items-center gap-3">
-            <button className="inline-flex h-[44px] items-center justify-center rounded-xl bg-[#025246] px-5 font-body text-[14px] font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#013E35] hover:shadow-md">
+            <Link
+              href="/auth/register"
+              className="inline-flex h-[44px] items-center justify-center rounded-xl bg-[#025246] px-5 font-body text-[14px] font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#013E35] hover:shadow-md"
+            >
               Daftar
-            </button>
+            </Link>
 
             <Link
-              href="../kompas-desa/Komoditas"
+              href="#komoditaslist"
               className="inline-flex h-[44px] items-center justify-center rounded-xl border border-[#E3EAE7] bg-white px-5 font-body text-[14px] font-semibold text-[#025246] shadow-sm transition-all duration-300 hover:border-[#025246]/25 hover:bg-[#F5FAF8]"
             >
               Cari Komoditas
@@ -115,11 +118,11 @@ export default function BentoGridStats() {
           >
             <Image
               src="/images/landingpage/beranda/kementan.webp"
-              alt="Terverifikasi Kementan"
+              alt="Hasil panen pertanian — kemitraan resmi terverifikasi Kementerian Pertanian RI"
               fill
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              preload
             />
 
             {/* subtle overlay */}
@@ -138,11 +141,8 @@ export default function BentoGridStats() {
                 Terverifikasi Kementan RI
               </span>
 
-              <a
-                href=""
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Kunjungi situs Kementan RI"
+              <span
+                aria-hidden="true"
                 className="
                   flex
                   h-8
@@ -163,7 +163,7 @@ export default function BentoGridStats() {
                   className="h-4 w-4"
                   strokeWidth={2.2}
                 />
-              </a>
+              </span>
             </div>
           </motion.div>
 
@@ -285,10 +285,10 @@ export default function BentoGridStats() {
           >
             <Image
               src="/images/landingpage/beranda/petani.webp"
-              alt="Aktivitas Petani"
+              alt="Petani lokal sedang bekerja di lahan pertanian"
               fill
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              sizes="(max-width: 768px) 100vw, 25vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

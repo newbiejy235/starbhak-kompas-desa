@@ -9,7 +9,7 @@ const statistics = [
   {
     value: <Counter end={28} duration={3000} />,
     suffix: "juta+",
-    label: "Rumah tangga usahaㅤ pertanian",
+    label: "Rumah tangga usaha pertanian",
     source: "BPS · 2024",
   },
   {
@@ -61,9 +61,10 @@ export function About() {
             <div className="relative overflow-hidden rounded-[2rem] bg-[#DDE8E4]">
               <Image
                 src="/images/landingpage/about/tanamanpetani.webp"
-                alt="Petani dan hasil pertanian"
+                alt="Petani merawat tanaman di lahan pertanian"
                 width={1200}
                 height={1400}
+                sizes="(max-width: 1024px) 100vw, 40vw"
                 className="aspect-[4/5] h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
               />
 

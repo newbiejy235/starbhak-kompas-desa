@@ -9,15 +9,26 @@ export default function ScrollToTop() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const currentScroll = window.scrollY;
+    let ticking = false;
 
-      setIsVisible(currentScroll > 280);
-      if (totalHeight > 0) {
-        const percentage = Math.min(Math.max((currentScroll / totalHeight) * 100, 0), 100);
-        setProgress(percentage);
-      }
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const totalHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        const currentScroll = window.scrollY;
+
+        setIsVisible(currentScroll > 280);
+        if (totalHeight > 0) {
+          const percentage = Math.min(
+            Math.max((currentScroll / totalHeight) * 100, 0),
+            100
+          );
+          setProgress(percentage);
+        }
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
