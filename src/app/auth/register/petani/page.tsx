@@ -7,7 +7,6 @@ import gsap from "gsap";
 import {
   Compass,
   ArrowLeft,
-  ArrowRight,
   User,
   UserCircle,
   Phone,
@@ -349,11 +348,6 @@ export default function RegisterPetani() {
                   className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 xl:py-3 text-xs xl:text-sm font-extrabold text-white shadow-md shadow-emerald-500/25 transition-all duration-200 ease-out hover:bg-emerald-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]"
                 >
                   <span>Lanjutkan ke Tahap 2</span>
-                  <ArrowRight
-                    size={15}
-                    strokeWidth={2.5}
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  />
                 </button>
               </div>
             </form>
