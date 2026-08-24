@@ -233,13 +233,12 @@ export default function Login() {
           <div className="relative z-10 w-full max-w-[380px]">
             {/* Teks kiri dikecilin biar lebih rapi & proporsional */}
             <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Mulai <br />
-              Perjalanan <br />
-              <span className="text-emerald-400">Digitalmu</span>
+              Login untuk <br />
+              <span className="text-emerald-400">Mengakses Sistem</span>
             </h1>
 
             <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Masuk untuk mengelola ekosistem pertanian, memantau hasil panen, dan terhubung dengan pasar secara berkelanjutan.
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas'Desa.
             </p>
           </div>
         </div>
@@ -251,9 +250,9 @@ export default function Login() {
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Masuk ke Akun
               </h2>
-              <p className="text-sm lg:text-base text-neutral-500 font-medium">
+              {/* <p className="text-sm lg:text-base text-neutral-500 font-medium">
                 Akses panel kontrol dan dashboard Anda secara langsung.
-              </p>
+              </p> */}
             </div>
 
             <form action={formAction} className="flex flex-col gap-4">
@@ -273,7 +272,7 @@ export default function Login() {
               {/* Input Email */}
               <div className="right-anim-item flex flex-col gap-1.5">
                 <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
-                  Email Resmi
+                  Email
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
@@ -353,7 +352,7 @@ export default function Login() {
                     </>
                   ) : (
                     <>
-                      <span>Masuk ke Dasbor</span>
+                      <span>Masuk</span>
                     </>
                   )}
                 </button>
