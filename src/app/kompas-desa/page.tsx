@@ -149,7 +149,7 @@ export default function KompasDesaPage() {
             </section>
 
             <section
-              id="testimonial"
+              id="testimoni"
               className="bg-white w-full scroll-mt-24"
             >
               <ScrollReveal>
@@ -167,7 +167,7 @@ export default function KompasDesaPage() {
             </section>
           </main>
 
-          <div id="footer" className="relative z-20 w-full">
+          <div id="kontak" className="relative z-20 w-full">
             <Footer />
           </div>
         </div>

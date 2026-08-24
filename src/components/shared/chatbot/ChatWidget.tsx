@@ -75,7 +75,7 @@ const MessageBubble = memo(function MessageBubble({ msg }: { msg: ChatMessage })
 function TypingDots() {
   return (
     <div className="flex justify-start" aria-label="Asisten sedang mengetik">
-      <div className="flex items-center gap-1 bg-gray-100 rounded-2xl rounded-bl-sm px-3 py-2.5">
+      <div className="flex items-center gap-1 bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3">
         {[0, 150, 300].map((delay) => (
           <span
             key={delay}
@@ -207,18 +207,20 @@ export default function ChatWidget() {
   );
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col items-end gap-3">
       {open && (
         <section
           role="dialog"
           aria-label="Chat Asisten KompasDesa"
-          className="flex flex-col w-[min(380px,calc(100vw-2rem))] h-[min(560px,100dvh-7rem)] bg-white rounded-2xl shadow-lift border border-gray-200 overflow-hidden animate-scale-in origin-bottom-right"
+          // FIX: Tinggi maksimum diatur menggunakan dVh dengan jarak aman -170px (Mobile) & -190px (Desktop) 
+          // Biar nggak akan pernah menyentuh atau numpuk sama Navbar di bagian atas layar.
+          className="flex flex-col w-[calc(100vw-2rem)] sm:w-[380px] h-[550px] max-h-[calc(100dvh-170px)] sm:max-h-[calc(100dvh-190px)] bg-white rounded-2xl shadow-2xl border border-neutral-200 overflow-hidden origin-bottom-right"
         >
-          {/* Header compact */}
-          <header className="flex items-center gap-2.5 px-3.5 py-2.5 bg-primary text-white shrink-0">
-            <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
-              <Bot size={16} />
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-primary" />
+          {/* Header */}
+          <header className="flex items-center gap-3 px-4 py-3.5 bg-primary text-white shrink-0 shadow-sm z-10">
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20">
+              <Bot size={18} />
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-primary" />
             </span>
             <div className="min-w-0 flex-1 leading-tight">
               <p className="text-[13px] font-bold truncate">Aleksan</p>
@@ -228,22 +230,22 @@ export default function ChatWidget() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Tutup chat"
-              className="rounded-lg p-1.5 hover:bg-white/10 active:bg-white/20 transition-colors"
+              className="rounded-xl p-1.5 hover:bg-white/15 active:bg-white/25 transition-colors"
             >
-              <X size={16} />
+              <X size={18} />
             </button>
           </header>
 
           {/* Messages */}
           <div
             ref={listRef}
-            className="flex-1 overflow-y-auto overscroll-contain px-3 py-3 space-y-2 bg-[#F6F6F6]"
+            className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 bg-[#F8F9FA]"
           >
             {initializing ? (
               <TypingDots />
             ) : error && messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-3 text-center px-4">
-                <Bot size={32} className="text-gray-300" />
+                <Bot size={36} className="text-gray-300" />
                 <p className="text-xs text-gray-500">{error}</p>
                 <button
                   type="button"
@@ -259,8 +261,8 @@ export default function ChatWidget() {
               </div>
             ) : messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-center px-4">
-                <Bot size={32} className="text-gray-300" />
-                <p className="text-sm font-semibold text-gray-600">Mulai percakapan</p>
+                <Bot size={36} className="text-gray-300" />
+                <p className="text-sm font-semibold text-gray-700">Mulai percakapan</p>
                 <p className="text-xs text-gray-400">
                   Tanya apa saja seputar produk, pengiriman, atau nego harga.
                 </p>
@@ -279,14 +281,14 @@ export default function ChatWidget() {
           {error && messages.length > 0 && (
             <div
               role="alert"
-              className="shrink-0 flex items-center justify-between gap-2 bg-red-50 text-red-600 text-[11px] font-medium px-3 py-1.5 animate-fade-in-fast"
+              className="shrink-0 flex items-center justify-between gap-2 bg-red-50 text-red-600 text-[11px] font-medium px-4 py-2 border-t border-red-100"
             >
               <span className="truncate">{error}</span>
               <button
                 type="button"
                 onClick={() => setError(null)}
                 aria-label="Tutup pesan error"
-                className="shrink-0 rounded p-0.5 hover:bg-red-100 transition-colors"
+                className="shrink-0 rounded p-1 hover:bg-red-100 transition-colors"
               >
                 <X size={12} />
               </button>
@@ -295,14 +297,14 @@ export default function ChatWidget() {
 
           {/* Quick replies */}
           {!sending && quickReplies.length > 0 && (
-            <div className="shrink-0 flex gap-1.5 overflow-x-auto px-3 pt-2 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="shrink-0 flex gap-2 overflow-x-auto px-4 pt-3 pb-2 bg-white border-t border-gray-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {quickReplies.map((qr) => (
                 <button
                   key={qr}
                   type="button"
                   onClick={() => handleSend(qr)}
                   disabled={sending || initializing}
-                  className="shrink-0 whitespace-nowrap rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-[11px] font-medium text-primary transition-colors duration-150 hover:bg-primary/10 active:scale-[0.97] disabled:opacity-50"
+                  className="shrink-0 whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-[12px] font-semibold text-primary transition-all duration-200 hover:bg-primary/10 hover:border-primary/30 active:scale-[0.97] disabled:opacity-50"
                 >
                   {qr}
                 </button>
@@ -316,7 +318,7 @@ export default function ChatWidget() {
               e.preventDefault();
               void handleSend();
             }}
-            className="shrink-0 flex items-center gap-2 border-t border-gray-200 bg-white px-3 py-2.5"
+            className="shrink-0 flex items-center gap-2.5 border-t border-gray-200 bg-white px-4 py-3"
           >
             <input
               type="text"
@@ -326,15 +328,15 @@ export default function ChatWidget() {
               enterKeyHint="send"
               maxLength={500}
               autoComplete="off"
-              className="h-9 min-w-0 flex-1 rounded-full border border-gray-200 bg-gray-50 px-3.5 text-[13px] outline-none transition-colors duration-150 focus:border-primary focus:bg-white"
+              className="h-10 min-w-0 flex-1 rounded-full border border-gray-200 bg-gray-50/50 px-4 text-[13px] text-gray-800 outline-none transition-colors duration-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
             />
             <button
               type="submit"
               disabled={!input.trim() || sending || initializing}
               aria-label="Kirim pesan"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white transition-all duration-150 ease-smooth hover:bg-primary-dark active:scale-90 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white transition-all duration-200 ease-in-out hover:bg-primary-dark active:scale-90 disabled:pointer-events-none disabled:opacity-50"
             >
-              <Send size={14} />
+              <Send size={16} className="ml-0.5" />
             </button>
           </form>
         </section>
@@ -346,13 +348,13 @@ export default function ChatWidget() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Tutup chat" : "Buka chat bantuan"}
         aria-expanded={open}
-        className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-primary text-white shadow-lift transition-all duration-200 ease-smooth hover:bg-primary-dark hover:scale-105 active:scale-90"
+        className="relative flex h-[56px] w-[56px] items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 ease-out hover:bg-primary-dark hover:scale-105 active:scale-95"
       >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
+        {open ? <X size={24} /> : <MessageCircle size={24} />}
         {!open && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-            <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
+            <span className="relative inline-flex h-4 w-4 rounded-full border-[2.5px] border-white bg-emerald-500" />
           </span>
         )}
       </button>

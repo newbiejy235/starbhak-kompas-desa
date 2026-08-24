@@ -52,9 +52,9 @@ export default function BentoGridStats() {
             #DariDesaUntukNegeri
           </div>
 
-          <h1 className="font-display max-w-[760px] text-[34px] font-extrabold leading-[1.08] tracking-tight text-[#1F1F1F] sm:text-[42px] lg:text-[48px]">
-            <AnimatedHeading text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas" />
-          </h1>
+        <div className="font-display max-w-[760px] text-[34px] font-extrabold leading-[1.08] tracking-tight">
+          <AnimatedHeading text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas" />
+        </div>
 
           <p className="mt-4 max-w-[620px] font-body text-[14px] leading-relaxed text-[#75938F] sm:text-[15px]">
             Temukan hasil panen segar langsung dari petani, atau perluas
