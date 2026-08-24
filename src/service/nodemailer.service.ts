@@ -2,16 +2,16 @@ import nodemailer from "nodemailer";
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { verificationCode } from "@/db/schema";
 
 export async function verification(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
   try {
     const validatedEmail = await db
-      .select({ email: usersTable.email })
+      .select({ id: usersTable.id })
       .from(usersTable)
-      .where(eq(usersTable.email, email))
+      .where(eq(usersTable.email, normalizedEmail))
       .limit(1);
-
-    const getEmail = await validatedEmail[0].email;
 
     if (validatedEmail.length == 0) {
       return {
@@ -20,26 +20,25 @@ export async function verification(email: string) {
       };
     }
 
+    const getUserId = await validatedEmail[0].id;
+
     const codeVerifivation = await Math.floor(
       100000 + Math.random() * 900000,
     ).toString();
 
     const expires = new Date(Date.now() + 10 * 60 * 1000);
 
-    // await db
-    //   .update(usersTable)
-    //   .set({
-    //     resetCode: code,
-    //     resetCodeExpires: expires,
-    //   })
-    //   .where(eq(usersTable.email, email));
-      
+    await db.insert(verificationCode).values({
+      userId: getUserId,
+      token: codeVerifivation,
+      expiredDate: expires,
+    });
+
     await sendResetCode(email, codeVerifivation);
 
     return {
       success: true,
       messgae: "user found",
-      data: codeVerifivation,
     };
   } catch (error) {
     console.error("message", error);

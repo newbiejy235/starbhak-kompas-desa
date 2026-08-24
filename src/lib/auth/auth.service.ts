@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { usersTable, notificationsTable } from "@/db/schema";
+import { usersTable, notificationsTable, verificationCode } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { hashPassword, comparePassword } from "@/lib/auth/bcrypt";
 import { signToken } from "@/lib/auth/jwt";
@@ -232,32 +232,88 @@ export async function updatePassword(
   newPassword: string,
   code: string,
 ) {
-  const hashedPassword = await hashPassword(newPassword);
   try {
     if (!code) {
       return {
         success: false,
-        message: "silahkan massukan kode verifikasi",
+        message: "Silakan masukkan kode verifikasi",
       };
     }
-    const changePassword = await db
+
+    const [user] = await db
+      .select({
+        id: usersTable.id,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User tidak ditemukan",
+      };
+    }
+
+    const [validatedCode] = await db
+      .select({
+        id: verificationCode.id,
+        token: verificationCode.token,
+        expiredDate: verificationCode.expiredDate,
+      })
+      .from(verificationCode)
+      .where(
+        and(
+          eq(verificationCode.userId, user.id),
+          eq(verificationCode.token, code),
+        ),
+      )
+      .limit(1);
+
+    if (!validatedCode) {
+      return {
+        success: false,
+        message: "Kode verifikasi tidak ditemukan, silakan kirim ulang",
+      };
+    }
+
+    if (code != validatedCode.token) {
+      return {
+        success: false,
+        message: "Kode verifikasi salah",
+      };
+    }
+
+    if (validatedCode.expiredDate < new Date()) {
+      return {
+        success: false,
+        message: "Kode verifikasi sudah expired",
+      };
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    await db
       .update(usersTable)
       .set({
         password: hashedPassword,
       })
-      .where(eq(usersTable.email, email));
+      .where(eq(usersTable.id, user.id));
+
+    await db
+      .delete(verificationCode)
+      .where(eq(verificationCode.id, validatedCode.id));
 
     return {
       success: true,
-      message: "password berhasil di ganti",
+      message: "Password berhasil diganti",
     };
   } catch (error) {
+    console.error("update password error:", error);
+
     return {
       success: false,
-      payload: {
-        message: "Internal server error",
-        errorMessage: error,
-      },
+      message: "Internal server error",
     };
   }
 }

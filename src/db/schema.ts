@@ -1,4 +1,13 @@
-import {integer,pgTable,varchar,text,timestamp,numeric,boolean,pgEnum,index,
+import {
+  integer,
+  pgTable,
+  varchar,
+  text,
+  timestamp,
+  numeric,
+  boolean,
+  pgEnum,
+  index,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
@@ -280,18 +289,15 @@ export const chatbotMessagesTable = pgTable(
   (table) => [index("chatbot_messages_session_idx").on(table.sessionId)],
 );
 
-export const chatbotKbArticlesTable = pgTable(
-  "chatbot_kb_articles_table",
-  {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    title: varchar({ length: 200 }).notNull(),
-    category: varchar({ length: 50 }).notNull(),
-    triggerKeywords: text(),
-    answerContent: text().notNull(),
-    isActive: boolean().notNull().default(true),
-    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-  },
-);
+export const chatbotKbArticlesTable = pgTable("chatbot_kb_articles_table", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  title: varchar({ length: 200 }).notNull(),
+  category: varchar({ length: 50 }).notNull(),
+  triggerKeywords: text(),
+  answerContent: text().notNull(),
+  isActive: boolean().notNull().default(true),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
 
 export const chatRoomStatusEnum = pgEnum("chat_room_status", [
   "active",
@@ -372,21 +378,21 @@ export const negotiationOffersTable = pgTable(
     roomId: integer()
       .notNull()
       .references(() => chatRoomsTable.id, { onDelete: "cascade" }),
-  commodityId: integer()
-    .notNull()
-    .references(() => commoditiesTable.id, { onDelete: "cascade" }),
-  buyerId: integer()
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
-  farmerId: integer()
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
-  price: numeric({ precision: 12, scale: 2 }).notNull(),
-  quantity: numeric({ precision: 12, scale: 2 }).notNull(),
-  unit: varchar({ length: 30 }).notNull().default("kg"),
-  status: negotiationStatusEnum().notNull().default("pending"),
-  acceptedAt: timestamp({ withTimezone: true }),
-  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    commodityId: integer()
+      .notNull()
+      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+    buyerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    farmerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    price: numeric({ precision: 12, scale: 2 }).notNull(),
+    quantity: numeric({ precision: 12, scale: 2 }).notNull(),
+    unit: varchar({ length: 30 }).notNull().default("kg"),
+    status: negotiationStatusEnum().notNull().default("pending"),
+    acceptedAt: timestamp({ withTimezone: true }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     index("negotiation_room_idx").on(table.roomId),
@@ -395,14 +401,14 @@ export const negotiationOffersTable = pgTable(
   ],
 );
 
-export const verificationCode = pgTable(
-  "verification_code",{
-    userId : integer().notNull().references(() => usersTable.id),
-    token : varchar({length: 6}).notNull(),
-    expiredDate : timestamp().notNull().defaultNow()
-  }
-
-)
+export const verificationCode = pgTable("verification_code", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id),
+  token: varchar({ length: 6 }).notNull(),
+  expiredDate: timestamp().notNull().defaultNow(),
+});
 
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;

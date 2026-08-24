@@ -17,34 +17,19 @@ export default function NewPassword() {
 
   const sendHandler = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!userEmail) {
-      return setMessage("isi form email");
-    }
+    if (!userEmail) return setMessage("isi form email");
 
     const sender = await sendCode(userEmail);
-
-    if (sender.success) {
-      return setMessage(sender.message);
-    }
   };
 
   const changesPasswordHandler = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword)
       return setMessage("isi password baru");
-    }
-
-    if (newPassword != confirmPassword) {
+    if (newPassword != confirmPassword)
       return setMessage("password harus tidak sinkron");
-    }
 
     const changes = await changesPassword(userEmail, newPassword, verification);
-
-    if (changes.success) {
-      return setMessage(changes.message);
-    }
   };
 
   const field =

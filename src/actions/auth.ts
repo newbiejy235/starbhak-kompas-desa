@@ -33,15 +33,19 @@ export async function changesPassword(
   newPassword: string,
   code: string,
 ) {
-  if (!code) {
-    return {
-      success: false,
-      message: "code salah",
-    };
+  try {
+    if (!code) {
+      return {
+        success: false,
+        message: "code salah",
+      };
+    }
+
+    const result = await updatePassword(email, newPassword, code);
+    console.log(`status ${result.success} message ${result.message} `);
+
+    return result;
+  } catch (error) {
+    console.log(error);
   }
-  updatePassword(email, newPassword, code);
-  return {
-    success: true,
-    message: "password berhasil di ganti",
-  };
 }
