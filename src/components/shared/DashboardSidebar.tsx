@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { LogOut, X, Menu } from "lucide-react";
 import { clearSession, getClientUser } from "@/lib/auth/client";
+import Avatar from "@/components/ui/Avatar";
 
 export type SidebarItem = {
   id: string;
@@ -66,9 +67,12 @@ export default function DashboardSidebar({
         </button>
       </div>
 
-      <div className="px-6 py-4 border-b border-gray-100 bg-primary/5">
-        <p className="text-sm font-bold text-gray-800">{user?.fullName}</p>
-        <p className="text-xs text-gray-500">{roleLabel}</p>
+      <div className="px-6 py-4 border-b border-gray-100 bg-primary/5 flex items-center gap-3">
+        <Avatar src={user?.fotoProfile} name={user?.fullName} size="sm" />
+        <div>
+          <p className="text-sm font-bold text-gray-800">{user?.fullName}</p>
+          <p className="text-xs text-gray-500">{roleLabel}</p>
+        </div>
       </div>
 
       <nav ref={navRef} className="relative p-4 flex flex-col gap-1.5 flex-grow overflow-y-auto">

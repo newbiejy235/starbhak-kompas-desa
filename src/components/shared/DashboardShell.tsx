@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Avatar from "@/components/ui/Avatar";
 
 interface DashboardShellProps {
   role: "admin" | "petani" | "pembeli";
@@ -71,9 +72,7 @@ export default function DashboardShell({
             {headerLabel}
           </p>
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shadow-soft">
-              {(user.fullName ?? "A").charAt(0).toUpperCase()}
-            </span>
+            <Avatar src={user.fotoProfile} name={user.fullName} size="sm" />
             <span className="hidden sm:block text-sm font-semibold text-neutral-900">
               {user.fullName}
             </span>

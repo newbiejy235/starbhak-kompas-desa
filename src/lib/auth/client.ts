@@ -6,6 +6,7 @@ export type ClientUser = {
   status: string;
   businessType?: string;
   username?: string;
+  fotoProfile?: string | null;
 };
 
 const TOKEN_KEY = "kd_token";
