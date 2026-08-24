@@ -12,6 +12,7 @@ import type { ActionState } from "@/lib/types/auth";
 import type { AuthUser } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Avatar from "@/components/ui/Avatar";
+import ImageCropModal from "@/components/ui/ImageCropModal";
 
 function ProfileSkeleton() {
   return (
@@ -31,6 +32,7 @@ export default function PetaniProfile() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [removeFoto, setRemoveFoto] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
   const { data: profile, loading, reload } = useFetch(
     () => (user ? getProfile(user.id) : Promise.resolve(null)),
@@ -76,6 +78,7 @@ export default function PetaniProfile() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
 
     setUploadError(null);
     const validTypes = ["image/jpeg", "image/jpg", "image/png"];
@@ -88,10 +91,19 @@ export default function PetaniProfile() {
       return;
     }
 
+    const url = URL.createObjectURL(file);
+    setCropImageSrc(url);
+  };
+
+  const handleCropComplete = (file: File) => {
     setSelectedFile(file);
     setRemoveFoto(false);
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    setPreviewUrl(URL.createObjectURL(file));
+    setCropImageSrc(null);
+  };
+
+  const handleCropCancel = () => {
+    setCropImageSrc(null);
   };
 
   const handleRemoveFoto = () => {
@@ -232,6 +244,14 @@ export default function PetaniProfile() {
           )}
         </button>
       </form>
+
+      {cropImageSrc && (
+        <ImageCropModal
+          imageSrc={cropImageSrc}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
     </div>
   );
 }
