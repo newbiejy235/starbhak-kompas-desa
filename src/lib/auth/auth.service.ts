@@ -211,7 +211,8 @@ export async function upgradeToPetani(
     await db.insert(notificationsTable).values({
       userId,
       title: "Selamat! Anda menjadi Petani",
-      message: "Akun Anda ditingkatkan menjadi petani. Silakan tambahkan komoditas Anda.",
+      message:
+        "Akun Anda ditingkatkan menjadi petani. Silakan tambahkan komoditas Anda.",
       type: "system",
     });
 
@@ -223,5 +224,40 @@ export async function upgradeToPetani(
   } catch (error) {
     console.error("upgrade to petani error:", error);
     return { success: false, message: "Gagal, coba lagi nanti" };
+  }
+}
+
+export async function updatePassword(
+  email: string,
+  newPassword: string,
+  code: string,
+) {
+  const hashedPassword = await hashPassword(newPassword);
+  try {
+    if (!code) {
+      return {
+        success: false,
+        message: "silahkan massukan kode verifikasi",
+      };
+    }
+    const changePassword = await db
+      .update(usersTable)
+      .set({
+        password: hashedPassword,
+      })
+      .where(eq(usersTable.email, email));
+
+    return {
+      success: true,
+      message: "password berhasil di ganti",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      payload: {
+        message: "Internal server error",
+        errorMessage: error,
+      },
+    };
   }
 }

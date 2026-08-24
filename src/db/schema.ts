@@ -395,6 +395,15 @@ export const negotiationOffersTable = pgTable(
   ],
 );
 
+export const verificationCode = pgTable(
+  "verification_code",{
+    userId : integer().notNull().references(() => usersTable.id),
+    token : varchar({length: 6}).notNull(),
+    expiredDate : timestamp().notNull().defaultNow()
+  }
+
+)
+
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;
