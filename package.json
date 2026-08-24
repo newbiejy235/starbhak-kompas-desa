@@ -15,6 +15,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/genai": "^2.18.0",
     "@gsap/react": "^2.1.2",
     "@neondatabase/serverless": "^1.1.0",
     "bcryptjs": "^3.0.3",

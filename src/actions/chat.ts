@@ -220,7 +220,7 @@ export async function sendChatMessage(
     const result = { id: msg.id };
 
     // Notify recipient (best-effort, non-blocking)
-    notifyChatMessage(roomId, senderId, content).catch(() => {});
+    notifyChatMessage(roomId, senderId, content).catch(() => { });
 
     return result;
   } catch (error) {
