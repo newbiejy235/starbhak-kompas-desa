@@ -4,11 +4,17 @@ import { useEffect, useState, useRef } from "react"
 
 interface CounterProps {
   end: number
-  duration?: number
+  duration: number
+  delay?: number
   suffix?: string
 }
 
-export default function Counter({ end, duration, suffix = "" }: CounterProps) {
+export default function Counter({
+  end,
+  duration,
+  delay = 0,
+  suffix = "",
+}: CounterProps) {
   const [count, setCount] = useState<number>(0)
   const [hasAnimated, setHasAnimated] = useState<boolean>(false)
   const elementRef = useRef<HTMLSpanElement | null>(null)
@@ -24,6 +30,7 @@ export default function Counter({ end, duration, suffix = "" }: CounterProps) {
     )
 
     const currentElement = elementRef.current
+
     if (currentElement) {
       observer.observe(currentElement)
     }
@@ -38,37 +45,52 @@ export default function Counter({ end, duration, suffix = "" }: CounterProps) {
   useEffect(() => {
     if (!hasAnimated) return
 
-    // Hormati prefers-reduced-motion: langsung tampilkan nilai akhir (PRD 9.1)
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const id = requestAnimationFrame(() => setCount(end))
       return () => cancelAnimationFrame(id)
     }
 
+    let animationFrame: number
     let startTime: number | null = null
-    const animationDuration = duration ?? 2000
 
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime
-      const progress = Math.min((currentTime - startTime) / animationDuration, 1)
+    const delayTimeout = window.setTimeout(() => {
+      const animate = (currentTime: number) => {
+        if (startTime === null) {
+          startTime = currentTime
+        }
 
-      const easeProgress = 1 - Math.pow(1 - progress, 3)
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
 
-      setCount(Math.floor(easeProgress * end))
-      if (progress < 1) {
-        requestAnimationFrame(animate)
-      } else {
-        setCount(end)
+        // Exponential Easing: Awal meluncur sangat kencang, akhir mengerem perlahan (slow-mo)
+        const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+
+        // Math.round bikin perpindahan angka dari frame ke frame terasa rapat dan tak patah
+        setCount(Math.round(easeProgress * end))
+
+        if (progress < 1) {
+          animationFrame = requestAnimationFrame(animate)
+        } else {
+          setCount(end)
+        }
+      }
+
+      animationFrame = requestAnimationFrame(animate)
+    }, delay)
+
+    return () => {
+      window.clearTimeout(delayTimeout)
+
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame)
       }
     }
-
-    requestAnimationFrame(animate)
-  }, [hasAnimated, end, duration])
+  }, [hasAnimated, end, duration, delay])
 
   return (
     <span ref={elementRef}>
-      {/* Menggunakan "en-US" untuk pemisah koma (1,000) */}
       {count.toLocaleString("en-US")}
       {suffix}
     </span>
-  )
+  );
 }

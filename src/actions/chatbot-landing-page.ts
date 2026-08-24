@@ -3,7 +3,7 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { SYSTEM_PROMPT } from "@/app/constants/PROMPT_System";
 
-const MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-flash-latest"] as const;
+const MODEL_CANDIDATES = ["gemini-3.6-flash"]
 const MAX_OUTPUT_TOKENS = 1024;
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_HISTORY_FOR_GEMINI = 20;

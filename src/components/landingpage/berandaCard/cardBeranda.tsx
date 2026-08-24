@@ -201,7 +201,8 @@ export default function BentoGridStats() {
               <div className="font-display flex items-baseline text-[38px] font-extrabold leading-none tracking-tight text-[#1F1F1F]">
                 <Counter
                   end={200}
-                  duration={1800}
+                  duration={3000}
+                  delay={2000}
                   suffix=""
                 />
                 <span className="text-[#025246]">+</span>
@@ -256,7 +257,8 @@ export default function BentoGridStats() {
               <div className="font-display flex items-baseline text-[38px] font-extrabold leading-none tracking-tight text-white">
                 <Counter
                   end={1200}
-                  duration={1800}
+                  duration={3500}
+                  delay={2000}
                   suffix=""
                 />
                 <span className="text-[#7FBFA9]">+</span>
