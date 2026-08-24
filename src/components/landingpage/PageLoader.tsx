@@ -7,11 +7,13 @@ type Props = {
   children: React.ReactNode;
 };
 
+const LOADER_DURATION_SEC = 2;
+const LOADER_DURATION_MS = LOADER_DURATION_SEC * 1000;
+
 export default function PageLoader({ children }: Props) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Hormati prefers-reduced-motion: lewati loader (PRD 9.1)
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const id = requestAnimationFrame(() => setIsVisible(false));
       return () => cancelAnimationFrame(id);
@@ -19,10 +21,11 @@ export default function PageLoader({ children }: Props) {
 
     document.body.style.overflow = "hidden";
 
+
     const timer = setTimeout(() => {
       setIsVisible(false);
       document.body.style.overflow = "auto";
-    }, 1000);
+    }, LOADER_DURATION_MS);
 
     return () => {
       clearTimeout(timer);
@@ -39,30 +42,18 @@ export default function PageLoader({ children }: Props) {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.6,
+              duration: 0.5,
               ease: [0.76, 0, 0.24, 1],
             }}
           >
             {/* Brand */}
             <motion.div
               className="flex flex-col items-center"
-              initial={{
-                opacity: 0,
-                scale: 0.92,
-                y: 15,
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                scale: 1.04,
-                y: -5,
-              }}
+              initial={{ opacity: 0, scale: 0.92, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.04, y: -5 }}
               transition={{
-                duration: 0.6,
+                duration: 0.5,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
@@ -70,15 +61,16 @@ export default function PageLoader({ children }: Props) {
                 <span>KompasDesa</span>
               </div>
 
-              <div className="relative mt-5 h-[2px] w-24 overflow-hidden rounded-full bg-[#025246]/10">
+              {/* Progress Bar Container */}
+              <div className="relative mt-5 h-[3px] w-28 overflow-hidden rounded-full bg-[#025246]/10">
+                {/* 3. Progress Bar Fill */}
                 <motion.div
                   className="absolute left-0 top-0 h-full bg-[#025246]"
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
                   transition={{
-                    duration: 5, // Catatan: Animasinya 5 detik, tapi loading screen hilang di 1 detik (setTimeout). Kalau mau full, sesuaikan timer di atas.
-                    delay: 0.15,
-                    ease: [0.22, 1, 0.36, 1],
+                    duration: LOADER_DURATION_SEC, // Durasi disamakan di sini
+                    ease: "easeInOut",
                   }}
                 />
               </div>
@@ -87,22 +79,14 @@ export default function PageLoader({ children }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Website */}
+      {/* Website Content */}
       <motion.div
         className="relative z-0"
-        initial={{
-          opacity: 0,
-          scale: 1.015,
-          y: 8,
-        }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-          y: 0,
-        }}
+        initial={{ opacity: 0, scale: 1.015, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{
-          duration: 0.8,
-          delay: 0.35,
+          duration: 0.6,
+          delay: 0.2,
           ease: [0.22, 1, 0.36, 1],
         }}
       >

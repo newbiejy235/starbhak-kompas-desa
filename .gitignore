@@ -9,6 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+./github/workflows/codeql.yml
 
 PRD.MD
 # testing

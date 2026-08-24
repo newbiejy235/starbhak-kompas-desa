@@ -3,208 +3,400 @@
 import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  Users,
+  Wheat,
+  ShoppingBag,
+  TrendingUp,
+  ChevronRight,
+  ArrowUpRight,
+} from "lucide-react";
 import Counter from "@/components/animation/Counter";
+import AnimatedHeading from "@/components/animation/headinglandingpage";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 16,
+    scale: 0.98,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.55,
+      ease: [0.21, 0.47, 0.32, 0.98],
+    },
+  },
+};
 
 export default function BentoGridStats() {
-  const containerVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        staggerChildren: 0.12,
-        delayChildren: 0.2,
-        ease: [0.21, 0.47, 0.32, 0.98],
-      },
-    },
-  };
-
-  const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 28, scale: 0.96 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: [0.21, 0.47, 0.32, 0.98],
-      },
-    },
-  };
-
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="mt-12 w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left font-sans md:auto-rows-[210px]"
-    >
-      {/* 1. Banner Kementan (Ambil 2 Kolom di Tablet & Laptop) */}
-      <motion.div
-        variants={cardVariants}
-        className="md:col-span-2 lg:col-span-2 relative h-full w-full overflow-hidden rounded-[2.5rem] bg-[#E4F1EB] group border border-emerald-950/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(2,82,70,0.12)] hover:-translate-y-1.5 transition-all duration-500 cursor-pointer"
-      >
-        <Image
-          src="/images/landingpage/beranda/kementan.webp"
-          alt="Terverifikasi Kementan"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
-          width={1000}
-          height={1000}
-          sizes="(max-width: 768px) 100vw, 66vw"
-          loading="eager"
-          fetchPriority="high"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-75 group-hover:opacity-85 transition-opacity duration-500" />
-
-        <div className="absolute top-5 right-5">
-          <span className="backdrop-blur-md bg-white/20 border border-white/30 text-white px-3.5 py-1.5 rounded-full text-[11px] font-semibold tracking-wider uppercase shadow-sm">
-            Kemitraan Resmi
-          </span>
-        </div>
-
-        <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
-          <span className="inline-flex items-center gap-2.5 backdrop-blur-xl bg-black/30 border border-white/20 text-white px-4 py-2 rounded-full text-xs font-medium shadow-2xl group-hover:bg-black/40 group-hover:border-white/40 transition-all duration-300">
-            Terverifikasi Kementan RI
-          </span>
-
-          <span className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-300">
-            <a href="https://www.pertanian.go.id/">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-              </svg>
-            </a>
-          </span>
-        </div>
-      </motion.div>
-
-      {/* 2. Stat: Petani Terdaftar (1 Kolom) */}
-      <motion.div
-        variants={cardVariants}
-        className="h-full w-full rounded-[2.5rem] bg-white border border-emerald-950/5 p-6 flex flex-col justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:border-emerald-600/20 hover:-translate-y-1.5 transition-all duration-500 group cursor-pointer relative overflow-hidden"
-      >
-        <div className="flex items-center justify-between">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F0F7F4] text-[#025246] group-hover:bg-[#025246] group-hover:text-white group-hover:rotate-6 group-hover:scale-110 transition-all duration-500 shadow-sm">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </span>
-          <span className="text-[11px] font-semibold tracking-wider text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full uppercase">
-            Aktif
-          </span>
-        </div>
-
-        <div>
-          <div className="text-4xl sm:text-5xl font-black text-[#111827] tracking-tight group-hover:translate-x-1 transition-transform duration-300 flex">
-            <Counter end={200} duration={6000} suffix="" />
-            <span className="text-emerald-800">+</span>
+    <div className="w-full bg-[#FAFDFC] mt-10">
+      <div className="mx-auto w-full max-w-[1180px] px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
+        {/* ================= HERO ================= */}
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 inline-flex items-center rounded-full border border-[#025246]/10 bg-[#E4F1EB] px-4 py-1.5 font-body text-[12px] font-semibold text-[#025246]">
+            #DariDesaUntukNegeri
           </div>
-          <p className="text-sm font-medium text-gray-500 mt-1">Petani Lokal Terdaftar</p>
-        </div>
-      </motion.div>
 
-      {/* 3. Stat: Ton Hasil Panen (1 Kolom) */}
-      <motion.div
-        variants={cardVariants}
-        className="h-full w-full rounded-[2.5rem] bg-gradient-to-br from-[#025246] via-[#02443a] to-[#012d26] p-6 flex flex-col justify-between shadow-[0_12px_35px_rgba(2,82,70,0.25)] hover:shadow-[0_22px_45px_rgba(2,82,70,0.4)] hover:-translate-y-1.5 transition-all duration-500 group relative overflow-hidden cursor-pointer"
-      >
-        <div
-          className="absolute -top-12 -right-12 w-40 h-40 rounded-full group-hover:scale-150 transition-transform duration-700"
-          style={{ background: "radial-gradient(circle, rgba(52,211,153,0.4), transparent 70%)" }}
-        />
+          <h1 className="font-display max-w-[760px] text-[34px] font-extrabold leading-[1.08] tracking-tight text-[#1F1F1F] sm:text-[42px] lg:text-[48px]">
+            <AnimatedHeading text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas" />
+          </h1>
 
-        <div className="flex items-center justify-between relative z-10">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur-md border border-white/15 group-hover:bg-white group-hover:text-[#025246] group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-          </span>
-          <span className="text-xs text-emerald-200/80 font-medium tracking-wide">
-            40+ Komoditas
-          </span>
-        </div>
+          <p className="mt-4 max-w-[620px] font-body text-[14px] leading-relaxed text-[#75938F] sm:text-[15px]">
+            Temukan hasil panen segar langsung dari petani, atau perluas
+            jangkauan penjualan ke lebih banyak pembeli melalui satu platform.
+          </p>
 
-        <div className="relative z-10">
-          <div className="text-4xl sm:text-5xl font-black text-white tracking-tight group-hover:translate-x-1 transition-transform duration-300 flex">
-            <Counter end={1200} duration={1800} suffix="" />
-            <span className="text-emerald-300">+</span>
+          <div className="mt-6 flex items-center gap-3">
+            <button className="inline-flex h-[44px] items-center justify-center rounded-xl bg-[#025246] px-5 font-body text-[14px] font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#013E35] hover:shadow-md">
+              Daftar
+            </button>
+
+            <Link
+              href="../kompas-desa/Komoditas"
+              className="inline-flex h-[44px] items-center justify-center rounded-xl border border-[#E3EAE7] bg-white px-5 font-body text-[14px] font-semibold text-[#025246] shadow-sm transition-all duration-300 hover:border-[#025246]/25 hover:bg-[#F5FAF8]"
+            >
+              Cari Komoditas
+            </Link>
           </div>
-          <p className="text-sm font-medium text-emerald-100/70 mt-1">Ton Hasil Panen Terjual</p>
         </div>
-      </motion.div>
 
-      {/* 4. Foto Petani (1 Kolom) */}
-      <motion.div
-        variants={cardVariants}
-        className="h-full w-full overflow-hidden rounded-[2.5rem] bg-[#E4F1EB] group border border-emerald-950/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] hover:-translate-y-1.5 transition-all duration-500 relative cursor-pointer"
-      >
-        <Image
-          src="/images/landingpage/beranda/petani.webp"
-          alt="Aktivitas Petani"
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
-          width={1000}
-          height={1000}
-          sizes="(max-width: 768px) 100vw, 33vw"
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="absolute bottom-4 left-5 right-5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-          <p className="text-xs font-semibold text-white tracking-wide">Daya Jangkau Komunitas</p>
-        </div>
-      </motion.div>
+        {/* ================= BENTO ================= */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="
+            mt-10
+            grid
+            grid-cols-1
+            gap-4
+            sm:grid-cols-2
+            lg:grid-cols-4
+            lg:grid-rows-[180px_180px]
+          "
+        >
+          {/* ================= KEMENTAN ================= */}
+          <motion.div
+            variants={cardVariants}
+            className="
+              group
+              relative
+              h-[240px]
+              overflow-hidden
+              rounded-[24px]
+              border
+              border-[#E7ECEA]
+              shadow-[0_6px_25px_rgba(0,0,0,0.035)]
+              transition-all
+              duration-500
+              hover:-translate-y-1
+              hover:shadow-[0_14px_35px_rgba(2,82,70,0.09)]
+              sm:col-span-2
+              lg:col-span-2
+              lg:row-span-2
+              lg:h-full
+            "
+          >
+            <Image
+              src="/images/landingpage/beranda/kementan.webp"
+              alt="Terverifikasi Kementan"
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+            />
 
-      {/* 5. Kolom Kartu Ringkasan Aktivitas (1 Kolom) */}
-      <motion.div variants={cardVariants} className="h-full flex flex-col gap-3.5">
-        <Link href="/auth/login" className="flex-1 flex">
-          <div className="w-full h-full rounded-[1.75rem] bg-white border border-emerald-950/5 p-4 flex items-center justify-between shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_10px_25px_rgba(2,82,70,0.08)] hover:border-emerald-600/20 hover:translate-x-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex items-center gap-3.5">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F0F7F4] text-[#025246] group-hover:bg-[#025246] group-hover:text-white transition-colors duration-300 shadow-sm">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+            {/* subtle overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+
+            {/* Badge */}
+            <div className="absolute right-5 top-5">
+              <span className="rounded-full bg-white/90 px-3 py-1.5 font-body text-[10px] font-semibold uppercase tracking-wider text-[#025246] shadow-sm">
+                Kemitraan Resmi
               </span>
-              <div>
-                <p className="text-[15px] font-bold text-[#111827] group-hover:text-[#025246] transition-colors duration-200">
-                  Pesanan Pelanggan
-                </p>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">
-                  <span className="text-emerald-600 font-semibold">21 pesanan</span> · bulan ini
-                </p>
-              </div>
             </div>
-            <span className="text-gray-300 group-hover:text-[#025246] group-hover:translate-x-1 transition-all duration-300 pr-1">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </span>
-          </div>
-        </Link>
 
-        <Link href="/auth/login" className="flex-1 flex">
-          <div className="w-full h-full rounded-[1.75rem] bg-gradient-to-r from-[#F8FAFB] to-white border border-emerald-950/5 p-4 flex items-center justify-between shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_10px_25px_rgba(2,82,70,0.08)] hover:border-emerald-600/20 hover:translate-x-1 transition-all duration-300 cursor-pointer group">
-            <div className="flex items-center gap-3.5">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white border border-emerald-950/5 text-[#025246] shadow-sm group-hover:bg-[#025246] group-hover:text-white transition-colors duration-300">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
+            {/* Bottom */}
+            <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between">
+              <span className="font-body text-[12px] font-medium text-white">
+                Terverifikasi Kementan RI
               </span>
-              <div>
-                <p className="text-[15px] font-bold text-[#111827] group-hover:text-[#025246] transition-colors duration-200">
-                  Permintaan Komoditas
-                </p>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">
-                  <span className="text-emerald-600 font-semibold">23 ton</span> · bulan ini
-                </p>
-              </div>
+
+              <a
+                href=""
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Kunjungi situs Kementan RI"
+                className="
+                  flex
+                  h-8
+                  w-8
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-white/40
+                  text-white
+                  opacity-0
+                  transition-all
+                  duration-300
+                  group-hover:opacity-100
+                "
+              >
+                <ArrowUpRight
+                  className="h-4 w-4"
+                  strokeWidth={2.2}
+                />
+              </a>
             </div>
-            <span className="text-gray-300 group-hover:text-[#025246] group-hover:translate-x-1 transition-all duration-300 pr-1">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </span>
-          </div>
-        </Link>
-      </motion.div>
-    </motion.div>
+          </motion.div>
+
+          {/* ================= PETANI ================= */}
+          <motion.div
+            variants={cardVariants}
+            className="
+              flex
+              h-[180px]
+              flex-col
+              justify-between
+              rounded-[24px]
+              border
+              border-[#E7ECEA]
+              bg-white
+              p-5
+              shadow-[0_6px_25px_rgba(0,0,0,0.035)]
+              transition-all
+              duration-500
+              hover:-translate-y-1
+              hover:shadow-[0_14px_35px_rgba(2,82,70,0.08)]
+            "
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-body text-[10px] font-semibold uppercase tracking-wider text-[#75938F]">
+                Aktif
+              </span>
+
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F7F4] text-[#025246]">
+                <Users className="h-4 w-4" strokeWidth={2} />
+              </span>
+            </div>
+
+            <div>
+              <div className="font-display flex items-baseline text-[38px] font-extrabold leading-none tracking-tight text-[#1F1F1F]">
+                <Counter
+                  end={200}
+                  duration={1800}
+                  suffix=""
+                />
+                <span className="text-[#025246]">+</span>
+              </div>
+
+              <p className="mt-2 font-body text-[12px] text-[#75938F]">
+                Petani Lokal Terdaftar
+              </p>
+            </div>
+          </motion.div>
+
+          {/* ================= PANEN ================= */}
+          <motion.div
+            variants={cardVariants}
+            className="
+              relative
+              flex
+              h-[180px]
+              flex-col
+              justify-between
+              overflow-hidden
+              rounded-[24px]
+              bg-[#025246]
+              p-5
+              shadow-[0_8px_28px_rgba(2,82,70,0.14)]
+              transition-all
+              duration-500
+              hover:-translate-y-1
+              hover:shadow-[0_16px_38px_rgba(2,82,70,0.2)]
+            "
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0.09), transparent 70%)",
+              }}
+            />
+
+            <div className="relative z-10 flex items-center justify-between">
+              <span className="font-body text-[10px] font-medium uppercase tracking-wider text-[#E4F1EB]/70">
+                40+ Komoditas
+              </span>
+
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white">
+                <Wheat className="h-4 w-4" strokeWidth={2} />
+              </span>
+            </div>
+
+            <div className="relative z-10">
+              <div className="font-display flex items-baseline text-[38px] font-extrabold leading-none tracking-tight text-white">
+                <Counter
+                  end={1200}
+                  duration={1800}
+                  suffix=""
+                />
+                <span className="text-[#7FBFA9]">+</span>
+              </div>
+
+              <p className="mt-2 font-body text-[12px] text-[#E4F1EB]/70">
+                Ton Hasil Panen Terjual
+              </p>
+            </div>
+          </motion.div>
+
+          {/* ================= FARMER IMAGE ================= */}
+          <motion.div
+            variants={cardVariants}
+            className="
+              group
+              relative
+              h-[180px]
+              overflow-hidden
+              rounded-[24px]
+              border
+              border-[#E7ECEA]
+              shadow-[0_6px_25px_rgba(0,0,0,0.035)]
+              lg:h-full
+            "
+          >
+            <Image
+              src="/images/landingpage/beranda/petani.webp"
+              alt="Aktivitas Petani"
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              sizes="(max-width: 768px) 100vw, 25vw"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+            <div className="absolute bottom-4 left-4 translate-y-1 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+              <p className="font-body text-[11px] font-medium text-white">
+                Daya Jangkau Komunitas
+              </p>
+            </div>
+          </motion.div>
+
+          {/* ================= ACTIVITY ================= */}
+          <motion.div
+            variants={cardVariants}
+            className="flex h-[180px] flex-col gap-3"
+          >
+            <Link
+              href="/auth/login"
+              className="
+                group
+                flex
+                flex-1
+                items-center
+                justify-between
+                rounded-[20px]
+                border
+                border-[#E7ECEA]
+                bg-white
+                px-4
+                shadow-[0_4px_18px_rgba(0,0,0,0.025)]
+                transition-all
+                duration-300
+                hover:border-[#025246]/20
+                hover:bg-[#FAFDFC]
+              "
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0F7F4] text-[#025246]">
+                  <ShoppingBag className="h-4 w-4" />
+                </span>
+
+                <div>
+                  <p className="font-display text-[12px] font-semibold text-[#1F1F1F]">
+                    Pesanan Pelanggan
+                  </p>
+
+                  <p className="mt-0.5 font-body text-[11px] text-[#75938F]">
+                    <span className="font-semibold text-[#025246]">
+                      21 pesanan
+                    </span>{" "}
+                    · bulan ini
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight
+                className="h-4 w-4 text-[#C7D3CF] transition-transform group-hover:translate-x-1 group-hover:text-[#025246]"
+                strokeWidth={2}
+              />
+            </Link>
+
+            <Link
+              href="/auth/login"
+              className="
+                group
+                flex
+                flex-1
+                items-center
+                justify-between
+                rounded-[20px]
+                border
+                border-[#E7ECEA]
+                bg-white
+                px-4
+                shadow-[0_4px_18px_rgba(0,0,0,0.025)]
+                transition-all
+                duration-300
+                hover:border-[#025246]/20
+                hover:bg-[#FAFDFC]
+              "
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0F7F4] text-[#025246]">
+                  <TrendingUp className="h-4 w-4" />
+                </span>
+
+                <div>
+                  <p className="font-display text-[12px] font-semibold text-[#1F1F1F]">
+                    Permintaan Komoditas
+                  </p>
+
+                  <p className="mt-0.5 font-body text-[11px] text-[#75938F]">
+                    <span className="font-semibold text-[#025246]">
+                      23 ton
+                    </span>{" "}
+                    · bulan ini
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight
+                className="h-4 w-4 text-[#C7D3CF] transition-transform group-hover:translate-x-1 group-hover:text-[#025246]"
+                strokeWidth={2}
+              />
+            </Link>
+          </motion.div>
+        </motion.div>
+      </div>
+    </div>
   );
 }

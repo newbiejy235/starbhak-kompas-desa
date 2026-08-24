@@ -67,7 +67,7 @@ export default function CardBenefit() {
     <section className="w-full bg-[#f8faf9] py-20 px-4 sm:px-6 flex flex-col items-center">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto mb-10">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1a1a1a]">
+        <h2 className="max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
           Keuntungan <span className="text-[#025246]">Bergabung</span>
         </h2>
         <p className="mt-3 text-sm sm:text-base text-slate-500">

@@ -42,7 +42,7 @@ export function KeamananSec() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <h2 className="max-w-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] text-3xl sm:text-3xl md:text-3xl text-center">
+          <h2 className="max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
             Mudah dan Terpercaya
           </h2>
 

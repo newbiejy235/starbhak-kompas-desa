@@ -138,7 +138,7 @@ export function KomoditasMarquee() {
       {/* Header */}
       <div className="mx-auto mb-14 max-w-7xl px-6 sm:mb-16 lg:mb-20 lg:px-8">
         <div className="flex flex-col items-center text-center">
-          <h2 className="max-w-3xl text-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-3xl md:text-4xl">
+          <h2 className="=max-w-3xl text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] text-center sm:text-[34px] md:text-[38px]">
             Beragam komoditas,
             <br />
             <span className="text-[#025246]">satu akses menuju pasar.</span>

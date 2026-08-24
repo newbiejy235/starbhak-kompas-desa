@@ -136,12 +136,12 @@ export default function Testimonial() {
   return (
     <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#fafdfc] px-4 py-20 font-sans">
       {/* Header */}
-      <div className="absolute top-12 z-30 max-w-xl px-4 text-center">
-        <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-3xl md:text-3xl">
+      <div className="absolute top-12 z-30 w-full max-w-6xl px-4 text-center">
+        <h2 className="mx-auto text-center text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-[34px] md:text-[50px]">
           Apa Kata <span className="text-[#025246]">Pengguna Kami</span>
         </h2>
         <p className="mt-2 text-xs text-[#75938f] sm:text-sm">
-          Lihat pengalaman mitra kami melalui tombol navigasi.
+          Kenali pengalaman mereka bersama KompasDesa.
         </p>
       </div>
 

@@ -6,13 +6,8 @@ import {
 } from "@/actions/notification";
 import { getClientUser } from "@/lib/auth/client";
 import { formatDateTime } from "@/lib/format";
-<<<<<<< HEAD
 import { LoadingState, EmptyState } from "@/components/shared/States";
 import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
-=======
-import { EmptyState } from "@/components/shared/States";
-import { Bell, CheckCheck, Package, CreditCard, Star, Info, type LucideIcon } from "lucide-react";
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
 import { useFetch } from "@/lib/hooks";
 import Link from "next/link";
 import type { NotificationRow } from "@/lib/types/market";
@@ -107,26 +102,6 @@ export default function UserNotifications() {
                 >
                   <Icon size={20} />
                 </div>
-<<<<<<< HEAD
-                 <div className="min-w-0 flex-1">
-                   <div className="flex items-center justify-between gap-2">
-                     <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
-                     {!n.isRead && (
-                       <span className="w-2.5 h-2.5 bg-[#025246] rounded-full flex-shrink-0" />
-                     )}
-                   </div>
-                   <p className="text-sm text-gray-600 mt-1">{n.message}</p>
-                   <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
-                 </div>
-               </div>
-            );
-            return n.type === "chat" ? (
-              <Link key={n.id} href="/user/chat" className="block hover:opacity-90 transition-opacity">
-                {card}
-              </Link>
-            ) : (
-              <div key={n.id}>{card}</div>
-=======
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="font-bold text-gray-900 text-sm">{n.title}</h3>
@@ -138,7 +113,13 @@ export default function UserNotifications() {
                   <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
                 </div>
               </div>
->>>>>>> fae347a98ccae123d389da841ac8772b71d668dd
+            );
+            return n.type === "chat" ? (
+              <Link key={n.id} href="/user/chat" className="block hover:opacity-90 transition-opacity">
+                {card}
+              </Link>
+            ) : (
+              <div key={n.id}>{card}</div>
             );
           })}
         </div>

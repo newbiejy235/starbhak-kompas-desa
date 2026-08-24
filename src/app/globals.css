@@ -5,6 +5,9 @@
    Primary memakai hijau brand #025246, secondary cyan #06B6D4.
    Token lain (radius, shadow, easing, durasi) sesuai PRD.
    ============================================================ */
+   
+
+
 @theme {
   /* Warna */
   --color-primary: #025246;
@@ -18,7 +21,7 @@
   --color-neutral-100: #f3f4f6;
 
   /* Font */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-jakarta-sans), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* Radius */
   --radius-card: 16px;
