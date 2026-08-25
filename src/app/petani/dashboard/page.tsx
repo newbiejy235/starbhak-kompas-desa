@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   Package,
   ShoppingCart,
@@ -8,9 +9,13 @@ import {
   Scale,
   Wallet,
   TrendingUp,
+  TrendingDown,
   Star,
   Bell,
   CalendarDays,
+  Plus,
+  MessageCircle,
+  ChevronRight,
 } from "lucide-react";
 import { getClientUser } from "@/lib/auth/client";
 import { formatNumber, formatDate } from "@/lib/format";
@@ -22,6 +27,7 @@ import type {
 import CountUp from "@/components/ui/CountUp";
 import Badge from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { ErrorState } from "@/components/shared/States";
 
 type ChartRange = "30d" | "3m" | "1y";
 
@@ -31,6 +37,22 @@ type DashboardData = {
   activities: Awaited<ReturnType<typeof getFarmerDashboard>>["activities"];
   harvestSchedule: Awaited<ReturnType<typeof getFarmerDashboard>>["harvestSchedule"];
 };
+
+/** Aksi cepat yang paling sering dibutuhkan petani. */
+const QUICK_ACTIONS = [
+  { href: "/petani/commodities/add", icon: Plus, label: "Tambah Produk" },
+  { href: "/petani/orders", icon: ShoppingCart, label: "Pesanan" },
+  { href: "/petani/chat", icon: MessageCircle, label: "Pesan" },
+  { href: "/petani/kalender-panen", icon: CalendarDays, label: "Jadwal Panen" },
+];
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 4 && hour < 11) return "Selamat pagi";
+  if (hour >= 11 && hour < 15) return "Selamat siang";
+  if (hour >= 15 && hour < 19) return "Selamat sore";
+  return "Selamat malam";
+}
 
 export default function PetaniDashboard() {
   const user = getClientUser();
@@ -46,12 +68,35 @@ export default function PetaniDashboard() {
   // Referensi waktu untuk klasifikasi jadwal (diambil di effect agar render murni)
   const [now, setNow] = useState(0);
 
+  const loadDashboard = useCallback(() => {
+    if (!user?.id) return;
+    setDashboardError(false);
+    setDashboard(null);
+
+    getFarmerDashboard(user.id)
+      .then((result) => {
+        setDashboard({
+          stats: result.stats,
+          topProducts: result.topProducts,
+          activities: result.activities,
+          harvestSchedule: result.harvestSchedule,
+        });
+      })
+      .catch((error) => {
+        console.error("Gagal memuat dashboard:", error);
+        setDashboardError(true);
+      });
+  }, [user?.id]);
+
   // Fetch data utama (sekali saat mount)
   useEffect(() => {
-    if (!user?.id) return;
-
     let isMounted = true;
     const id = requestAnimationFrame(() => setNow(Date.now()));
+
+    if (!user?.id) return () => {
+      isMounted = false;
+      cancelAnimationFrame(id);
+    };
 
     getFarmerDashboard(user.id)
       .then((result) => {
@@ -98,10 +143,12 @@ export default function PetaniDashboard() {
   // Skeleton loading saat data dimuat (PRD 8.3 & 16)
   if (dashboardError) {
     return (
-      <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-10 text-center">
-        <p className="text-sm text-gray-500">
-          Gagal memuat data dashboard. Coba muat ulang halaman.
-        </p>
+      <div className="mx-auto max-w-6xl animate-fade-up p-4 sm:p-6 lg:p-0">
+        <ErrorState
+          title="Dashboard belum dapat dimuat"
+          message="Terjadi masalah saat mengambil data usaha Anda."
+          onRetry={loadDashboard}
+        />
       </div>
     );
   }
@@ -112,12 +159,18 @@ export default function PetaniDashboard() {
   const salesChart = chartLoading ? [] : (chart?.data ?? []);
   const maxKg = Math.max(...salesChart.map((p) => p.kg), 1);
 
+  const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0];
+  const upTrend = stats.percentChange >= 0;
+
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900">Dashboard Petani</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          {getGreeting()}
+          {firstName ? `, ${firstName}` : ""}
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Kelola hasil panen dan pesanan Anda.
+          Ringkasan usaha Anda hari ini, {formatDate(new Date())}.
         </p>
       </div>
 
@@ -128,6 +181,31 @@ export default function PetaniDashboard() {
         <StatCard delay={160} icon={<CheckCircle2 size={18} />} value={stats.completedOrdersThisMonth} label="Pesanan Selesai" />
         <StatCard delay={240} icon={<Scale size={18} />} value={stats.totalSoldThisMonth} label="Total Penjualan (kg)" />
       </div>
+
+      {/* Aksi cepat */}
+      <nav aria-label="Aksi cepat" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {QUICK_ACTIONS.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="group flex items-center justify-between gap-2 rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft transition-all duration-150 ease-smooth hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift"
+          >
+            <span className="flex min-w-0 items-center gap-2.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <action.icon size={15} />
+              </span>
+              <span className="truncate text-sm font-semibold text-gray-700 group-hover:text-primary">
+                {action.label}
+              </span>
+            </span>
+            <ChevronRight
+              size={15}
+              aria-hidden
+              className="shrink-0 text-gray-300 transition-colors duration-150 group-hover:text-primary"
+            />
+          </Link>
+        ))}
+      </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <MiniCard delay={320} icon={<Wallet size={16} />} label="Pendapatan Hari Ini">
@@ -142,9 +220,12 @@ export default function PetaniDashboard() {
           label="Pendapatan Bulanan"
           badge={
             stats.percentChange !== 0 ? (
-              <Badge tone={stats.percentChange > 0 ? "success" : "danger"}>
-                {stats.percentChange > 0 ? "▲" : "▼"} {stats.percentChange > 0 ? "+" : ""}
-                {stats.percentChange}%
+              <Badge tone={upTrend ? "success" : "danger"}>
+                <span className="inline-flex items-center gap-1">
+                  {upTrend ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                  {upTrend ? "+" : ""}
+                  {stats.percentChange}%
+                </span>
               </Badge>
             ) : undefined
           }
