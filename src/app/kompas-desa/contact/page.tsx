@@ -10,12 +10,13 @@ import {
   AtSign
 } from "lucide-react";
 
+
 const contactItems = [
   {
     icon: MessageCircle,
     label: "WhatsApp",
-    value: "0851 6734 8039",
-    href: "https://wa.me/6285167348039",
+    value: "+62 888-8888-8888",
+    href: "https://wa.me/62888888888",
   },
   {
     icon: Mail,
@@ -33,7 +34,6 @@ const contactItems = [
 export default function KontakPage() {
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f]">
-      {/* HERO */}
       <section className="px-5 pb-14 pt-24 md:px-8 md:pb-16 md:pt-28 lg:px-12">
         <div className="mx-auto grid max-w-5xl items-end gap-8 md:grid-cols-[1fr_0.55fr]">
           <div>

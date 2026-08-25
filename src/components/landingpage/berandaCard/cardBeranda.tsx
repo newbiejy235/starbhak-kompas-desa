@@ -51,10 +51,9 @@ export default function BentoGridStats() {
           <div className="mb-4 inline-flex items-center rounded-full border border-[#025246]/10 bg-[#E4F1EB] px-4 py-1.5 font-body text-[12px] font-semibold text-[#025246]">
             #DariDesaUntukNegeri
           </div>
-
           <AnimatedHeading
             text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas"
-            className="font-display max-w-[760px] text-[38px] leading-[1.08]"
+            className="font-display max-w-[760px] text-[40px] leading-[1.08]"
           />
 
           <p className="mt-4 max-w-[620px] font-body text-[14px] leading-relaxed text-[#75938F] sm:text-[15px]">

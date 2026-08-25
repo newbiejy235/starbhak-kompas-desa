@@ -25,7 +25,6 @@ import TopCommoditiesCard from "@/components/petanipage/dashboard/TopCommodities
 import CountUp from "@/components/ui/CountUp";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-/* ---------------------- SKELETON ---------------------- */
 function AnalitikSkeleton() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -178,9 +177,8 @@ export default function AnalitikPage() {
           </p>
           {(trendInsight !== null) && (
             <span
-              className={`mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-bold ${
-                upTrend ? "text-success" : "text-danger"
-              }`}
+              className={`mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-bold ${upTrend ? "text-success" : "text-danger"
+                }`}
             >
               {upTrend ? (
                 <TrendingUp size={11} />
