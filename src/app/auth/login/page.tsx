@@ -10,7 +10,8 @@ import {
   Loader2,
   ArrowLeft,
   User,
-  Lock
+  Lock,
+  Sparkles
 } from "lucide-react";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
@@ -41,65 +42,113 @@ export default function Login() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // 1. Initial Load Timeline
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      tl.from(".bg-curve", { 
-        scaleX: 0, 
-        transformOrigin: "left center", 
-        duration: 1.2 
-      })
-      .from(".header-item", { 
-        opacity: 0, 
-        y: -20, 
-        stagger: 0.1, 
-        duration: 0.6 
-      }, "-=0.8")
-      .from(".left-anim-item", {
-        opacity: 0,
-        x: -30,
-        stagger: 0.1,
-        duration: 0.8,
-      }, "-=0.6")
-      .from(".right-anim-item", {
-        opacity: 0,
-        y: 20,
-        stagger: 0.08,
-        duration: 0.7,
-      }, "-=0.7")
-      .from(".footer-anim", {
-        opacity: 0,
+      tl.fromTo(".bg-curve", 
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+      )
+      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"], 
+        { opacity: 0, y: 30, rotateX: -10 },
+        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 }, 
+        "-=0.9"
+      )
+      .fromTo(".border-illustration", 
+        { opacity: 0, scale: 0.5, rotation: -15 },
+        { opacity: 1, scale: 1, rotation: 0, duration: 1, ease: "back.out(1.5)" },
+        "-=1"
+      )
+      .fromTo(".footer-anim", 
+        { opacity: 0, y: 10 },
+        { opacity: 1, duration: 0.8 }, 
+        "-=0.5"
+      );
+
+      gsap.to(".float-box-1", {
+        y: -10,
+        rotation: -2,
+        duration: 3.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      });
+      
+      gsap.to(".float-box-2", {
         y: 10,
-        duration: 0.5
-      }, "-=0.4");
+        rotation: 2,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: 0.5
+      });
 
-      // 2. Ambient Floating Elements Animation (Hanya jalan di desktop)
-      const circles = floatingElementsRef.current?.children;
-      if (circles) {
-        Array.from(circles).forEach((circle, i) => {
-          gsap.to(circle, {
-            y: "random(-30, 30)",
-            x: "random(-20, 20)",
-            rotation: "random(-15, 15)",
-            duration: "random(3, 6)",
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: i * 0.4,
-          });
+      gsap.to(".wave-human", {
+        rotation: 15,
+        transformOrigin: "bottom right",
+        duration: 0.4,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      });
+
+      gsap.to(".wave-farmer", {
+        rotation: -15,
+        transformOrigin: "bottom left",
+        duration: 0.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: 0.2
+      });
+
+      const orbs = document.querySelectorAll(".ambient-orb");
+      orbs.forEach((orb, i) => {
+        gsap.to(orb, {
+          scale: "random(1.1, 1.4)",
+          opacity: "random(0.4, 0.8)",
+          duration: "random(3, 5)",
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.3,
         });
-      }
+      });
     }, containerRef);
 
-    return () => ctx.revert();
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 40;
+      const y = (e.clientY / window.innerHeight - 0.5) * 40;
+      
+      gsap.to(".ambient-orb", {
+        x: (i) => x * (i + 1.5),
+        y: (i) => y * (i + 1.5),
+        duration: 1.5,
+        ease: "power2.out"
+      });
+
+      gsap.to(".border-illustration", {
+        x: x * 0.3,
+        y: y * 0.3,
+        duration: 2,
+        ease: "power2.out"
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      ctx.revert();
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
 
   return (
-    <div ref={containerRef} className="min-h-screen w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col">
+    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
       
-      {/* SHAPE BACKGROUND: Kurva Asimetris (Hanya muncul di Desktop) */}
+      {/* SHAPE BACKGROUND */}
       <svg 
-        className="bg-curve absolute top-0 left-0 w-full lg:w-[58%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block" 
+        className="bg-curve absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block" 
         preserveAspectRatio="none" 
         viewBox="0 0 100 100"
       >
@@ -112,15 +161,15 @@ export default function Login() {
         <path d="M0,0 L72,0 C90,35 88,75 58,100 L0,100 Z" fill="url(#emeraldGrad)" />
       </svg>
 
-      {/* AMBIENT FLOATING ORBS (Hanya muncul di Desktop) */}
+      {/* AMBIENT FLOATING ORBS */}
       <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
-        <div className="absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
-        <div className="absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
-        <div className="absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
+        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
       </div>
 
       {/* HEADER NAV */}
-      <header className="relative z-20 w-full flex items-center justify-between px-6 py-6 lg:px-12 xl:px-16">
+      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
         <div className="header-item flex items-center gap-4">
           <Link
             href="/"
@@ -149,36 +198,64 @@ export default function Login() {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto">
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
         
-        {/* LEFT PANEL - (HIDDEN DI HP, HANYA MUNCUL DI DESKTOP) */}
-        <div className="hidden lg:flex lg:w-[50%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 py-12 lg:py-0 text-white relative">
-          <div className="relative z-10 w-full max-w-[480px]">
-            <h1 className="left-anim-item text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
-              Mulai <br />
-              Perjalanan <br />
-              <span className="text-emerald-400">Digitalmu</span>
+        {/* ILUSTRASI FLOATING (Digeser ke kiri masuk ke area ijo: left-[38%]) */}
+        <div className="border-illustration absolute top-1/2 left-[38%] -translate-x-1/2 -translate-y-1/2 z-30 hidden lg:block pointer-events-none origin-center">
+          <div className="relative w-[220px] h-[250px]">
+            
+            {/* Box 1 (Tangan Orang / Menyapa) */}
+            <div className="float-box-1 absolute top-2 left-0 w-[110px] h-[130px] bg-amber-200 rounded-[16px] border-[4px] border-[#022c22] shadow-[8px_8px_0px_rgba(2,44,34,0.15)] flex items-end justify-center pb-3 overflow-hidden z-20">
+              <div className="absolute inset-0 opacity-20 bg-[linear-gradient(0deg,transparent_24%,#000_25%,#000_26%,transparent_27%,transparent_74%,#000_75%,#000_76%,transparent_77%,transparent)] bg-[length:15px_15px]" />
+              <span className="wave-human relative z-10 text-[55px] drop-shadow-md pb-1">👋🏽</span>
+            </div>
+
+            {/* Aksen Bintang Tengah */}
+            <div className="absolute top-[52%] left-[45%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-[#025246] rotate-45 border-[3px] border-white z-30 shadow-lg flex items-center justify-center">
+              <Sparkles className="text-white -rotate-45" size={16} strokeWidth={2.5} />
+            </div>
+
+            {/* Box 2 (Unsur Petani) */}
+            <div className="float-box-2 absolute bottom-2 right-0 w-[115px] h-[125px] bg-emerald-100 rounded-[16px] border-[4px] border-[#022c22] shadow-[8px_8px_0px_rgba(2,44,34,0.1)] flex items-end justify-center pb-3 overflow-hidden z-10">
+               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#000_2px,transparent_2px)] bg-[length:12px_12px]" />
+              <img 
+                 src="https://i.pinimg.com/736x/6e/02/51/6e02519899393fa847d87d57c63e6cf0.jpg" 
+                 alt="Petani" 
+                 className="wave-farmer relative z-10 w-[75px] h-[75px] object-cover rounded-xl shadow-md border-2 border-[#022c22]" 
+               />
+            </div>
+
+          </div>
+        </div>
+
+        {/* LEFT PANEL */}
+        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
+          <div className="relative z-10 w-full max-w-[380px]">
+            {/* Teks kiri dikecilin biar lebih rapi & proporsional */}
+            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
+              Login untuk <br />
+              <span className="text-emerald-400">Mengakses Sistem</span>
             </h1>
 
-            <p className="left-anim-item text-base lg:text-lg text-emerald-100/80 leading-relaxed font-medium">
-              Masuk untuk mengelola sistem ekosistem pertanian, memantau hasil panen, dan terhubung dengan pasar secara berkelanjutan.
+            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas'Desa.
             </p>
           </div>
         </div>
 
-        {/* RIGHT PANEL - Form Login (FULL WIDTH DI HP, 50% DI DESKTOP) */}
-        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:px-16 xl:px-24 py-10 relative">
-          <div className="w-full max-w-[440px]">
-            <div className="right-anim-item mb-8 text-center lg:text-left">
+        {/* RIGHT PANEL - Form Login (Dikasih ruang luas & form ukuran normal) */}
+        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
+          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Masuk ke Akun
               </h2>
-              <p className="text-sm lg:text-base text-neutral-500 font-medium">
+              {/* <p className="text-sm lg:text-base text-neutral-500 font-medium">
                 Akses panel kontrol dan dashboard Anda secara langsung.
-              </p>
+              </p> */}
             </div>
 
-            <form action={formAction} className="flex flex-col gap-5">
+            <form action={formAction} className="flex flex-col gap-4">
               {state.message && (
                 <div
                   role="alert"
@@ -193,9 +270,9 @@ export default function Login() {
               )}
 
               {/* Input Email */}
-              <div className="right-anim-item flex flex-col gap-2">
+              <div className="right-anim-item flex flex-col gap-1.5">
                 <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
-                  Email Resmi
+                  Email
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
@@ -208,14 +285,14 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@kompasdesa.id"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-4 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                 </div>
               </div>
 
               {/* Input Password */}
-              <div className="right-anim-item flex flex-col gap-2">
+              <div className="right-anim-item flex flex-col gap-1.5">
                 <label htmlFor="password" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Kata Sandi
                 </label>
@@ -230,7 +307,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Masukkan kata sandi akun"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-4 pl-12 pr-12 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-12 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                   <button
@@ -266,7 +343,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={pending}
-                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-4 text-[15px] font-extrabold text-white shadow-md transition-all duration-200 ease-out hover:bg-[#04382f] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                 >
                   {pending ? (
                     <>
@@ -286,7 +363,7 @@ export default function Login() {
       </main>
 
       {/* FOOTER */}
-      <footer className="footer-anim relative z-10 w-full text-center py-6 text-[12px] font-medium text-neutral-400">
+      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
         &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
     </div>

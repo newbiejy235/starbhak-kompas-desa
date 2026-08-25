@@ -29,7 +29,6 @@ export default function DashboardSidebar({
   const [isOpen, setIsOpen] = useState(false);
   const user = getClientUser();
 
-  // Indikator aktif bergeser mulus antar menu (PRD 8.3 & 9.2)
   const navRef = useRef<HTMLElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false });
@@ -43,7 +42,12 @@ export default function DashboardSidebar({
     const nav = navRef.current;
     const el = itemRefs.current[activeItem.id];
     if (!nav || !el) return;
-    setIndicator({ top: el.offsetTop, height: el.offsetHeight, ready: true });
+
+    setIndicator({
+      top: el.offsetTop - 16,
+      height: el.offsetHeight,
+      ready: true
+    });
   }, [activeItem]);
 
   const logout = () => {
@@ -55,7 +59,7 @@ export default function DashboardSidebar({
     <>
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
         <Link href={brandHref} className="text-xl font-bold text-primary">
-          Kompas Desa
+          KompasDesa
         </Link>
         <button
           onClick={() => setIsOpen(false)}
@@ -93,11 +97,10 @@ export default function DashboardSidebar({
               }}
               href={item.href}
               onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
-                active
-                  ? "bg-primary/5 text-primary"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-primary"
-              }`}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${active
+                ? "bg-primary/5 text-primary"
+                : "text-gray-600 hover:bg-gray-50 hover:text-primary"
+                }`}
             >
               <item.icon size={19} />
               {item.label}

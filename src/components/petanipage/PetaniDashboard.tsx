@@ -152,13 +152,12 @@ export default function PetaniDashboard() {
               </div>
               <span className="hidden sm:block text-xs font-medium text-gray-500">Stok: {p.stock}</span>
               <span
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                  p.status === "Tersedia"
-                    ? "bg-green-100 text-green-700"
-                    : p.status === "Stok Rendah"
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-red-100 text-red-600"
-                }`}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${p.status === "Tersedia"
+                  ? "bg-green-100 text-green-700"
+                  : p.status === "Stok Rendah"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-red-100 text-red-600"
+                  }`}
               >
                 {p.status}
               </span>

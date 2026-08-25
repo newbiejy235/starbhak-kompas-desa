@@ -81,6 +81,30 @@ export default function Navbar() {
     }
   }, [])
 
+  // Scroll spy — update activeLink berdasarkan section yang terlihat
+  useEffect(() => {
+    const sectionIds = ["beranda", "tentang", "layanan", "testimoni", "kontak"]
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[]
+
+    if (sections.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveLink(`#${entry.target.id}`)
+          }
+        }
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+    )
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
+
   const dashboardHref =
     role === "admin"
       ? "/admin/dashboard"

@@ -1,20 +1,32 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
-import { formatRupiah, formatDateTime, ORDER_STATUS_LABEL } from "@/lib/format";
-import { EmptyState } from "@/components/shared/States";
-import StatusBadge from "@/components/shared/StatusBadge";
-import { MapPin, Store, ArrowRight, XCircle } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
-import type { FarmerOrder } from "@/lib/types/market";
+import { EmptyState } from "@/components/shared/States";
 import { Skeleton } from "@/components/ui/Skeleton";
+import {
+  ORDER_STATUS_LABEL,
+  PAYMENT_STATUS_LABEL,
+} from "@/lib/format";
+import type { FarmerOrder } from "@/lib/types/market";
+import OrderCard from "@/components/petanipage/orders/OrderCard";
+import OrderDetailDrawer from "@/components/petanipage/orders/OrderDetailDrawer";
+import CancelDialog from "@/components/petanipage/orders/CancelDialog";
 
 function OrdersSkeleton() {
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
+    <div className="mx-auto max-w-5xl space-y-4">
       <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-4 w-64 mb-6" />
+      <Skeleton className="mb-4 h-4 w-64" />
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[68px] rounded-xl" />
+        ))}
+      </div>
+      <Skeleton className="h-16 rounded-xl" />
       {Array.from({ length: 3 }).map((_, i) => (
         <Skeleton key={i} className="h-52 rounded-card" />
       ))}
@@ -22,126 +34,272 @@ function OrdersSkeleton() {
   );
 }
 
+function StatPill({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p
+        className={`mt-0.5 text-xl font-black ${
+          accent ? "text-primary" : "text-gray-900"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+const selectClass =
+  "rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 focus:border-primary focus:outline-none";
+
 export default function PetaniOrders() {
   const user = getClientUser();
 
-  const { data: orders, loading, reload } = useFetch(
+  const { data, loading, reload } = useFetch(
     () =>
       user ? getFarmerOrders(user.id) : Promise.resolve([] as FarmerOrder[]),
     [user?.id],
   );
+  const orders = useMemo(() => data ?? [], [data]);
 
-  if (loading) return <OrdersSkeleton />;
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [deliveryFilter, setDeliveryFilter] = useState("all");
+  const [sort, setSort] = useState("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [selected, setSelected] = useState<FarmerOrder | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<FarmerOrder | null>(null);
+  const [advancingKey, setAdvancingKey] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
 
-  const list = orders ?? [];
+  const filtered = useMemo(() => {
+    let list = [...orders];
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      list = list.filter(
+        (o) =>
+          o.orderCode.toLowerCase().includes(q) ||
+          o.buyerName.toLowerCase().includes(q) ||
+          o.commodityName.toLowerCase().includes(q),
+      );
+    }
+    if (statusFilter !== "all") list = list.filter((o) => o.status === statusFilter);
+    if (paymentFilter !== "all")
+      list = list.filter((o) => (o.paymentStatus ?? "pending") === paymentFilter);
+    if (deliveryFilter !== "all")
+      list = list.filter((o) => o.deliveryMethod === deliveryFilter);
+    list.sort((a, b) =>
+      sort === "newest"
+        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    return list;
+  }, [orders, query, statusFilter, paymentFilter, deliveryFilter, sort]);
 
-  const nextStatus = (status: string): string | null => {
-    const flow: Record<string, string> = {
-      pending: "confirmed",
-      confirmed: "processing",
-      processing: "shipped",
-      shipped: "completed",
-    };
-    return flow[status] ?? null;
+  const stats = useMemo(
+    () => ({
+      total: orders.length,
+      pending: orders.filter((o) => o.status === "pending").length,
+      processing: orders
+        .filter((o) => ["confirmed", "processing", "shipped"].includes(o.status))
+        .length,
+      completed: orders.filter((o) => o.status === "completed").length,
+    }),
+    [orders],
+  );
+
+  const handleAdvance = async (id: number, status: string) => {
+    if (!user || advancingKey) return;
+    setAdvancingKey(`${id}-${status}`);
+    setActionError(null);
+    try {
+      const res = await updateOrderStatus(id, status, user.id);
+      if (!res.success) setActionError(res.message);
+      await reload();
+      setVersion((v) => v + 1);
+    } finally {
+      setAdvancingKey(null);
+    }
   };
 
-  const advance = async (id: number, status: string) => {
-    if (!user) return;
-    await updateOrderStatus(id, status, user.id);
-    reload();
+  const confirmCancel = async () => {
+    if (!cancelTarget) return;
+    await handleAdvance(cancelTarget.id, "cancelled");
+    setCancelTarget(null);
   };
+
+  if (loading && orders.length === 0) return <OrdersSkeleton />;
 
   return (
-    <div className="max-w-5xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Pesanan Masuk</h1>
-      <p className="text-sm text-gray-500 mb-6">Kelola dan proses pesanan dari pembeli.</p>
+    <div className="min-h-screen animate-fade-up">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Pesanan Masuk</h1>
+        <p className="mt-1 mb-5 text-sm text-gray-500">
+          Kelola pesanan, pembayaran, pengiriman, dan komunikasi dengan pembeli.
+        </p>
 
-      {list.length === 0 ? (
-        <EmptyState
-          title="Belum Ada Pesanan"
-          message="Pesanan dari pembeli akan muncul di sini."
-        />
-      ) : (
-        <div className="space-y-4">
-          {list.map((o, i) => {
-            const next = nextStatus(o.status);
-            return (
+        {/* Stats */}
+        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <StatPill label="Total Pesanan" value={stats.total} />
+          <StatPill label="Menunggu" value={stats.pending} />
+          <StatPill label="Diproses" value={stats.processing} />
+          <StatPill label="Selesai" value={stats.completed} accent />
+        </div>
+
+        {/* Filter bar */}
+        <div className="mb-4 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Cari kode pesanan, pembeli, atau komoditas..."
+                aria-label="Cari pesanan"
+                className="w-full rounded-xl border border-gray-200 py-2.5 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFilters((v) => !v)}
+              aria-label="Tampilkan filter"
+              aria-expanded={showFilters}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors sm:hidden ${
+                showFilters
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-gray-200 text-gray-700"
+              }`}
+            >
+              <SlidersHorizontal size={15} />
+            </button>
+          </div>
+
+          <div
+            className={`${showFilters ? "grid" : "hidden"} mt-3 grid-cols-2 gap-2 sm:grid sm:grid-cols-4`}
+          >
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              aria-label="Filter status pesanan"
+              className={selectClass}
+            >
+              <option value="all">Semua Status</option>
+              {Object.entries(ORDER_STATUS_LABEL).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              aria-label="Filter status pembayaran"
+              className={selectClass}
+            >
+              <option value="all">Semua Pembayaran</option>
+              {Object.entries(PAYMENT_STATUS_LABEL).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            <select
+              value={deliveryFilter}
+              onChange={(e) => setDeliveryFilter(e.target.value)}
+              aria-label="Filter metode penerimaan"
+              className={selectClass}
+            >
+              <option value="all">Semua Pengiriman</option>
+              <option value="pickup">Ambil Sendiri</option>
+              <option value="expedition">Ekspedisi</option>
+            </select>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              aria-label="Urutkan pesanan"
+              className={selectClass}
+            >
+              <option value="newest">Terbaru</option>
+              <option value="oldest">Terlama</option>
+            </select>
+          </div>
+        </div>
+
+        {actionError && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-danger">
+            {actionError}
+          </div>
+        )}
+
+        {/* List */}
+        {filtered.length === 0 ? (
+          <EmptyState
+            title={orders.length === 0 ? "Belum Ada Pesanan" : "Tidak Ada Pesanan"}
+            message={
+              orders.length === 0
+                ? "Pesanan dari pembeli akan muncul di sini."
+                : "Tidak ada pesanan yang cocok dengan filter saat ini."
+            }
+          />
+        ) : (
+          <div className="space-y-3">
+            {filtered.map((o, i) => (
               <div
                 key={o.id}
-                className="bg-white rounded-card border border-gray-200/80 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth overflow-hidden animate-fade-up"
-                style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
+                className="animate-fade-up"
+                style={{
+                  animationDelay: `${Math.min(i * 60, 360)}ms`,
+                  animationFillMode: "backwards",
+                }}
               >
-                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                  <div>
-                    <p className="text-xs text-gray-500">{formatDateTime(o.createdAt)}</p>
-                    <p className="text-sm font-bold text-gray-800">{o.orderCode}</p>
-                  </div>
-                  <StatusBadge status={o.status} />
-                </div>
-
-                <div className="px-5 py-4 grid sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-xl font-black flex-shrink-0">
-                      {o.commodityName?.charAt(0)?.toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{o.commodityName}</p>
-                      <p className="text-xs text-gray-500">
-                        {Number(o.quantity)} × {formatRupiah(o.unitPrice)}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Pembayaran: <StatusBadge status={o.paymentStatus ?? "pending"} />
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p className="flex items-center gap-2">
-                      <Store size={14} className="text-primary" /> {o.buyerName}
-                      <span className="text-xs text-gray-400">({o.buyerNoTelp})</span>
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <MapPin size={14} className="text-primary" />
-                      {o.deliveryMethod === "pickup" ? "Pick Up" : o.deliveryAddress}
-                    </p>
-                    <p className="font-bold text-primary text-base">
-                      Total: {formatRupiah(o.totalPrice)}
-                    </p>
-                  </div>
-                </div>
-
-                {o.notes && (
-                  <div className="px-5 pb-3">
-                    <p className="text-xs text-gray-500 italic bg-gray-50 rounded-lg px-3 py-2">
-                      Catatan pembeli: {o.notes}
-                    </p>
-                  </div>
-                )}
-
-                {next && (
-                  <div className="px-5 pb-5">
-                    <button
-                      onClick={() => advance(o.id, next)}
-                      className="inline-flex items-center gap-2 w-full sm:w-auto rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-sm"
-                    >
-                      Ubah ke &quot;{ORDER_STATUS_LABEL[next]}&quot; <ArrowRight size={16} />
-                    </button>
-                  </div>
-                )}
-                {o.status === "pending" && (
-                  <div className="px-5 pb-5">
-                    <button
-                      onClick={() => advance(o.id, "cancelled")}
-                      className="inline-flex items-center gap-2 w-full sm:w-auto rounded-xl border border-danger/30 px-6 py-3 text-sm font-bold text-danger hover:bg-danger/5 active:scale-[0.98] transition-all duration-200"
-                    >
-                      <XCircle size={16} /> Batalkan Pesanan
-                    </button>
-                  </div>
-                )}
+                <OrderCard
+                  order={o}
+                  advancingKey={advancingKey}
+                  onOpen={setSelected}
+                  onAdvance={handleAdvance}
+                  onCancelRequest={setCancelTarget}
+                />
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Detail drawer */}
+      {selected && (
+        <OrderDetailDrawer
+          key={`${selected.id}-${version}`}
+          orderId={selected.id}
+          summary={selected}
+          version={version}
+          onClose={() => setSelected(null)}
+          onAdvance={handleAdvance}
+          onCancelRequest={setCancelTarget}
+          advancingKey={advancingKey}
+        />
+      )}
+
+      {/* Cancel confirmation */}
+      {cancelTarget && (
+        <CancelDialog
+          orderCode={cancelTarget.orderCode}
+          onConfirm={confirmCancel}
+          onDismiss={() => setCancelTarget(null)}
+        />
       )}
     </div>
   );
