@@ -16,12 +16,8 @@ import {
   Trash2,
   Loader2,
   CalendarDays,
-  LockKeyhole,
-  CheckCircle2,
-  AlertCircle,
-  Save,
-  Building2,
-  type LucideIcon,
+  KeyRound,
+  ShieldCheck,
 } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
@@ -37,11 +33,6 @@ import { toast } from "sonner";
 const inputCls =
   "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10";
 
-const labelCls = "block text-xs font-medium text-gray-700 mb-1.5";
-
-/* ============================================================
-   Komponen kecil
-   ============================================================ */
 function FieldSkeleton() {
   return (
     <div className="space-y-6">
@@ -50,57 +41,6 @@ function FieldSkeleton() {
         <Skeleton className="w-[380px] h-[420px] rounded-2xl" />
         <Skeleton className="flex-1 h-[420px] rounded-2xl" />
       </div>
-    </div>
-  );
-}
-
-function SectionHeader({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span
-        aria-hidden
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E4F1EB] text-[#025246]"
-      >
-        <Icon size={15} strokeWidth={2} />
-      </span>
-      <div className="min-w-0">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-        <p className="mt-0.5 text-xs text-gray-500">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function InfoItem({
-  icon: Icon,
-  label,
-  value,
-  valueClass = "",
-}: {
-  icon: LucideIcon;
-  label: string;
-  value?: string | null;
-  valueClass?: string;
-}) {
-  return (
-    <div className="min-w-0">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-        {label}
-      </p>
-      <p className="mt-1 flex items-start gap-1.5 text-sm font-medium text-gray-900">
-        <Icon size={14} aria-hidden className="mt-0.5 shrink-0 text-primary" />
-        <span className={`min-w-0 break-words ${valueClass}`}>
-          {value && value.trim() ? value : "-"}
-        </span>
-      </p>
     </div>
   );
 }
@@ -443,6 +383,57 @@ export default function PetaniProfile() {
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Alamat</label>
                   <input name="address" defaultValue={p.address ?? ""} className={inputCls} placeholder="Kota / Alamat lengkap" />
                 </div>
+              </div>
+
+              {/* Keamanan — opsional, hanya isi bila ingin mengganti sandi */}
+              <div className="border-t border-gray-100 pt-5">
+                <div className="flex items-start gap-3 mb-4">
+                  <span
+                    aria-hidden
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                  >
+                    <KeyRound size={15} />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900">Keamanan</h3>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      Kosongkan kedua kolom jika tidak ingin mengganti kata sandi.
+                    </p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="current-password" className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Sandi Saat Ini
+                    </label>
+                    <input
+                      id="current-password"
+                      name="currentPassword"
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="Masukkan sandi saat ini"
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="new-password" className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Sandi Baru
+                    </label>
+                    <input
+                      id="new-password"
+                      name="newPassword"
+                      type="password"
+                      minLength={6}
+                      autoComplete="new-password"
+                      placeholder="Minimal 6 karakter"
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+                <p className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-400">
+                  <ShieldCheck size={12} className="text-primary" />
+                  Sandi disimpan terenkripsi dan tidak dapat dilihat siapa pun.
+                </p>
               </div>
             </div>
 

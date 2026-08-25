@@ -28,7 +28,13 @@ export type SidebarGroup = {
   children: SidebarItem[];
 };
 
-export type SidebarEntry = SidebarItem | SidebarGroup;
+/** Judul seksi navigasi (non-interaktif), mis. "UTAMA". */
+export type SidebarHeading = {
+  id: string;
+  label: string;
+};
+
+export type SidebarEntry = SidebarItem | SidebarGroup | SidebarHeading;
 
 function isSidebarGroup(item: SidebarEntry): item is SidebarGroup {
   return Array.isArray((item as SidebarGroup).children);
@@ -160,12 +166,15 @@ export default function DashboardSidebar({
   };
   const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false });
 
-  // Rute aktif bisa berada pada item biasa maupun di dalam grup.
-  const activeEntry = menuItems.find((item) =>
-    isSidebarGroup(item)
-      ? item.children.some((c) => matchesRoute(pathname, c.href))
-      : matchesRoute(pathname, item.href),
-  );
+  // Rute aktif bisa berada pada item biasa maupun di dalam grup (heading dilewati).
+  const activeEntry = menuItems.find((item) => {
+    if (isSidebarGroup(item)) {
+      return item.children.some((c) => matchesRoute(pathname, c.href));
+    }
+    // Judul seksi tidak punya href sehingga tidak pernah aktif.
+    if (!("href" in item)) return false;
+    return matchesRoute(pathname, item.href);
+  });
 
   useEffect(() => {
     if (!activeEntry) return;
@@ -220,6 +229,18 @@ export default function DashboardSidebar({
           }}
         />
         {menuItems.map((item) => {
+          // Judul seksi: teks non-interaktif pemisah antar grup menu.
+          if (!("children" in item) && !("href" in item)) {
+            return (
+              <p
+                key={item.id}
+                className="px-4 pb-1 pt-4 text-[11px] font-bold uppercase tracking-wider text-gray-400 first:pt-1"
+              >
+                {item.label}
+              </p>
+            );
+          }
+
           if (isSidebarGroup(item)) {
             return (
               <div
@@ -236,7 +257,7 @@ export default function DashboardSidebar({
             );
           }
 
-          const active = matchesRoute(pathname, item.href);
+          const active = "href" in item && matchesRoute(pathname, item.href);
           return (
             <Link
               key={item.id}

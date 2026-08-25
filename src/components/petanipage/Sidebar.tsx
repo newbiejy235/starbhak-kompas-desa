@@ -2,6 +2,7 @@
 
 import {
   LayoutDashboard,
+  Package,
   PackagePlus,
   ShoppingBag,
   History,
@@ -9,7 +10,6 @@ import {
   Bell,
   CircleUser,
   MessageCircle,
-  EllipsisVertical,
   CalendarDays,
   NotebookPen,
   TrendingUp,
@@ -18,55 +18,55 @@ import {
   Trophy,
   BookOpen,
   CircleQuestionMark,
+  ChartColumn,
+  Boxes,
 } from "lucide-react";
 import DashboardSidebar, {
   type SidebarEntry,
 } from "@/components/shared/DashboardSidebar";
 
+/**
+ * Navigasi petani dikelompokkan mengikuti alur kerja seller:
+ * UTAMA -> PRODUK -> OPERASIONAL -> PERFORMA -> KOMUNIKASI -> LAINNYA.
+ * Hanya fitur yang benar-benar tersedia yang ditampilkan.
+ */
 const menuItems: SidebarEntry[] = [
+  // ── UTAMA ──
+  { id: "heading-utama", label: "Utama" },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/petani/dashboard" },
-  { id: "chat", label: "Pesan", icon: MessageCircle, href: "/petani/chat" },
-  { id: "add", label: "Tambah Komoditas", icon: PackagePlus, href: "/petani/commodities/add" },
-  { id: "orders", label: "Pesanan Masuk", icon: ShoppingBag, href: "/petani/orders" },
+  { id: "orders", label: "Pesanan", icon: ShoppingBag, href: "/petani/orders" },
   { id: "sales", label: "Riwayat Penjualan", icon: History, href: "/petani/sales" },
+  { id: "buyers", label: "Pembeli", icon: Users, href: "/petani/pembeli" },
+
+  // ── PRODUK ──
+  { id: "heading-produk", label: "Produk" },
+  { id: "commodities", label: "Komoditas", icon: Package, href: "/petani/commodities" },
+  { id: "add", label: "Tambah Komoditas", icon: PackagePlus, href: "/petani/commodities/add" },
+  { id: "stock", label: "Stok", icon: Boxes, href: "/petani/stok" },
+
+  // ── OPERASIONAL ──
+  { id: "heading-operasional", label: "Operasional" },
+  { id: "calendar", label: "Kalender Panen", icon: CalendarDays, href: "/petani/kalender-panen" },
+  { id: "harvest-notes", label: "Catatan Panen", icon: NotebookPen, href: "/petani/catatan-panen" },
+
+  // ── PERFORMA ──
+  { id: "heading-performa", label: "Performa" },
+  { id: "analytics", label: "Analitik", icon: ChartColumn, href: "/petani/analitik" },
+  { id: "target", label: "Target Penjualan", icon: Target, href: "/petani/target-penjualan" },
+  { id: "achievements", label: "Pencapaian", icon: Trophy, href: "/petani/pencapaian" },
+
+  // ── KOMUNIKASI ──
+  { id: "heading-komunikasi", label: "Komunikasi" },
+  { id: "chat", label: "Pesan", icon: MessageCircle, href: "/petani/chat" },
   { id: "reviews", label: "Ulasan", icon: Star, href: "/petani/reviews" },
   { id: "notifications", label: "Notifikasi", icon: Bell, href: "/petani/notifications" },
+
+  // ── LAINNYA ──
+  { id: "heading-lainnya", label: "Lainnya" },
+  { id: "price-history", label: "Riwayat Harga", icon: TrendingUp, href: "/petani/riwayat-harga" },
+  { id: "guide", label: "Panduan", icon: BookOpen, href: "/petani/panduan" },
+  { id: "help", label: "Bantuan", icon: CircleQuestionMark, href: "/petani/bantuan" },
   { id: "profile", label: "Profil", icon: CircleUser, href: "/petani/profile" },
-  {
-    id: "more",
-    label: "Lainnya",
-    icon: EllipsisVertical,
-    children: [
-      {
-        id: "calendar",
-        label: "Kalender Panen",
-        icon: CalendarDays,
-        href: "/petani/kalender-panen",
-      },
-      {
-        id: "harvest-notes",
-        label: "Catatan Panen",
-        icon: NotebookPen,
-        href: "/petani/catatan-panen",
-      },
-      {
-        id: "price-history",
-        label: "Riwayat Harga",
-        icon: TrendingUp,
-        href: "/petani/riwayat-harga",
-      },
-      {
-        id: "target",
-        label: "Target Penjualan",
-        icon: Target,
-        href: "/petani/target-penjualan",
-      },
-      { id: "buyers", label: "Pembeli", icon: Users, href: "/petani/pembeli" },
-      { id: "achievements", label: "Pencapaian", icon: Trophy, href: "/petani/pencapaian" },
-      { id: "guide", label: "Panduan", icon: BookOpen, href: "/petani/panduan" },
-      { id: "help", label: "Bantuan", icon: CircleQuestionMark, href: "/petani/bantuan" },
-    ],
-  },
 ];
 
 export default function PetaniSidebar() {

@@ -15,6 +15,7 @@ import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import { toISODate } from "@/utils/date";
 import PageHeader from "@/components/shared/PageHeader";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -66,6 +67,8 @@ export default function CatatanPanenPage() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  // Konfirmasi hapus memakai dialog (bukan window.confirm) agar konsisten.
+  const [deleteTarget, setDeleteTarget] = useState<HarvestRecordRow | null>(null);
 
   const totals = useMemo(() => {
     const list = records ?? [];
@@ -92,12 +95,12 @@ export default function CatatanPanenPage() {
     reload();
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (record: HarvestRecordRow) => {
     if (!user) return;
-    if (!window.confirm("Hapus catatan panen ini?")) return;
-    setDeletingId(id);
-    const res = await deleteHarvestRecord(user.id, id);
+    setDeletingId(record.id);
+    const res = await deleteHarvestRecord(user.id, record.id);
     setDeletingId(null);
+    setDeleteTarget(null);
     if (!res.success) {
       toast.error(res.message);
       return;
@@ -199,7 +202,7 @@ export default function CatatanPanenPage() {
               </div>
 
               <button
-                onClick={() => handleDelete(r.id)}
+                onClick={() => setDeleteTarget(r)}
                 disabled={deletingId === r.id}
                 aria-label={`Hapus catatan panen ${r.commodityName}`}
                 className="self-start rounded-lg p-1.5 text-gray-400 transition-all duration-150 hover:bg-red-50 hover:text-red-500 active:scale-90 disabled:opacity-50"
@@ -212,6 +215,18 @@ export default function CatatanPanenPage() {
       )}
 
       {/* Modal catat panen */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Hapus Catatan Panen?"
+        message={`Catatan panen ${deleteTarget?.commodityName ?? ""} akan dihapus permanen dari riwayat Anda.`}
+        confirmLabel="Hapus"
+        onConfirm={() => {
+          if (deleteTarget) return handleDelete(deleteTarget);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+        isPending={deletingId !== null}
+      />
+
       <Modal open={open} onClose={() => setOpen(false)} title="Catat Hasil Panen">
         <form onSubmit={submit} className="space-y-4">
           <div>
