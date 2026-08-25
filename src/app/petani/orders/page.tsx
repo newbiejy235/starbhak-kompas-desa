@@ -47,9 +47,8 @@ function StatPill({
     <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
       <p className="text-xs text-gray-500">{label}</p>
       <p
-        className={`mt-0.5 text-xl font-black ${
-          accent ? "text-primary" : "text-gray-900"
-        }`}
+        className={`mt-0.5 text-xl font-black ${accent ? "text-primary" : "text-gray-900"
+          }`}
       >
         {value}
       </p>
@@ -178,11 +177,10 @@ export default function PetaniOrders() {
               onClick={() => setShowFilters((v) => !v)}
               aria-label="Tampilkan filter"
               aria-expanded={showFilters}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors sm:hidden ${
-                showFilters
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors sm:hidden ${showFilters
                   ? "border-primary bg-primary/5 text-primary"
                   : "border-gray-200 text-gray-700"
-              }`}
+                }`}
             >
               <SlidersHorizontal size={15} />
             </button>

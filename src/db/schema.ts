@@ -410,6 +410,52 @@ export const verificationCode = pgTable("verification_code", {
   expiredDate: timestamp().notNull().defaultNow(),
 });
 
+export const salesTargetStatusEnum = pgEnum("sales_target_status", [
+  "active",
+  "completed",
+  "cancelled",
+]);
+
+export const salesTargetsTable = pgTable(
+  "sales_targets_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    farmerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    targetAmount: numeric({ precision: 14, scale: 2 }).notNull(),
+    startDate: timestamp({ withTimezone: true }).notNull(),
+    endDate: timestamp({ withTimezone: true }).notNull(),
+    status: salesTargetStatusEnum().notNull().default("active"),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("sales_targets_farmer_idx").on(table.farmerId)],
+);
+
+export const harvestRecordsTable = pgTable(
+  "harvest_records_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    farmerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    commodityId: integer()
+      .notNull()
+      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+    harvestDate: timestamp({ withTimezone: true }).notNull(),
+    quantity: numeric({ precision: 12, scale: 2 }).notNull(),
+    unit: varchar({ length: 30 }).notNull().default("kg"),
+    quality: varchar({ length: 50 }).notNull().default("A"),
+    notes: text(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("harvest_records_farmer_idx").on(table.farmerId),
+    index("harvest_records_commodity_idx").on(table.commodityId),
+  ],
+);
+
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;
@@ -422,3 +468,5 @@ export type Notification = typeof notificationsTable.$inferSelect;
 export type ChatRoom = typeof chatRoomsTable.$inferSelect;
 export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;
+export type SalesTarget = typeof salesTargetsTable.$inferSelect;
+export type HarvestRecord = typeof harvestRecordsTable.$inferSelect;

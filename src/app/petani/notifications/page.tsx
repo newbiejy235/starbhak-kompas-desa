@@ -23,9 +23,7 @@ import { useFetch } from "@/lib/hooks";
 import type { NotificationRow } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-/* ============================================================
-   Design tokens & konfigurasi tipe notifikasi
-   ============================================================ */
+
 const GREEN = "#025246";
 const GREEN_SOFT = "#F0F7F5";
 
@@ -36,7 +34,6 @@ interface TypeMeta {
   icon: LucideIcon;
   label: string;
   iconClass: string;
-  /** Rute tujuan jika bisa disimpulkan dengan aman dari tipe notifikasi. */
   href?: string;
 }
 
@@ -150,9 +147,8 @@ function NotificationsSkeleton() {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className={`flex gap-3.5 px-4 py-4 sm:gap-4 sm:px-5 ${
-              i > 0 ? "border-t border-gray-100" : ""
-            }`}
+            className={`flex gap-3.5 px-4 py-4 sm:gap-4 sm:px-5 ${i > 0 ? "border-t border-gray-100" : ""
+              }`}
           >
             <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -185,9 +181,8 @@ function NotificationItem({
   const Icon = meta.icon;
   const unread = !notification.isRead;
 
-  const shared = `relative flex gap-3.5 px-4 py-4 transition-colors duration-150 animate-fade-up sm:gap-4 sm:px-5 ${
-    unread ? "bg-[#F5FAF8] hover:bg-[#EDF5F2]" : "hover:bg-gray-50"
-  } ${focusRing}`;
+  const shared = `relative flex gap-3.5 px-4 py-4 transition-colors duration-150 animate-fade-up sm:gap-4 sm:px-5 ${unread ? "bg-[#F5FAF8] hover:bg-[#EDF5F2]" : "hover:bg-gray-50"
+    } ${focusRing}`;
 
   const style = {
     animationDelay: `${Math.min(index * 40, 240)}ms`,
@@ -206,9 +201,8 @@ function NotificationItem({
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-3">
           <h3
-            className={`min-w-0 truncate text-sm ${
-              unread ? "font-semibold text-gray-900" : "font-medium text-gray-700"
-            }`}
+            className={`min-w-0 truncate text-sm ${unread ? "font-semibold text-gray-900" : "font-medium text-gray-700"
+              }`}
           >
             {unread && (
               <>
@@ -403,11 +397,10 @@ export default function PetaniNotifications() {
                     type="button"
                     onClick={() => setTypeFilter(f.value)}
                     aria-pressed={isActive}
-                    className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200/70 hover:text-gray-900"
-                    }`}
+                    className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${isActive
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200/70 hover:text-gray-900"
+                      }`}
                   >
                     {f.label}
                   </button>

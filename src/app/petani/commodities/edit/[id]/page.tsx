@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useActionState } from "react";
+import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 import {
   getCategories,
@@ -60,7 +61,12 @@ export default function EditCommodity() {
     async (prev: ActionState | null, data: FormData) => {
       if (!user) return { success: false, message: "Silakan masuk" };
       const res = await updateCommodity(Number(id), user.id, data);
-      if (res.success) router.push("/petani/dashboard");
+      if (res.success) {
+        toast.success("Komoditas berhasil diperbarui");
+        router.push("/petani/dashboard");
+      } else {
+        toast.error(res.message);
+      }
       return res;
     },
     null,

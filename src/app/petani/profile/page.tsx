@@ -30,6 +30,7 @@ import type { AuthUser } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Avatar from "@/components/ui/Avatar";
 import ImageCropModal from "@/components/ui/ImageCropModal";
+import { toast } from "sonner";
 
 /* ============================================================
    Design system lokal
@@ -547,6 +548,7 @@ export default function PetaniProfile() {
 
       const res = await updateProfile(user.id, data);
       if (res.success) {
+        toast.success("Profil berhasil diperbarui");
         setPreviewUrl(null);
         setSelectedFile(null);
         setRemoveFoto(false);
@@ -564,6 +566,8 @@ export default function PetaniProfile() {
           });
         }
         reload();
+      } else {
+        toast.error(res.message);
       }
       return res;
     },

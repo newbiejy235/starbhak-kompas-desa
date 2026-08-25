@@ -36,6 +36,13 @@
       "when": 1787145316600,
       "tag": "0004_purple_jack_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787651540899,
+      "tag": "0005_smart_kree",
+      "breakpoints": true
     }
   ]
 }

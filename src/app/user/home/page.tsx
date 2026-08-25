@@ -14,20 +14,43 @@ import type {
 } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
+/* Fokus keyboard konsisten dengan halaman petani */
+const focusRing =
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246]";
+
 function CatalogSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-card border border-gray-200/80 overflow-hidden">
-          <Skeleton className="aspect-[4/3] rounded-none" />
-          <div className="p-5 space-y-3">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
-            <Skeleton className="h-6 w-28 mt-2" />
-          </div>
+    <div className="animate-fade-up">
+      {/* Hero */}
+      <Skeleton className="mb-7 h-44 rounded-card sm:h-40" />
+      {/* Filter kategori */}
+      <div className="mb-6">
+        <Skeleton className="mb-3 h-4 w-20" />
+        <div className="flex gap-2">
+          {[72, 96, 88, 104, 84].map((w, i) => (
+            <Skeleton key={i} className="h-9 rounded-lg" style={{ width: w }} />
+          ))}
         </div>
-      ))}
+      </div>
+      {/* Judul katalog */}
+      <div className="mb-5 space-y-2">
+        <Skeleton className="h-6 w-52" />
+        <Skeleton className="h-3.5 w-72" />
+      </div>
+      {/* Grid produk */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="overflow-hidden rounded-card border border-gray-200/80 bg-white">
+            <Skeleton className="aspect-[4/3] rounded-none" />
+            <div className="space-y-3 p-5">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="mt-2 h-6 w-28" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -58,33 +81,32 @@ function HomeContent() {
   const products = data?.products ?? [];
   const categories = data?.categories ?? [];
 
+  const chipClass = (active: boolean) =>
+    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${
+      active
+        ? "bg-primary text-white"
+        : "border border-gray-200 bg-white text-gray-600 hover:border-primary hover:text-primary"
+    }`;
+
   return (
-    <>
-      {/* Hero banner dengan entrance animation (PRD 8.3) */}
-      <section className="bg-gradient-to-r from-primary to-primary-dark rounded-card p-6 sm:p-10 mb-8 text-white relative overflow-hidden shadow-soft animate-fade-up">
-        <div
-          aria-hidden
-          className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-secondary/20 blur-3xl animate-float"
-        />
-        <div
-          aria-hidden
-          className="absolute -bottom-20 right-40 w-48 h-48 rounded-full bg-white/10 blur-2xl"
-        />
+    <div className="animate-fade-up">
+      {/* Hero banner — tenang, tanpa dekorasi berlebih */}
+      <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
         <div className="relative z-10 max-w-xl">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+          <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl lg:text-3xl">
             Panen Segar Langsung dari Petani Lokal
           </h1>
-          <p className="text-white/80 text-sm sm:text-base mb-6">
-            Dapatkan kualitas terbaik dengan harga yang lebih transparan. Dukung petani Indonesia!
+          <p className="mt-2 mb-5 max-w-md text-sm text-white/80">
+            Kualitas terbaik dengan harga transparan. Dukung petani Indonesia!
           </p>
           <Link
             href="#katalog"
-            className="inline-block bg-white text-primary px-6 py-3 rounded-xl text-sm font-bold hover:bg-emerald-50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm"
+            className={`inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-primary shadow-sm transition-colors duration-150 hover:bg-emerald-50 active:scale-[0.98] ${focusRing}`}
           >
             Jelajahi Katalog
           </Link>
         </div>
-        <div className="hidden md:block absolute right-10 top-1/2 -translate-y-1/2 opacity-20">
+        <div className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 opacity-15 md:block">
           <Image
             src="/images/user/HeaderImageUser.svg"
             alt=""
@@ -95,72 +117,89 @@ function HomeContent() {
       </section>
 
       {/* Filter kategori */}
-      <section id="katalog" className="mb-8 scroll-mt-24">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Kategori</h2>
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-          <button
-            onClick={() => router.push("/user/home")}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 active:scale-95 whitespace-nowrap ${
-              !catParam
-                ? "bg-primary text-white border-primary shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-            }`}
-          >
-            Semua
-          </button>
-          {categories.map((c) => (
+      <section id="katalog" className="mb-7 scroll-mt-24">
+        <h2 className="mb-1 text-lg font-bold tracking-tight text-neutral-900">Kategori</h2>
+        <p className="mb-3 text-xs text-gray-500">Saring komoditas sesuai kebutuhan Anda.</p>
+        <div
+          role="group"
+          aria-label="Filter kategori"
+          className="-mx-4 overflow-x-auto px-4 pb-1 scrollbar-thin sm:mx-0 sm:px-0"
+        >
+          <div className="flex gap-2">
             <button
-              key={c.id}
-              onClick={() => router.push(`/user/home?category=${c.id}`)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 active:scale-95 whitespace-nowrap ${
-                catParam === String(c.id)
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-              }`}
+              type="button"
+              onClick={() => router.push("/user/home")}
+              aria-pressed={!catParam}
+              className={chipClass(!catParam)}
             >
-              {c.icon && <span className="mr-1">{c.icon}</span>}
-              {c.name}
+              Semua
             </button>
-          ))}
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => router.push(`/user/home?category=${c.id}`)}
+                aria-pressed={catParam === String(c.id)}
+                className={chipClass(catParam === String(c.id))}
+              >
+                {c.icon && <span className="mr-1">{c.icon}</span>}
+                {c.name}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Katalog Komoditas</h2>
-          <p className="text-sm text-gray-500 mt-1">
+      {/* Katalog */}
+      <section aria-label="Katalog komoditas">
+        <div className="mb-5">
+          <h2 className="text-lg font-bold tracking-tight text-neutral-900">
+            Katalog Komoditas
+          </h2>
+          <p className="mt-0.5 text-sm text-gray-500">
             {search
               ? `Hasil pencarian untuk "${search}"`
-              : "Jelajahi hasil panen terbaik dari berbagai daerah"}
+              : "Jelajahi hasil panen terbaik dari berbagai daerah."}
           </p>
         </div>
-      </div>
 
-      {loading ? (
-        <CatalogSkeleton />
-      ) : products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((item, i) => (
-            <div
-              key={item.id}
-              className="animate-fade-up"
-              style={{ animationDelay: `${Math.min(i * 60, 480)}ms`, animationFillMode: "backwards" }}
-            >
-              <ProductCard data={item} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="Belum Ada Produk"
-          message={
-            search || catParam
-              ? "Tidak ada produk yang cocok dengan filter Anda."
-              : "Saat ini belum ada komoditas hasil panen yang tersedia."
-          }
-        />
-      )}
-    </>
+        {loading ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="overflow-hidden rounded-card border border-gray-200/80 bg-white">
+                <Skeleton className="aspect-[4/3] rounded-none" />
+                <div className="space-y-3 p-5">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-6 w-28 mt-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : products.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {products.map((item, i) => (
+              <div
+                key={item.id}
+                className="animate-fade-up"
+                style={{ animationDelay: `${Math.min(i * 60, 480)}ms`, animationFillMode: "backwards" }}
+              >
+                <ProductCard data={item} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="Belum Ada Produk"
+            message={
+              search || catParam
+                ? "Tidak ada produk yang cocok dengan filter Anda."
+                : "Saat ini belum ada komoditas hasil panen yang tersedia."
+            }
+          />
+        )}
+      </section>
+    </div>
   );
 }
 
