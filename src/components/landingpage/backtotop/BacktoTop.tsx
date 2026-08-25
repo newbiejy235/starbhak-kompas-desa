@@ -39,7 +39,6 @@ export default function ScrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Lingkaran keliling r=16 -> 2 * PI * 16 ≈ 100.5
   const strokeDashoffset = 100.5 - (100.5 * progress) / 100;
 
   return (

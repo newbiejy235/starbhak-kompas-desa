@@ -12,6 +12,10 @@ import ChatWidget from "@/components/shared/chatbot/ChatWidget";
 import ScrollReveal from "@/components/animation/ScrollReveal";
 import ScrollToTop from "@/components/landingpage/backtotop/BacktoTop";
 
+const ContactSection = dynamic(
+  () => import("@/components/landingpage/contact/page")
+);
+
 const PartnerSection = dynamic(
   () => import("@/components/landingpage/mitra/Mitra")
 );
@@ -165,9 +169,17 @@ export default function KompasDesaPage() {
                 <FAQSection />
               </ScrollReveal>
             </section>
+
+            <section
+              id="kontak"
+              className="bg-white w-full py-10">
+              <ScrollReveal>
+                <ContactSection />
+              </ScrollReveal>
+            </section>
           </main>
 
-          <div id="kontak" className="relative z-20 w-full">
+          <div id="footer" className="relative z-20 w-full">
             <Footer />
           </div>
         </div>

@@ -17,13 +17,6 @@ export default function NotFound() {
       <div className="absolute top-[45%] left-[8%] w-1 h-1 rounded-full bg-[#E0A34E]/50 animate-particle-slow"></div>
 
       <div className="relative z-10 max-w-md w-full flex flex-col items-center text-center">
-
-        <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase text-[#025246] bg-white border border-slate-200 rounded-full px-4 py-1.5 shadow-sm mb-8 animate-fade-in">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#025246] animate-ping-dot"></span>
-          Halaman Tidak Ditemukan
-        </span>
-
-
         <h1 className="text-[96px] sm:text-[128px] font-extrabold leading-none tracking-tighter text-slate-900 select-none">
           <span className="inline-block animate-digit-1">4</span>
           <span className="inline-block text-[#025246] animate-digit-2">0</span>

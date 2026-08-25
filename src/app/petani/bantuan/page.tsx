@@ -181,18 +181,16 @@ export default function BantuanPage() {
                     <ChevronDown
                       size={16}
                       aria-hidden
-                      className={`shrink-0 text-gray-400 transition-transform duration-200 ease-smooth ${
-                        open ? "rotate-180" : ""
-                      }`}
+                      className={`shrink-0 text-gray-400 transition-transform duration-200 ease-smooth ${open ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
                   <div
                     id={panelId}
-                    className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
-                      open
+                    className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${open
                         ? "grid-rows-[1fr] opacity-100"
                         : "grid-rows-[0fr] opacity-0"
-                    }`}
+                      }`}
                   >
                     <div className="overflow-hidden">
                       <p className="border-t border-gray-100 px-4 py-3 text-xs leading-relaxed text-gray-600">
