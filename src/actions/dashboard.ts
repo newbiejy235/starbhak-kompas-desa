@@ -7,7 +7,8 @@ import {
   reviewsTable,
   notificationsTable,
 } from "@/db/schema";
-import { eq, and, desc, sql, gte, lte, asc } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, asc, ne, inArray } from "drizzle-orm";
+import { LOW_STOCK_THRESHOLD } from "@/constants/commodities";
 
 export type DashboardStats = {
   totalCommodities: number;
@@ -43,6 +44,26 @@ export type HarvestScheduleItem = {
   date: string | null;
 };
 
+/** Jumlah pesanan aktif per status — dasar panel "perlu perhatian". */
+export type OrderStatusCounts = {
+  pending: number;
+  confirmed: number;
+  processing: number;
+  shipped: number;
+};
+
+export type LowStockItem = {
+  id: number;
+  name: string;
+  stock: number;
+  unit: string;
+};
+
+export type LowStockSummary = {
+  items: LowStockItem[];
+  total: number;
+};
+
 export async function getFarmerDashboard(farmerId: number) {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -51,14 +72,84 @@ export async function getFarmerDashboard(farmerId: number) {
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
   // OPTIMASI: Semua query dashboard jalan BERSAMAAN
-  const [stats, topProducts, activities, harvestSchedule] = await Promise.all([
-    computeStats(farmerId, startOfToday, startOfMonth, startOfLastMonth, endOfLastMonth),
-    getTopProducts(farmerId),
-    getActivities(farmerId, 5),
-    getHarvestSchedule(farmerId)
+  const [stats, topProducts, activities, harvestSchedule, statusCounts, lowStock] =
+    await Promise.all([
+      computeStats(farmerId, startOfToday, startOfMonth, startOfLastMonth, endOfLastMonth),
+      getTopProducts(farmerId),
+      getActivities(farmerId, 5),
+      getHarvestSchedule(farmerId),
+      getActiveOrderStatusCounts(farmerId),
+      getLowStock(farmerId),
+    ]);
+
+  return { stats, topProducts, activities, harvestSchedule, statusCounts, lowStock };
+}
+
+/**
+ * Hitung jumlah pesanan aktif per status (pending s.d. shipped).
+ * Dipakai dashboard untuk menjawab: "apa yang harus saya kerjakan hari ini?".
+ */
+async function getActiveOrderStatusCounts(
+  farmerId: number,
+): Promise<OrderStatusCounts> {
+  const rows = await db
+    .select({ status: ordersTable.status, count: sql<number>`count(*)::int` })
+    .from(ordersTable)
+    .where(
+      and(
+        eq(ordersTable.farmerId, farmerId),
+        inArray(ordersTable.status, [
+          "pending",
+          "confirmed",
+          "processing",
+          "shipped",
+        ]),
+      ),
+    )
+    .groupBy(ordersTable.status);
+
+  const counts: OrderStatusCounts = {
+    pending: 0,
+    confirmed: 0,
+    processing: 0,
+    shipped: 0,
+  };
+  for (const row of rows) {
+    if (row.status === "pending" || row.status === "confirmed" ||
+        row.status === "processing" || row.status === "shipped") {
+      counts[row.status] = row.count;
+    }
+  }
+  return counts;
+}
+
+/** Komoditas dengan stok <= ambang menipis (tanpa data palsu). */
+async function getLowStock(farmerId: number): Promise<LowStockSummary> {
+  const condition = and(
+    eq(commoditiesTable.farmerId, farmerId),
+    lte(commoditiesTable.stock, String(LOW_STOCK_THRESHOLD)),
+    ne(commoditiesTable.status, "rejected"),
+  );
+
+  const [items, countRows] = await Promise.all([
+    db
+      .select({
+        id: commoditiesTable.id,
+        name: commoditiesTable.name,
+        stock: commoditiesTable.stock,
+        unit: commoditiesTable.unit,
+      })
+      .from(commoditiesTable)
+      .where(condition)
+      .orderBy(asc(commoditiesTable.stock))
+      .limit(4),
+    db.select({ count: sql<number>`count(*)::int` }).from(commoditiesTable).where(condition),
   ]);
 
-  return { stats, topProducts, activities, harvestSchedule };
+  return {
+    items: items.map((r) => ({ ...r, stock: Number(r.stock) })),
+    total: countRows[0]?.count ?? 0,
+  };
 }
 
 async function computeStats(

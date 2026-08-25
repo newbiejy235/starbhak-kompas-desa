@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
@@ -61,7 +62,17 @@ const selectClass =
   "rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 focus:border-primary focus:outline-none";
 
 export default function PetaniOrders() {
+  // useSearchParams dibungkus Suspense agar halaman tetap bisa di-prerender.
+  return (
+    <Suspense fallback={<OrdersSkeleton />}>
+      <OrdersContent />
+    </Suspense>
+  );
+}
+
+function OrdersContent() {
   const user = getClientUser();
+  const searchParams = useSearchParams();
 
   const { data, loading, reload } = useFetch(
     () =>
@@ -70,8 +81,12 @@ export default function PetaniOrders() {
   );
   const orders = useMemo(() => data ?? [], [data]);
 
+  // Status awal dari URL (?status=...) agar tautan dari dashboard langsung tersaring.
+  const urlStatus = searchParams.get("status");
+  const [statusFilter, setStatusFilter] = useState(() =>
+    urlStatus && urlStatus in ORDER_STATUS_LABEL ? urlStatus : "all",
+  );
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [deliveryFilter, setDeliveryFilter] = useState("all");
   const [sort, setSort] = useState("newest");
