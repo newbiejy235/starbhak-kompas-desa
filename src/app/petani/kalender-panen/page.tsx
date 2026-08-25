@@ -7,8 +7,6 @@ import { toast } from "sonner";
 import {
   CalendarDays,
   CalendarPlus,
-  ChevronLeft,
-  ChevronRight,
   Pencil,
   Plus,
 } from "lucide-react";
@@ -16,35 +14,15 @@ import { getHarvestCalendar, updateHarvestEstimate } from "@/actions/harvest";
 import type { HarvestScheduleRow } from "@/lib/types/market";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
+import { toISODate } from "@/utils/date";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { EmptyState, ErrorState, formatImage } from "@/components/shared/States";
+import HarvestCalendarGrid from "@/components/petanipage/HarvestCalendarGrid";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatNumber } from "@/lib/format";
-
-import { DAY_LABELS } from "@/app/constants/time_date";
-import { MONTH_NAMES } from "@/app/constants/time_date";
-
-
-function toISODate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function buildMonthGrid(year: number, month: number): Date[] {
-  const first = new Date(year, month, 1);
-  const offset = (first.getDay() + 6) % 7;
-  const start = new Date(year, month, 1 - offset);
-  return Array.from({ length: 42 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    return d;
-  });
-}
 
 /* ---------------------- SKELETON ---------------------- */
 function CalendarSkeleton() {
@@ -87,6 +65,7 @@ export default function KalenderPanenPage() {
   const [editDate, setEditDate] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Kelompokkan jadwal per tanggal untuk penanda di kalender.
   const byDay = useMemo(() => {
     const map = new Map<string, HarvestScheduleRow[]>();
     for (const s of schedules ?? []) {
@@ -98,11 +77,6 @@ export default function KalenderPanenPage() {
     }
     return map;
   }, [schedules]);
-
-  const grid = useMemo(
-    () => buildMonthGrid(viewYear, viewMonth),
-    [viewYear, viewMonth],
-  );
 
   const upcoming = useMemo(() => {
     const now = new Date();
@@ -125,6 +99,12 @@ export default function KalenderPanenPage() {
     const next = new Date(viewYear, viewMonth + delta, 1);
     setViewYear(next.getFullYear());
     setViewMonth(next.getMonth());
+  };
+
+  const goToToday = () => {
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+    setSelectedDate(null);
   };
 
   const openEdit = (item: HarvestScheduleRow) => {
@@ -193,103 +173,16 @@ export default function KalenderPanenPage() {
       />
 
       {/* Kalender bulanan */}
-      <section className="mb-6 overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-soft">
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-          <p className="text-sm font-bold text-gray-900">
-            {MONTH_NAMES[viewMonth]} {viewYear}
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => changeMonth(-1)}
-              aria-label="Bulan sebelumnya"
-              className="rounded-lg p-2 text-gray-500 transition-colors duration-150 hover:bg-gray-50 hover:text-primary"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              onClick={() => {
-                setViewYear(today.getFullYear());
-                setViewMonth(today.getMonth());
-                setSelectedDate(null);
-              }}
-              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 transition-colors duration-150 hover:bg-gray-50 hover:text-primary"
-            >
-              Hari ini
-            </button>
-            <button
-              onClick={() => changeMonth(1)}
-              aria-label="Bulan berikutnya"
-              className="rounded-lg p-2 text-gray-500 transition-colors duration-150 hover:bg-gray-50 hover:text-primary"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/60">
-          {DAY_LABELS.map((d) => (
-            <div
-              key={d}
-              className="py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-400"
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7">
-          {grid.map((day) => {
-            const iso = toISODate(day);
-            const inMonth = day.getMonth() === viewMonth;
-            const isToday = iso === toISODate(today);
-            const dayItems = byDay.get(iso);
-            const isSelected = selectedDate === iso;
-            return (
-              <button
-                key={iso}
-                onClick={() =>
-                  dayItems
-                    ? setSelectedDate(isSelected ? null : iso)
-                    : setSelectedDate(null)
-                }
-                disabled={!inMonth}
-                aria-label={`${day.getDate()} ${MONTH_NAMES[day.getMonth()]}, ${dayItems?.length ?? 0} jadwal panen`}
-                aria-pressed={isSelected}
-                className={`relative flex min-h-[52px] flex-col items-center justify-start gap-1 border-b border-r border-gray-100 px-1 pt-1.5 transition-colors duration-150 last:border-r-0 sm:min-h-[64px] ${inMonth
-                  ? isSelected
-                    ? "bg-primary/10"
-                    : "hover:bg-primary/5"
-                  : "bg-gray-50/40"
-                  }`}
-              >
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${isToday
-                    ? "bg-primary text-white"
-                    : inMonth
-                      ? "text-gray-700"
-                      : "text-gray-300"
-                    }`}
-                >
-                  {day.getDate()}
-                </span>
-                {dayItems && (
-                  <span
-                    className={`flex items-center gap-0.5 ${isSelected ? "" : ""}`}
-                  >
-                    {dayItems.slice(0, 3).map((it) => (
-                      <span
-                        key={it.id}
-                        aria-hidden
-                        className="h-1.5 w-1.5 rounded-full bg-primary"
-                      />
-                    ))}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      <HarvestCalendarGrid
+        viewYear={viewYear}
+        viewMonth={viewMonth}
+        byDay={byDay}
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
+        onChangeMonth={changeMonth}
+        onGoToToday={goToToday}
+        todayIso={toISODate(today)}
+      />
 
       {/* Daftar jadwal */}
       <section>
