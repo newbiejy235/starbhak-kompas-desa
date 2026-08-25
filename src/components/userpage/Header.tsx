@@ -20,6 +20,7 @@ import { getClientUser, clearSession, updateSessionRole } from "@/lib/auth/clien
 import { becomePetaniAction } from "@/actions/auth";
 import { getUnreadNotificationCount } from "@/actions/notification";
 import { useFetch } from "@/lib/hooks";
+import Avatar from "@/components/ui/Avatar";
 import type { ActionState } from "@/lib/types/auth";
 
 export default function UserHeader() {
@@ -92,8 +93,6 @@ export default function UserHeader() {
     router.replace("/auth/login");
   };
 
-  const initial = user?.fullName?.charAt(0)?.toUpperCase() || "U";
-
   const menuItems = [
     { href: "/user/profile", label: "Lihat Profil", icon: UserRound },
     { href: "/user/orders", label: "Pesanan Saya", icon: ShoppingBag },
@@ -154,8 +153,8 @@ export default function UserHeader() {
               onClick={() => setMenuOpen((o) => !o)}
               className="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-white transition-colors active:scale-95 duration-150"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                {initial}
+              <div className="w-9 h-9 relative rounded-full overflow-hidden shadow-sm">
+                <Avatar src={user?.fotoProfile} name={user?.fullName || "U"} size="sm" />
               </div>
               <ChevronDown
                 size={16}

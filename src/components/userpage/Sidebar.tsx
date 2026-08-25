@@ -14,12 +14,14 @@ import {
   Menu,
   MessageCircle,
 } from "lucide-react";
-import { clearSession } from "@/lib/auth/client";
+import { clearSession, getClientUser } from "@/lib/auth/client";
+import Avatar from "@/components/ui/Avatar";
 
 export default function UserSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const user = getClientUser();
 
   const menuItems = [
     { id: "home", label: "Beranda", icon: LayoutDashboard, href: "/user/home" },
@@ -44,6 +46,13 @@ export default function UserSidebar() {
         <button onClick={() => setIsOpen(false)} className="lg:hidden text-gray-500">
           <X size={20} />
         </button>
+      </div>
+      <div className="px-6 py-4 border-b border-gray-100 bg-primary/5 flex items-center gap-3">
+        <Avatar src={user?.fotoProfile} name={user?.fullName} size="sm" />
+        <div>
+          <p className="text-sm font-bold text-gray-800">{user?.fullName}</p>
+          <p className="text-xs text-gray-500">Akun Pembeli</p>
+        </div>
       </div>
       <nav className="p-4 flex flex-col gap-2 flex-grow">
         {menuItems.map((item) => {

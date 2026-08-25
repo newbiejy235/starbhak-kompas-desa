@@ -2,19 +2,16 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   MessageCircle,
   Search,
   Calendar,
   Filter,
-  Package,
   Clock,
   CheckCircle2,
   X,
 } from "lucide-react";
-import { formatDateTime } from "@/lib/format";
-import { formatImage } from "@/components/shared/States";
+import Avatar from "@/components/ui/Avatar";
 
 interface ChatRoomItem {
   id: number;
@@ -27,6 +24,8 @@ interface ChatRoomItem {
   createdAt: Date;
   buyerName: string;
   farmerName: string;
+  buyerFotoProfile?: string | null;
+  farmerFotoProfile?: string | null;
   commodityName: string;
   commodityPrice: string;
   commodityImage: string | null;
@@ -205,7 +204,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
         ) : (
           filteredRooms.map((room) => {
             const otherName = role === "pembeli" ? room.farmerName : room.buyerName;
-            const img = formatImage(room.commodityImage);
+            const otherFoto = role === "pembeli" ? room.farmerFotoProfile : room.buyerFotoProfile;
             const isActive = room.status === "active";
             const isDeal = room.hasDeal === true;
             const timeLabel = getRelativeTime(room.lastMessageAt || room.createdAt);
@@ -217,15 +216,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
                 className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/80 active:bg-gray-100 transition-all border-b border-gray-100 last:border-0 group"
               >
                 <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden">
-                    {img ? (
-                      <Image src={img} alt={room.commodityName} fill sizes="48px" className="object-cover" unoptimized />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
-                        <Package size={18} className="text-white" />
-                      </div>
-                    )}
-                  </div>
+                  <Avatar src={otherFoto} name={otherName} size="md" />
                   {isActive && (
                     <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00AA5B] rounded-full border-2 border-white" />
                   )}

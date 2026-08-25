@@ -101,6 +101,7 @@ export type LoginResult = ActionState & {
     role: string;
     fullName: string;
     status: string;
+    fotoProfile?: string | null;
   };
 };
 
@@ -153,6 +154,7 @@ export async function login(data: FormData): Promise<LoginResult> {
         role: user.role,
         fullName: user.fullName,
         status: user.status,
+        fotoProfile: user.fotoProfile ?? null,
       },
     };
   } catch (error) {

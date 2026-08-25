@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
+import Avatar from "@/components/ui/Avatar";
 
 interface ChatRoomData {
   id: number;
@@ -303,10 +304,14 @@ export default function ChatRoomView({
         className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2 group`}
         onContextMenu={(e) => (canInteract || canReply) && handleContextMenu(e, msg)}
       >
-        <div className={`max-w-[78%]`}>
+        <div className={`flex items-end gap-2 max-w-[80%] ${isMe ? "flex-row-reverse" : ""}`}>
           {!isMe && (
-            <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
+            <Avatar src={msg.senderFoto} name={msg.senderName} size="xs" className="mb-5" />
           )}
+          <div className={`max-w-full`}>
+            {!isMe && (
+              <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
+            )}
           <div
             className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe
               ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
@@ -425,6 +430,7 @@ export default function ChatRoomView({
             )}
           </div>
         </div>
+        </div>
       </div>
     );
   };
@@ -436,6 +442,12 @@ export default function ChatRoomView({
         <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors">
           <ArrowLeft size={20} />
         </button>
+        <Avatar
+          src={isFarmer ? room.buyerFoto : room.farmerFoto}
+          name={isFarmer ? room.buyerName : room.farmerName}
+          size="sm"
+          className="ring-2 ring-white/20"
+        />
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-bold truncate">
             {isFarmer ? room.buyerName : room.farmerName}

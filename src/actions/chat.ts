@@ -84,6 +84,8 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
         createdAt: chatRoomsTable.createdAt,
         buyerName: usersTable.fullName,
         farmerName: usersTable.fullName,
+        buyerFotoProfile: sql<string | null>`coalesce((select u2."fotoProfile" from users_table u2 where u2."id" = chat_rooms_table."buyerId"), null)`,
+        farmerFotoProfile: sql<string | null>`coalesce((select u2."fotoProfile" from users_table u2 where u2."id" = chat_rooms_table."farmerId"), null)`,
         commodityName: commoditiesTable.name,
         commodityPrice: commoditiesTable.price,
         commodityImage: ImageUpload.secureUrl,
