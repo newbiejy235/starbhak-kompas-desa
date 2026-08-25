@@ -3,14 +3,14 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Pencil, Trash2, MapPin, Plus } from "lucide-react";
+import { Pencil, Trash2, MapPin, Plus, Package } from "lucide-react";
 import {
   getFarmerCommodities,
   deleteCommodity,
 } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, formatNumber } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import CommodityFormPopup from "@/components/petanipage/CommodityFormPopup";
 import DeleteConfirmDialog from "@/components/petanipage/DeleteConfirmDialog";
@@ -168,6 +168,26 @@ export default function CommoditiesPage() {
                 <p className="text-primary font-bold text-sm mb-2">
                   {formatRupiah(item.price)} / {item.unit}
                 </p>
+
+                {/* Stok: beri peringatan halus saat menipis (ambang 10) */}
+                {(() => {
+                  const stock = Number(item.stock);
+                  const lowStock = stock > 0 && stock <= 10;
+                  return (
+                    <p
+                      className={`mb-3 flex items-center gap-1 text-xs ${
+                        lowStock
+                          ? "font-medium text-warning"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <Package size={12} className="shrink-0" />
+                      {stock <= 0
+                        ? "Stok habis"
+                        : `Stok ${formatNumber(stock)} ${item.unit}${lowStock ? " — stok menipis" : ""}`}
+                    </p>
+                  );
+                })()}
 
                 <p className="text-xs text-gray-500 line-clamp-2 mb-3">
                   {item.description || "Tidak ada deskripsi"}

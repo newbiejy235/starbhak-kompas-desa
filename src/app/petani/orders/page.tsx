@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
@@ -78,7 +79,6 @@ export default function PetaniOrders() {
   const [selected, setSelected] = useState<FarmerOrder | null>(null);
   const [cancelTarget, setCancelTarget] = useState<FarmerOrder | null>(null);
   const [advancingKey, setAdvancingKey] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 
   const filtered = useMemo(() => {
@@ -120,12 +120,15 @@ export default function PetaniOrders() {
   const handleAdvance = async (id: number, status: string) => {
     if (!user || advancingKey) return;
     setAdvancingKey(`${id}-${status}`);
-    setActionError(null);
     try {
       const res = await updateOrderStatus(id, status, user.id);
-      if (!res.success) setActionError(res.message);
+      if (!res.success) {
+        toast.error(res.message);
+      }
       await reload();
       setVersion((v) => v + 1);
+    } catch {
+      toast.error("Gagal memperbarui pesanan. Silakan coba lagi.");
     } finally {
       setAdvancingKey(null);
     }
@@ -236,12 +239,6 @@ export default function PetaniOrders() {
             </select>
           </div>
         </div>
-
-        {actionError && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-danger">
-            {actionError}
-          </div>
-        )}
 
         {/* List */}
         {filtered.length === 0 ? (
