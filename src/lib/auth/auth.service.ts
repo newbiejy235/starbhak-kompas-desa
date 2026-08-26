@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { usersTable, notificationsTable } from "@/db/schema";
+import { usersTable, notificationsTable, verificationCode } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { hashPassword, comparePassword } from "@/lib/auth/bcrypt";
 import { signToken } from "@/lib/auth/jwt";
@@ -213,7 +213,8 @@ export async function upgradeToPetani(
     await db.insert(notificationsTable).values({
       userId,
       title: "Selamat! Anda menjadi Petani",
-      message: "Akun Anda ditingkatkan menjadi petani. Silakan tambahkan komoditas Anda.",
+      message:
+        "Akun Anda ditingkatkan menjadi petani. Silakan tambahkan komoditas Anda.",
       type: "system",
     });
 
@@ -225,5 +226,96 @@ export async function upgradeToPetani(
   } catch (error) {
     console.error("upgrade to petani error:", error);
     return { success: false, message: "Gagal, coba lagi nanti" };
+  }
+}
+
+export async function updatePassword(
+  email: string,
+  newPassword: string,
+  code: string,
+) {
+  try {
+    if (!code) {
+      return {
+        success: false,
+        message: "Silakan masukkan kode verifikasi",
+      };
+    }
+
+    const [user] = await db
+      .select({
+        id: usersTable.id,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User tidak ditemukan",
+      };
+    }
+
+    const [validatedCode] = await db
+      .select({
+        id: verificationCode.id,
+        token: verificationCode.token,
+        expiredDate: verificationCode.expiredDate,
+      })
+      .from(verificationCode)
+      .where(
+        and(
+          eq(verificationCode.userId, user.id),
+          eq(verificationCode.token, code),
+        ),
+      )
+      .limit(1);
+
+    if (!validatedCode) {
+      return {
+        success: false,
+        message: "Kode verifikasi tidak ditemukan, silakan kirim ulang",
+      };
+    }
+
+    if (code != validatedCode.token) {
+      return {
+        success: false,
+        message: "Kode verifikasi salah",
+      };
+    }
+
+    if (validatedCode.expiredDate < new Date()) {
+      return {
+        success: false,
+        message: "Kode verifikasi sudah expired",
+      };
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    await db
+      .update(usersTable)
+      .set({
+        password: hashedPassword,
+      })
+      .where(eq(usersTable.id, user.id));
+
+    await db
+      .delete(verificationCode)
+      .where(eq(verificationCode.id, validatedCode.id));
+
+    return {
+      success: true,
+      message: "Password berhasil diganti",
+    };
+  } catch (error) {
+    console.error("update password error:", error);
+
+    return {
+      success: false,
+      message: "Internal server error",
+    };
   }
 }
