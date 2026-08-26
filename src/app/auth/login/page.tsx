@@ -10,8 +10,7 @@ import {
   Loader2,
   ArrowLeft,
   User,
-  Lock,
-  Sparkles
+  Lock
 } from "lucide-react";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
@@ -19,12 +18,19 @@ import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
 import Image from "next/image";
 
+const slideshowImages = [
+  "/images/Joni.svg",
+  "/",
+  "/assets/bg-login-3.jpg",
+];
+
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  
+  const [currentSlide, setCurrentSlide] = useState(0);
+
   const [state, formAction, pending] = useActionState<LoginResult, FormData>(
     loginAction,
     initialState as LoginResult,
@@ -32,6 +38,14 @@ export default function Login() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (state.success && state.token && state.user && state.redirect) {
@@ -44,7 +58,7 @@ export default function Login() {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      tl.fromTo(".bg-curve", 
+      tl.fromTo(".bg-curve-container", 
         { scaleX: 0, transformOrigin: "left center" },
         { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
       )
@@ -53,54 +67,11 @@ export default function Login() {
         { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 }, 
         "-=0.9"
       )
-      .fromTo(".border-illustration", 
-        { opacity: 0, scale: 0.5, rotation: -15 },
-        { opacity: 1, scale: 1, rotation: 0, duration: 1, ease: "back.out(1.5)" },
-        "-=1"
-      )
       .fromTo(".footer-anim", 
         { opacity: 0, y: 10 },
         { opacity: 1, duration: 0.8 }, 
         "-=0.5"
       );
-
-      gsap.to(".float-box-1", {
-        y: -10,
-        rotation: -2,
-        duration: 3.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
-      });
-      
-      gsap.to(".float-box-2", {
-        y: 10,
-        rotation: 2,
-        duration: 3,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: 0.5
-      });
-
-      gsap.to(".wave-human", {
-        rotation: 15,
-        transformOrigin: "bottom right",
-        duration: 0.4,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
-      });
-
-      gsap.to(".wave-farmer", {
-        rotation: -15,
-        transformOrigin: "bottom left",
-        duration: 0.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: 0.2
-      });
 
       const orbs = document.querySelectorAll(".ambient-orb");
       orbs.forEach((orb, i) => {
@@ -126,13 +97,6 @@ export default function Login() {
         duration: 1.5,
         ease: "power2.out"
       });
-
-      gsap.to(".border-illustration", {
-        x: x * 0.3,
-        y: y * 0.3,
-        duration: 2,
-        ease: "power2.out"
-      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -146,20 +110,46 @@ export default function Login() {
   return (
     <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
       
-      {/* SHAPE BACKGROUND */}
-      <svg 
-        className="bg-curve absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block" 
-        preserveAspectRatio="none" 
-        viewBox="0 0 100 100"
-      >
+      {/* SVG ClipPath Definition (Hidden) */}
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
         <defs>
-          <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#022c22" />
-            <stop offset="100%" stopColor="#064e3b" />
-          </linearGradient>
+          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
+          </clipPath>
         </defs>
-        <path d="M0,0 L72,0 C90,35 88,75 58,100 L0,100 Z" fill="url(#emeraldGrad)" />
       </svg>
+
+      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER (Presisi Mengikuti Lengkungan) */}
+      <div 
+        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
+        style={{ clipPath: "url(#emeraldCurveClip)" }}
+      >
+        {/* Slideshow Images */}
+        {slideshowImages.map((src, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <div
+              key={src + index}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                isActive
+                  ? "opacity-30 scale-100 blur-0"
+                  : "opacity-0 scale-105 blur-md"
+              }`}
+            >
+              <Image
+                src={src}
+                alt="Background Slide"
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          );
+        })}
+
+        {/* Overlay Dark Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
+      </div>
 
       {/* AMBIENT FLOATING ORBS */}
       <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
@@ -200,59 +190,27 @@ export default function Login() {
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
         
-        {/* ILUSTRASI FLOATING (Digeser ke kiri masuk ke area ijo: left-[38%]) */}
-        <div className="border-illustration absolute top-1/2 left-[38%] -translate-x-1/2 -translate-y-1/2 z-30 hidden lg:block pointer-events-none origin-center">
-          <div className="relative w-[220px] h-[250px]">
-            
-            {/* Box 1 (Tangan Orang / Menyapa) */}
-            <div className="float-box-1 absolute top-2 left-0 w-[110px] h-[130px] bg-amber-200 rounded-[16px] border-[4px] border-[#022c22] shadow-[8px_8px_0px_rgba(2,44,34,0.15)] flex items-end justify-center pb-3 overflow-hidden z-20">
-              <div className="absolute inset-0 opacity-20 bg-[linear-gradient(0deg,transparent_24%,#000_25%,#000_26%,transparent_27%,transparent_74%,#000_75%,#000_76%,transparent_77%,transparent)] bg-[length:15px_15px]" />
-              <span className="wave-human relative z-10 text-[55px] drop-shadow-md pb-1">👋🏽</span>
-            </div>
-
-            {/* Aksen Bintang Tengah */}
-            <div className="absolute top-[52%] left-[45%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-[#025246] rotate-45 border-[3px] border-white z-30 shadow-lg flex items-center justify-center">
-              <Sparkles className="text-white -rotate-45" size={16} strokeWidth={2.5} />
-            </div>
-
-            {/* Box 2 (Unsur Petani) */}
-            <div className="float-box-2 absolute bottom-2 right-0 w-[115px] h-[125px] bg-emerald-100 rounded-[16px] border-[4px] border-[#022c22] shadow-[8px_8px_0px_rgba(2,44,34,0.1)] flex items-end justify-center pb-3 overflow-hidden z-10">
-               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#000_2px,transparent_2px)] bg-[length:12px_12px]" />
-              <img 
-                 src="https://i.pinimg.com/736x/6e/02/51/6e02519899393fa847d87d57c63e6cf0.jpg" 
-                 alt="Petani" 
-                 className="wave-farmer relative z-10 w-[75px] h-[75px] object-cover rounded-xl shadow-md border-2 border-[#022c22]" 
-               />
-            </div>
-
-          </div>
-        </div>
-
         {/* LEFT PANEL */}
         <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
           <div className="relative z-10 w-full max-w-[380px]">
-            {/* Teks kiri dikecilin biar lebih rapi & proporsional */}
             <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
               Login untuk <br />
               <span className="text-emerald-400">Mengakses Sistem</span>
             </h1>
 
             <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas'Desa.
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas&apos;Desa.
             </p>
           </div>
         </div>
 
-        {/* RIGHT PANEL - Form Login (Dikasih ruang luas & form ukuran normal) */}
+        {/* RIGHT PANEL - Form Login */}
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
           <div className="w-full max-w-[380px] xl:max-w-[420px]">
             <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Masuk ke Akun
               </h2>
-              {/* <p className="text-sm lg:text-base text-neutral-500 font-medium">
-                Akses panel kontrol dan dashboard Anda secara langsung.
-              </p> */}
             </div>
 
             <form action={formAction} className="flex flex-col gap-4">
@@ -269,7 +227,6 @@ export default function Login() {
                 </div>
               )}
 
-              {/* Input Email */}
               <div className="right-anim-item flex flex-col gap-1.5">
                 <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Email
@@ -291,7 +248,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Input Password */}
               <div className="right-anim-item flex flex-col gap-1.5">
                 <label htmlFor="password" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Kata Sandi
@@ -321,7 +277,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Action Bawah Form */}
               <div className="right-anim-item flex items-center justify-between pt-1">
                 <label className="flex cursor-pointer items-center gap-2.5 group">
                   <input
@@ -338,7 +293,6 @@ export default function Login() {
                 </Link>
               </div>
 
-              {/* Tombol Utama */}
               <div className="right-anim-item mt-2">
                 <button
                   type="submit"
@@ -362,7 +316,6 @@ export default function Login() {
         </div>
       </main>
 
-      {/* FOOTER */}
       <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
         &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
