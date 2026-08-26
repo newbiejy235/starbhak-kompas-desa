@@ -14,7 +14,7 @@ import {
   Star,
   Sprout,
   X,
-  MapPin,
+  LifeBuoy,
 } from "lucide-react";
 import { getClientUser, clearSession, updateSessionRole } from "@/lib/auth/client";
 import { becomePetaniAction } from "@/actions/auth";
@@ -23,14 +23,64 @@ import { useFetch } from "@/lib/hooks";
 import Avatar from "@/components/ui/Avatar";
 import type { ActionState } from "@/lib/types/auth";
 
-export default function UserHeader() {
+/* ============================================================
+   Token desain mengikuti DashboardShell / halaman petani
+   ============================================================ */
+const focusRing =
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246]";
+
+const iconBtn =
+  `relative rounded-lg p-2 text-gray-500 transition-colors duration-150 hover:bg-white/80 hover:text-primary active:scale-95 ${focusRing}`;
+
+/* ============================================================
+   Pencarian — selaras dengan gaya input di dashboard petani
+   ============================================================ */
+export function HeaderSearch() {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = search.trim();
+    if (q) {
+      router.push(`/user/home?search=${encodeURIComponent(q)}`);
+    } else {
+      router.push("/user/home");
+    }
+  };
+
+  return (
+    <form
+      onSubmit={submitSearch}
+      role="search"
+      className="hidden sm:relative sm:block w-full max-w-xs lg:max-w-sm"
+    >
+      <Search
+        size={16}
+        aria-hidden
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      />
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Cari komoditas..."
+        aria-label="Cari komoditas"
+        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary ${focusRing}`}
+      />
+    </form>
+  );
+}
+
+/* ============================================================
+   Aksi kanan: keranjang, notifikasi, menu akun
+   ============================================================ */
+export function HeaderActions() {
   const router = useRouter();
   const pathname = usePathname();
-  const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [closingModal, setClosingModal] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const user = getClientUser();
 
@@ -62,30 +112,12 @@ export default function UserHeader() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Glassmorphism saat scroll (PRD 8.3)
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const closeModal = () => {
     setClosingModal(true);
     setTimeout(() => {
       setModalOpen(false);
       setClosingModal(false);
     }, 180);
-  };
-
-  const submitSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = search.trim();
-    if (q) {
-      router.push(`/user/home?search=${encodeURIComponent(q)}`);
-    } else {
-      router.push("/user/home");
-    }
   };
 
   const logout = () => {
@@ -97,179 +129,190 @@ export default function UserHeader() {
     { href: "/user/profile", label: "Lihat Profil", icon: UserRound },
     { href: "/user/orders", label: "Pesanan Saya", icon: ShoppingBag },
     { href: "/user/reviews", label: "Ulasan Saya", icon: Star },
+    { href: "/user/bantuan", label: "Pusat Bantuan", icon: LifeBuoy },
   ];
 
   return (
     <>
-      <header
-        className={`fixed top-0 right-0 left-0 lg:left-64 h-16 z-30 flex items-center justify-between px-4 sm:px-6 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/70 backdrop-blur-md border-b border-gray-200/60 shadow-sm"
-            : "bg-[#F6F6F6] border-b border-transparent"
-        }`}
-      >
-        <div className="flex items-center gap-4 w-full">
-          <form onSubmit={submitSearch} className="hidden sm:flex items-center bg-white/80 border border-gray-200 rounded-full px-4 py-2 w-full max-w-md focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 transition-all">
-            <Search size={18} className="text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari komoditas..."
-              className="bg-transparent border-none outline-none ml-2 text-sm w-full"
-            />
-          </form>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Link
-            href="/user/cart"
-            aria-label="Keranjang belanja"
-            className={`relative p-2 rounded-full transition-all duration-200 active:scale-90 ${
-              pathname.startsWith("/user/cart")
-                ? "text-primary bg-primary/10"
-                : "text-gray-500 hover:bg-white hover:text-primary hover:shadow-sm"
-            }`}
-          >
-            <ShoppingCart size={20} />
-          </Link>
-          <Link
-            href="/user/notifications"
-            aria-label="Notifikasi"
-            className={`relative p-2 rounded-full transition-all duration-200 active:scale-90 ${
-              pathname.startsWith("/user/notifications")
-                ? "text-primary bg-primary/10"
-                : "text-gray-500 hover:bg-white hover:text-primary hover:shadow-sm"
-            }`}
-          >
-            <Bell size={20} />
-            {unread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full">
-                {unread > 99 ? "99+" : unread}
-              </span>
-            )}
-          </Link>
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setMenuOpen((o) => !o)}
-              className="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-white transition-colors active:scale-95 duration-150"
+      <div className="flex flex-shrink-0 items-center gap-0.5">
+        <Link
+          href="/user/cart"
+          aria-label="Keranjang belanja"
+          aria-current={pathname.startsWith("/user/cart") ? "page" : undefined}
+          className={`${iconBtn} ${
+            pathname.startsWith("/user/cart") ? "bg-primary/10 text-primary" : ""
+          }`}
+        >
+          <ShoppingCart size={19} />
+        </Link>
+        <Link
+          href="/user/notifications"
+          aria-label={
+            unread > 0 ? `Notifikasi (${unread} belum dibaca)` : "Notifikasi"
+          }
+          aria-current={
+            pathname.startsWith("/user/notifications") ? "page" : undefined
+          }
+          className={`${iconBtn} ${
+            pathname.startsWith("/user/notifications") ? "bg-primary/10 text-primary" : ""
+          }`}
+        >
+          <Bell size={19} />
+          {unread > 0 && (
+            <span
+              aria-hidden
+              className="absolute -top-0.5 -right-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white"
             >
-              <div className="w-9 h-9 relative rounded-full overflow-hidden shadow-sm">
-                <Avatar src={user?.fotoProfile} name={user?.fullName || "U"} size="sm" />
-              </div>
-              <ChevronDown
-                size={16}
-                className={`text-gray-400 transition-transform duration-300 ${
-                  menuOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )}
+        </Link>
 
-            {menuOpen && (
-              <div className="absolute right-0 top-12 w-64 bg-white rounded-card border border-gray-200/80 shadow-lift overflow-hidden z-50 animate-scale-in origin-top-right">
-                <div className="px-5 py-4 border-b border-gray-100">
-                  <p className="font-bold text-gray-900 text-sm truncate">
-                    {user?.fullName}
-                  </p>
-                  <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-                </div>
-                <nav className="p-2 flex flex-col gap-1">
-                  {menuItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-primary/5 hover:text-primary transition-colors"
-                    >
-                      <item.icon size={18} />
-                      {item.label}
-                    </Link>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setModalOpen(true);
-                    }}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-success hover:bg-success/5 transition-colors"
-                  >
-                    <Sprout size={18} />
-                    Daftar Jadi Petani
-                  </button>
-                </nav>
-                <div className="p-2 border-t border-gray-100">
-                  <button
-                    onClick={logout}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-danger hover:bg-danger/5 w-full transition-colors"
-                  >
-                    <LogOut size={18} />
-                    Keluar
-                  </button>
-                </div>
+        <div className="relative ml-1" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className={`flex items-center gap-2 rounded-full p-0.5 pr-1.5 transition-colors duration-150 hover:bg-white/80 active:scale-95 ${focusRing}`}
+          >
+            <Avatar src={user?.fotoProfile} name={user?.fullName || "U"} size="sm" />
+            <span className="hidden sm:block max-w-[140px] truncate text-sm font-semibold text-neutral-900">
+              {user?.fullName}
+            </span>
+            <ChevronDown
+              size={15}
+              aria-hidden
+              className={`text-gray-400 transition-transform duration-200 ${
+                menuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {menuOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 top-12 z-50 w-64 origin-top-right overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-lift animate-scale-in"
+            >
+              <div className="border-b border-gray-100 px-5 py-4">
+                <p className="truncate text-sm font-bold text-gray-900">
+                  {user?.fullName}
+                </p>
+                <p className="truncate text-xs text-gray-400">{user?.email}</p>
               </div>
-            )}
-          </div>
+              <nav className="flex flex-col gap-1 p-2">
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    role="menuitem"
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-primary/5 hover:text-primary ${focusRing}`}
+                  >
+                    <item.icon size={18} aria-hidden />
+                    {item.label}
+                  </Link>
+                ))}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setModalOpen(true);
+                  }}
+                  className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-success transition-colors duration-150 hover:bg-success/5 ${focusRing}`}
+                >
+                  <Sprout size={18} aria-hidden />
+                  Daftar Jadi Petani
+                </button>
+              </nav>
+              <div className="border-t border-gray-100 p-2">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-danger transition-colors duration-150 hover:bg-danger/5 ${focusRing}`}
+                >
+                  <LogOut size={18} aria-hidden />
+                  Keluar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      </header>
+      </div>
 
+      {/* Modal daftar jadi petani */}
       {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
             className={`absolute inset-0 bg-black/50 backdrop-blur-sm ${
-              closingModal ? "animate-fade-out" : "animate-fade-in"
+              closingModal ? "animate-fade-out" : "animate-fade-in-fast"
             }`}
             onClick={closeModal}
+            aria-hidden
           />
           <div
-            className={`relative w-full max-w-md bg-white rounded-card shadow-lift overflow-hidden ${
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="become-petani-title"
+            className={`relative w-full max-w-md overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-lift ${
               closingModal ? "animate-scale-out" : "animate-scale-in"
             }`}
           >
-            <div className="bg-gradient-to-r from-primary to-primary-dark px-6 py-5 text-white flex items-center justify-between">
-              <div>
-                <h2 className="font-bold text-lg flex items-center gap-2">
-                  <Sprout size={20} /> Daftar Jadi Petani
-                </h2>
-                <p className="text-xs text-white/70 mt-0.5">
-                  Jual hasil pertanian Anda langsung di Kompas&apos;Desa
-                </p>
-              </div>
-              <button
-                onClick={closeModal}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors active:scale-90"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <form action={formAction} className="p-6 space-y-4">
-              <input type="hidden" name="userId" value={user?.id ?? ""} />
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                  Alamat Lahan / Lokasi
-                </label>
-                <div className="relative">
-                  <MapPin size={16} className="absolute left-4 top-6 -translate-y-1/2 text-gray-400" />
-                  <textarea
-                    name="address"
-                    rows={2}
-                    placeholder="Contoh: Desa Sukamaju, Kec. Cianjur, Jawa Barat"
-                    className="w-full rounded-2xl border border-gray-300 pl-11 pr-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
-                  />
+            <div className="flex items-start justify-between gap-4 px-6 pt-6">
+              <div className="flex items-start gap-3">
+                <span
+                  aria-hidden
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0F7F5] text-primary"
+                >
+                  <Sprout size={20} strokeWidth={2} />
+                </span>
+                <div>
+                  <h2 id="become-petani-title" className="text-lg font-bold tracking-tight text-gray-900">
+                    Daftar Jadi Petani
+                  </h2>
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    Jual hasil pertanian Anda langsung di Kompas&apos;Desa.
+                  </p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={closeModal}
+                aria-label="Tutup"
+                className={`rounded-lg p-1.5 text-gray-400 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-700 ${focusRing}`}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form action={formAction} className="space-y-4 p-6">
+              <input type="hidden" name="userId" value={user?.id ?? ""} />
+              <div>
+                <label htmlFor="petani-address" className="mb-1.5 block text-xs font-medium text-gray-700">
+                  Alamat Lahan / Lokasi
+                </label>
+                <textarea
+                  id="petani-address"
+                  name="address"
+                  rows={2}
+                  placeholder="Contoh: Desa Sukamaju, Kec. Cianjur, Jawa Barat"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+                />
+              </div>
               {state && !state.success && (
-                <p className="text-sm text-danger animate-fade-in">{state.message}</p>
+                <p className="animate-fade-in text-sm text-danger">{state.message}</p>
               )}
               {state && state.success && (
-                <p className="text-sm text-success animate-fade-in">{state.message}</p>
+                <p className="animate-fade-in text-sm text-success">{state.message}</p>
               )}
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`w-full rounded-xl bg-primary py-3 text-sm font-bold text-white transition-all duration-150 hover:bg-primary-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`}
               >
                 {isPending ? "Memproses..." : "Daftar sebagai Petani"}
               </button>
-              <p className="text-[11px] text-gray-400 text-center">
+              <p className="text-center text-[11px] text-gray-400">
                 Akun Anda akan otomatis beralih menjadi Petani dan dapat mengelola komoditas.
               </p>
             </form>

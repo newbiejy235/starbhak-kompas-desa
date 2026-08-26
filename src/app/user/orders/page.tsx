@@ -13,12 +13,27 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function OrdersSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-4 w-64 mb-6" />
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-32 rounded-card" />
-      ))}
+    <div className="mx-auto max-w-4xl animate-fade-up">
+      <div className="mb-6 space-y-2">
+        <Skeleton className="h-7 w-44" />
+        <Skeleton className="h-3.5 w-64" />
+      </div>
+      <div className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="overflow-hidden rounded-card border border-gray-200/80 bg-white">
+            <Skeleton className="h-14 rounded-none bg-gray-100" />
+            <div className="flex items-center gap-4 px-5 py-4">
+              <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-56" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+              <Skeleton className="h-5 w-20 shrink-0" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -37,56 +52,57 @@ export default function UserOrders() {
   const orderList = orders ?? [];
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Pesanan Saya</h1>
-      <p className="text-sm text-gray-500 mb-6">Pantau status pesanan Anda di sini.</p>
+    <div className="mx-auto max-w-4xl animate-fade-up">
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Pesanan Saya</h1>
+        <p className="mt-1 text-sm text-gray-500">Pantau status pesanan dan pembayaran Anda.</p>
+      </header>
 
       {orderList.length === 0 ? (
         <EmptyState
           title="Belum Ada Pesanan"
-          message="Anda belum memiliki pesanan. Yuk mulai belanja komoditas segar!"
+          message="Pesanan Anda akan muncul di sini setelah berbelanja."
         />
       ) : (
         <div className="space-y-4">
           {orderList.map((o, i) => (
             <div
               key={o.id}
-              className="bg-white rounded-card border border-gray-200/80 shadow-soft hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth overflow-hidden animate-fade-up"
+              className="overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift animate-fade-up"
               style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
             >
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              {/* Strip kepala kartu — sama dengan kartu pesanan petani */}
+              <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-5 py-3">
                 <div>
-                  <p className="text-xs text-gray-500">{formatDateTime(o.createdAt)}</p>
                   <p className="text-sm font-bold text-gray-800">{o.orderCode}</p>
+                  <p className="text-xs text-gray-500">{formatDateTime(o.createdAt)}</p>
                 </div>
                 <StatusBadge status={o.status} />
               </div>
 
               <Link
                 href={`/user/checkout/${o.id}`}
-                className="px-5 py-4 flex items-center gap-4 hover:bg-primary/[0.03] transition-colors group"
+                className="group flex items-center gap-4 px-5 py-4 transition-colors duration-150 hover:bg-primary/[0.03]"
               >
-                <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-2xl font-black group-hover:scale-105 transition-transform duration-300">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary-dark text-lg font-bold text-white">
                   {o.commodityName?.charAt(0)?.toUpperCase()}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
-                  <p className="text-xs text-gray-500">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-gray-900">{o.commodityName}</p>
+                  <p className="mt-0.5 truncate text-xs text-gray-500">
                     {Number(o.quantity)} × {formatRupiah(o.unitPrice)} · {o.farmerName}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
-                    Pembayaran: <StatusBadge status={o.paymentStatus ?? "pending"} />
-                  </p>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <span className="shrink-0 text-[11px] text-gray-400">Pembayaran</span>
+                    <StatusBadge status={o.paymentStatus ?? "pending"} />
+                  </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="font-extrabold text-primary">{formatRupiah(o.totalPrice)}</p>
+                <div className="shrink-0 text-right">
+                  <p className="text-base font-bold text-primary">{formatRupiah(o.totalPrice)}</p>
                   {o.status === "completed" && (
-                    <Link
-                      href={`/user/reviews?order=${o.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-primary font-semibold mt-1 hover:underline"
-                    >
-                      <Star size={12} /> Beri Ulasan
-                    </Link>
+                    <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:underline">
+                      <Star size={12} aria-hidden /> Beri Ulasan
+                    </span>
                   )}
                 </div>
               </Link>

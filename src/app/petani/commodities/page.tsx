@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { Pencil, Trash2, MapPin, Plus } from "lucide-react";
 import {
   getFarmerCommodities,
@@ -81,8 +82,11 @@ export default function CommoditiesPage() {
     try {
       const res = await deleteCommodity(deleteTarget.id, user.id);
       if (res.success) {
+        toast.success("Komoditas berhasil dihapus");
         setDeleteTarget(null);
         reload();
+      } else {
+        toast.error(res.message);
       }
     } finally {
       setIsDeleting(false);

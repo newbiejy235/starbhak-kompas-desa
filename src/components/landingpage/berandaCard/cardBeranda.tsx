@@ -52,9 +52,10 @@ export default function BentoGridStats() {
             #DariDesaUntukNegeri
           </div>
 
-        <div className="font-display max-w-[760px] text-[34px] font-extrabold leading-[1.08] tracking-tight">
-          <AnimatedHeading text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas" />
-        </div>
+          <AnimatedHeading
+            text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas"
+            className="font-display max-w-[760px] text-[38px] leading-[1.08]"
+          />
 
           <p className="mt-4 max-w-[620px] font-body text-[14px] leading-relaxed text-[#75938F] sm:text-[15px]">
             Temukan hasil panen segar langsung dari petani, atau perluas
@@ -73,12 +74,11 @@ export default function BentoGridStats() {
               href="#komoditaslist"
               className="inline-flex h-[44px] items-center justify-center rounded-xl border border-[#E3EAE7] bg-white px-5 font-body text-[14px] font-semibold text-[#025246] shadow-sm transition-all duration-300 hover:border-[#025246]/25 hover:bg-[#F5FAF8]"
             >
-              Cari Komoditas
+              Lihat Pasar
             </Link>
           </div>
         </div>
 
-        {/* ================= BENTO ================= */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -201,7 +201,8 @@ export default function BentoGridStats() {
               <div className="font-display flex items-baseline text-[38px] font-extrabold leading-none tracking-tight text-[#1F1F1F]">
                 <Counter
                   end={200}
-                  duration={1800}
+                  duration={3000}
+                  delay={2000}
                   suffix=""
                 />
                 <span className="text-[#025246]">+</span>
@@ -256,7 +257,8 @@ export default function BentoGridStats() {
               <div className="font-display flex items-baseline text-[38px] font-extrabold leading-none tracking-tight text-white">
                 <Counter
                   end={1200}
-                  duration={1800}
+                  duration={3500}
+                  delay={2000}
                   suffix=""
                 />
                 <span className="text-[#7FBFA9]">+</span>

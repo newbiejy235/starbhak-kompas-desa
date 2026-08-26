@@ -30,6 +30,18 @@ import type {
 import type { getUserNotifications } from "@/actions/notification";
 import type { getAuthUser } from "@/lib/auth/auth.service";
 import type { getCategoryStats } from "@/actions/category";
+import type {
+  getHarvestCalendar,
+  getHarvestRecords,
+} from "@/actions/harvest";
+import type {
+  getPriceCommodities,
+  getPriceHistory,
+} from "@/actions/price";
+import type { getSalesTargetOverview } from "@/actions/target";
+import type { getFarmerBuyers } from "@/actions/buyer";
+import type { getFarmerAchievements } from "@/actions/achievement";
+import type { getHelpFaqs } from "@/actions/help";
 
 export type AuthUser = NonNullable<
   Awaited<ReturnType<typeof getAuthUser>>
@@ -78,3 +90,21 @@ export type AdminReview = Awaited<ReturnType<typeof getAllReviews>>[number];
 
 export type NotificationRow =
   Awaited<ReturnType<typeof getUserNotifications>>[number];
+
+export type HarvestScheduleRow =
+  Awaited<ReturnType<typeof getHarvestCalendar>>[number];
+export type HarvestRecordRow =
+  Awaited<ReturnType<typeof getHarvestRecords>>[number];
+export type PriceCommodityOption =
+  Awaited<ReturnType<typeof getPriceCommodities>>[number];
+export type PriceHistoryData = NonNullable<
+  Awaited<ReturnType<typeof getPriceHistory>>
+>;
+export type SalesTargetOverview = Awaited<
+  ReturnType<typeof getSalesTargetOverview>
+>;
+export type FarmerBuyerRow =
+  Awaited<ReturnType<typeof getFarmerBuyers>>[number];
+export type AchievementRow =
+  Awaited<ReturnType<typeof getFarmerAchievements>>[number];
+export type FaqItem = Awaited<ReturnType<typeof getHelpFaqs>>[number];

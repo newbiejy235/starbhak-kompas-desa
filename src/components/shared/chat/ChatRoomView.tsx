@@ -119,7 +119,6 @@ export default function ChatRoomView({
   const [showProductInfo, setShowProductInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Context menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msg: ChatMessageData } | null>(null);
   const [editingMsg, setEditingMsg] = useState<ChatMessageData | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -314,18 +313,16 @@ export default function ChatRoomView({
               <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
             )}
           <div
-            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${
-              isMe
-                ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
-                : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
-            } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
+            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe
+              ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
+              : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
+              } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
           >
             {/* Reply quote */}
             {replyMsg && !msg.isDeleted && (
               <div
-                className={`mb-2 pl-2 border-l-2 ${
-                  isMe ? "border-white/40 bg-white/10" : "border-[#025246] bg-gray-50"
-                } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
+                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-[#025246] bg-gray-50"
+                  } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
                 onClick={() => {
                   const el = document.getElementById(`msg-${replyMsg.id}`);
                   el?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -419,7 +416,6 @@ export default function ChatRoomView({
               </>
             )}
 
-            {/* Edit/Delete button on hover */}
             {(canInteract || canReply) && !isEditing && (
               <button
                 id={`msg-${msg.id}`}
@@ -823,7 +819,6 @@ export default function ChatRoomView({
   );
 }
 
-// Helper to determine if a message can be replied to (used in context menu render)
 function canReplyFor(msg: ChatMessageData): boolean {
   return msg.type !== "system" && !msg.isDeleted;
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import Sonner from "@/components/shared/Sonner";
 import "./globals.css";
 
 const jakartaSans = Plus_Jakarta_Sans({
@@ -55,6 +56,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-jakarta selection:bg-[#025246] selection:text-white">
         {children}
+        <Sonner />
       </body>
     </html>
   );

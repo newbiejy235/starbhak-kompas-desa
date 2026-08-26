@@ -1,13 +1,18 @@
 "use client";
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Bot, MessageCircle, Send, X, RotateCcw } from "lucide-react";
+import {
+  Bot,
+  MessageCircle,
+  Send,
+  X,
+  RotateCcw,
+} from "lucide-react";
+
 import {
   startChatbotSession,
   sendChatbotMessage,
-  getChatbotMessages,
-} from "@/actions/chatbot";
-import { getClientUser } from "@/lib/auth/client";
+} from "@/actions/chatbot-landing-page";
 
 interface ChatMessage {
   id: number | string;
@@ -15,58 +20,49 @@ interface ChatMessage {
   content: string;
 }
 
-const SESSION_KEY = "kd_chatbot_session";
-const GUEST_KEY = "kd_chatbot_guest";
-
-function getGuestToken(): string {
-  try {
-    let token = window.localStorage.getItem(GUEST_KEY);
-    if (!token) {
-      token =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      window.localStorage.setItem(GUEST_KEY, token);
-    }
-    return token;
-  } catch {
-    return "guest-anonymous";
-  }
+interface SendResult {
+  ok: boolean;
+  reply?: string;
+  quickReplies?: string[];
+  reason?:
+  | "SESSION_NOT_FOUND"
+  | "EMPTY_MESSAGE"
+  | "MESSAGE_TOO_LONG"
+  | "AI_UNAVAILABLE";
 }
 
-type StoredSession = { sessionId: number; quickReplies?: string[] };
+const REASON_MESSAGES: Record<string, string> = {
+  SESSION_NOT_FOUND: "Session chat sudah tidak valid. Percakapan baru dibuat.",
+  EMPTY_MESSAGE: "Pesan tidak boleh kosong.",
+  MESSAGE_TOO_LONG: "Pesan terlalu panjang. Silakan ringkas pertanyaan kamu.",
+  AI_UNAVAILABLE:
+    "Maaf, Tunas sedang mengalami kendala saat memproses pertanyaan kamu. Silakan coba lagi beberapa saat.",
+};
 
-function readStoredSession(): StoredSession | null {
-  try {
-    const raw = window.sessionStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as StoredSession) : null;
-  } catch {
-    return null;
-  }
-}
-
-function persistSession(sessionId: number, quickReplies: string[] = []) {
-  try {
-    window.sessionStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({ sessionId, quickReplies } satisfies StoredSession),
-    );
-  } catch {
-    /* ignore */
-  }
-}
-
-const MessageBubble = memo(function MessageBubble({ msg }: { msg: ChatMessage }) {
+const MessageBubble = memo(function MessageBubble({
+  msg,
+}: {
+  msg: ChatMessage;
+}) {
   const isMe = msg.sender === "USER";
+
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[80%] px-3 py-2 text-[13px] leading-relaxed break-words whitespace-pre-wrap ${isMe
-          ? "bg-primary text-white rounded-2xl rounded-br-sm"
-          : "bg-gray-100 text-gray-800 rounded-2xl rounded-bl-sm"
+        className={`max-w-[80%] px-3.5 py-2.5 text-[13px] leading-relaxed break-words whitespace-pre-wrap ${isMe
+          ? "bg-primary text-white rounded-2xl rounded-br-sm shadow-sm"
+          : "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm shadow-sm"
           }`}
       >
-        {msg.content}
+        {msg.content.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+          const isBold = part.startsWith("**") && part.endsWith("**");
+
+          return isBold ? (
+            <strong key={index}>{part.slice(2, -2)}</strong>
+          ) : (
+            <span key={index}>{part}</span>
+          );
+        })}
       </div>
     </div>
   );
@@ -74,7 +70,7 @@ const MessageBubble = memo(function MessageBubble({ msg }: { msg: ChatMessage })
 
 function TypingDots() {
   return (
-    <div className="flex justify-start" aria-label="Asisten sedang mengetik">
+    <div className="flex justify-start" aria-label="Tunas sedang mengetik">
       <div className="flex items-center gap-1 bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3">
         {[0, 150, 300].map((delay) => (
           <span
@@ -96,147 +92,242 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
 
   const sessionRef = useRef<number | null>(null);
-  const initPromiseRef = useRef<Promise<void> | null>(null);
+  const initRef = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
       const el = listRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
+
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
     });
   }, []);
 
-  const ensureSession = useCallback(async () => {
-    if (sessionRef.current !== null) return;
-    if (initPromiseRef.current) return initPromiseRef.current;
+  // Auto scroll setiap isi chat / quick replies berubah.
+  useEffect(() => {
+    if (open) {
+      scrollToBottom();
+    }
+  }, [open, messages.length, sending, quickReplies.length, scrollToBottom]);
 
-    initPromiseRef.current = (async () => {
-      setInitializing(true);
-      setError(null);
-      try {
-        const stored = readStoredSession();
-        if (stored?.sessionId) {
-          const history = await getChatbotMessages(stored.sessionId);
-          if (history && history.length > 0) {
-            sessionRef.current = stored.sessionId;
-            setMessages(
-              history.map((m) => ({
-                id: m.id,
-                sender: m.sender as "USER" | "BOT",
-                content: m.content,
-              })),
-            );
-            setQuickReplies(stored.quickReplies ?? []);
-            scrollToBottom();
-            return;
-          }
-        }
+  // ==========================================
+  // START SESSION
+  // ==========================================
 
-        const user = getClientUser();
-        const result = await startChatbotSession(user?.id, getGuestToken());
-        if (!result) throw new Error("session");
-        sessionRef.current = result.sessionId;
-        const greeting: ChatMessage[] = [
-          { id: result.greeting.id, sender: "BOT", content: result.greeting.content },
-        ];
-        setMessages(greeting);
-        setQuickReplies(result.greeting.quickReplies ?? []);
-        persistSession(result.sessionId, result.greeting.quickReplies ?? []);
-        scrollToBottom();
-      } catch {
-        setError("Tidak dapat memulai percakapan. Coba lagi.");
-      } finally {
-        setInitializing(false);
-        initPromiseRef.current = null;
+  const initializeChat = useCallback(async () => {
+    if (initRef.current || sessionRef.current !== null) return;
+
+    initRef.current = true;
+    setInitializing(true);
+    setError(null);
+
+    try {
+      const result = await startChatbotSession();
+
+      if (!result || typeof result.sessionId !== "number") {
+        throw new Error("Gagal membuat session");
       }
-    })();
 
-    return initPromiseRef.current;
-  }, [scrollToBottom]);
+      sessionRef.current = result.sessionId;
+      setSessionReady(true);
+
+      setMessages([
+        {
+          id: result.greeting.id,
+          sender: "BOT",
+          content: result.greeting.content,
+        },
+      ]);
+
+      setQuickReplies(result.greeting.quickReplies ?? []);
+    } catch (err) {
+      console.error("Chat initialization error:", err);
+
+      setError("Tidak dapat memulai percakapan. Coba lagi.");
+    } finally {
+      initRef.current = false;
+      setInitializing(false);
+    }
+  }, []);
+
+  // ==========================================
+  // OPEN / CLOSE CHAT
+  // ==========================================
+
+  const handleToggleOpen = () => {
+    if (!open && !initializing && sessionRef.current === null) {
+      void initializeChat();
+    }
+
+    setOpen((value) => !value);
+  };
 
   useEffect(() => {
     if (!open) return;
-    void ensureSession();
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, ensureSession]);
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
 
   const handleSend = useCallback(
     async (text?: string) => {
       const content = (text ?? input).trim();
-      if (!content || sending || sessionRef.current === null) return;
+
+      if (
+        !content ||
+        sending ||
+        initializing ||
+        sessionRef.current === null
+      ) {
+        return;
+      }
 
       setInput("");
       setError(null);
-      const optimisticId = `tmp-${Date.now()}`;
+      setQuickReplies([]);
+
+      const optimisticId = `user-${Date.now()}`;
+
       setMessages((prev) => [
         ...prev,
-        { id: optimisticId, sender: "USER", content },
+        {
+          id: optimisticId,
+          sender: "USER",
+          content,
+        },
       ]);
-      setQuickReplies([]);
+
       setSending(true);
-      scrollToBottom();
 
       try {
-        const reply = await sendChatbotMessage(sessionRef.current, content);
-        if (reply) {
-          setMessages((prev) => [
-            ...prev,
-            { id: `bot-${Date.now()}`, sender: "BOT", content: reply.reply },
-          ]);
-          setQuickReplies(reply.quickReplies ?? []);
-          persistSession(sessionRef.current, reply.quickReplies ?? []);
-        } else {
-          setError("Balasan gagal diproses. Silakan coba lagi.");
-          setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        let result: SendResult | null = await sendChatbotMessage(
+          sessionRef.current,
+          content
+        );
+
+        if (
+          result &&
+          !result.ok &&
+          result.reason === "SESSION_NOT_FOUND" &&
+          !initRef.current
+        ) {
+          initRef.current = true;
+
+          try {
+            const newSession = await startChatbotSession();
+
+            if (newSession && typeof newSession.sessionId === "number") {
+              sessionRef.current = newSession.sessionId;
+
+              result = await sendChatbotMessage(
+                newSession.sessionId,
+                content
+              );
+            }
+          } finally {
+            initRef.current = false;
+          }
         }
-      } catch {
-        setError("Koneksi bermasalah. Pesanmu belum terkirim.");
-        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+
+        if (!result) {
+          throw new Error("Gemini tidak memberikan response");
+        }
+
+        if (!result.ok) {
+          setError(REASON_MESSAGES[result.reason ?? "AI_UNAVAILABLE"]);
+          return;
+        }
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `bot-${Date.now()}`,
+            sender: "BOT",
+            content: result.reply!,
+          },
+        ]);
+
+        setQuickReplies(result.quickReplies ?? []);
+      } catch (err) {
+        console.error("Send message error:", err);
+
+        setError("Koneksi ke Tunas bermasalah. Coba lagi.");
+
+        setMessages((prev) =>
+          prev.filter((message) => message.id !== optimisticId)
+        );
       } finally {
         setSending(false);
-        scrollToBottom();
       }
     },
-    [input, sending, scrollToBottom],
+    [input, sending, initializing]
   );
+
+  const handleRetry = () => {
+    sessionRef.current = null;
+    initRef.current = false;
+    setSessionReady(false);
+    setMessages([]);
+    setQuickReplies([]);
+    setError(null);
+
+    void initializeChat();
+  };
 
   return (
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col items-end gap-3">
       {open && (
         <section
           role="dialog"
-          aria-label="Chat Asisten KompasDesa"
-          // FIX: Tinggi maksimum diatur menggunakan dVh dengan jarak aman -170px (Mobile) & -190px (Desktop) 
-          // Biar nggak akan pernah menyentuh atau numpuk sama Navbar di bagian atas layar.
+          aria-label="Chat Asisten Kompas Desa"
           className="flex flex-col w-[calc(100vw-2rem)] sm:w-[380px] h-[550px] max-h-[calc(100dvh-170px)] sm:max-h-[calc(100dvh-190px)] bg-white rounded-2xl shadow-2xl border border-neutral-200 overflow-hidden origin-bottom-right"
         >
-          {/* Header */}
+          {/* HEADER */}
           <header className="flex items-center gap-3 px-4 py-3.5 bg-primary text-white shrink-0 shadow-sm z-10">
             <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20">
               <Bot size={18} />
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-primary" />
             </span>
+
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="text-[13px] font-bold truncate">Aleksan</p>
-              <p className="text-[10px] text-white/70">Tanya langsung dengan Aleksan</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[13px] font-semibold tracking-[-0.01em] text-white">
+                  Tunas
+                </p>
+                <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-medium text-white">
+                  AI
+                </span>
+              </div>
+              <p className="mt-0.5 text-[10px] text-white/80">
+                Asisten Kompas Desa
+              </p>
             </div>
+
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Tutup chat"
-              className="rounded-xl p-1.5 hover:bg-white/15 active:bg-white/25 transition-colors"
+              className="rounded-xl p-1.5 hover:bg-white/15 active:bg-white/25 transition-colors text-white"
             >
               <X size={18} />
             </button>
           </header>
 
-          {/* Messages */}
+          {/* MESSAGES CONTAINER */}
           <div
             ref={listRef}
             className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 bg-[#F8F9FA]"
@@ -244,19 +335,20 @@ export default function ChatWidget() {
             {initializing ? (
               <TypingDots />
             ) : error && messages.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-3 text-center px-4">
-                <Bot size={36} className="text-gray-300" />
-                <p className="text-xs text-gray-500">{error}</p>
+              <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                  <Bot size={22} strokeWidth={1.7} />
+                </span>
+                <p className="max-w-[220px] text-xs leading-relaxed text-gray-500">
+                  {error}
+                </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    sessionRef.current = null;
-                    initPromiseRef.current = null;
-                    void ensureSession();
-                  }}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                  onClick={handleRetry}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/20"
                 >
-                  <RotateCcw size={12} /> Coba lagi
+                  <RotateCcw size={12} />
+                  Coba lagi
                 </button>
               </div>
             ) : messages.length === 0 ? (
@@ -264,20 +356,21 @@ export default function ChatWidget() {
                 <Bot size={36} className="text-gray-300" />
                 <p className="text-sm font-semibold text-gray-700">Mulai percakapan</p>
                 <p className="text-xs text-gray-400">
-                  Tanya apa saja seputar produk, pengiriman, atau nego harga.
+                  Tanya apa saja seputar Kompas Desa.
                 </p>
               </div>
             ) : (
               <>
-                {messages.map((msg) => (
-                  <MessageBubble key={msg.id} msg={msg} />
+                {messages.map((message) => (
+                  <MessageBubble key={message.id} msg={message} />
                 ))}
+
                 {sending && <TypingDots />}
               </>
             )}
           </div>
 
-          {/* Error banner */}
+          {/* ERROR ALERT */}
           {error && messages.length > 0 && (
             <div
               role="alert"
@@ -287,7 +380,7 @@ export default function ChatWidget() {
               <button
                 type="button"
                 onClick={() => setError(null)}
-                aria-label="Tutup pesan error"
+                aria-label="Tutup error"
                 className="shrink-0 rounded p-1 hover:bg-red-100 transition-colors"
               >
                 <X size={12} />
@@ -295,57 +388,63 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {/* Quick replies */}
           {!sending && quickReplies.length > 0 && (
             <div className="shrink-0 flex gap-2 overflow-x-auto px-4 pt-3 pb-2 bg-white border-t border-gray-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {quickReplies.map((qr) => (
+              {quickReplies.map((reply) => (
                 <button
-                  key={qr}
+                  key={reply}
                   type="button"
-                  onClick={() => handleSend(qr)}
+                  onClick={() => void handleSend(reply)}
                   disabled={sending || initializing}
-                  className="shrink-0 whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-[12px] font-semibold text-primary transition-all duration-200 hover:bg-primary/10 hover:border-primary/30 active:scale-[0.97] disabled:opacity-50"
+                  className="shrink-0 whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-[11px] font-semibold text-primary transition-all duration-200 hover:bg-primary/10 hover:border-primary/30 active:scale-[0.97] disabled:opacity-50"
                 >
-                  {qr}
+                  {reply}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Input */}
+          {/* INPUT FORM */}
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={(event) => {
+              event.preventDefault();
               void handleSend();
             }}
-            className="shrink-0 flex items-center gap-2.5 border-t border-gray-200 bg-white px-4 py-3"
+            className="shrink-0 flex items-center gap-2 border-t border-gray-100 bg-white px-3.5 py-3"
           >
             <input
               type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ketik pesan..."
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Tanya tentang Kompas Desa..."
               enterKeyHint="send"
               maxLength={500}
               autoComplete="off"
-              className="h-10 min-w-0 flex-1 rounded-full border border-gray-200 bg-gray-50/50 px-4 text-[13px] text-gray-800 outline-none transition-colors duration-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
+              disabled={initializing}
+              className="h-9 min-w-0 flex-1 rounded-full border border-gray-200 bg-gray-50 px-3.5 text-[12px] text-gray-800 placeholder:text-gray-400 outline-none transition-all duration-150 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/5 disabled:opacity-60"
             />
+
             <button
               type="submit"
-              disabled={!input.trim() || sending || initializing}
+              disabled={
+                !input.trim() ||
+                sending ||
+                initializing ||
+                !sessionReady
+              }
               aria-label="Kirim pesan"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-white transition-all duration-200 ease-in-out hover:bg-primary-dark active:scale-90 disabled:pointer-events-none disabled:opacity-50"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition-all duration-150 hover:bg-primary-dark hover:shadow-md active:scale-90 disabled:pointer-events-none disabled:opacity-35"
             >
-              <Send size={16} className="ml-0.5" />
+              <Send size={14} strokeWidth={2} />
             </button>
           </form>
         </section>
       )}
 
-      {/* Floating toggle */}
+      {/* FLOATING BUTTON */}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggleOpen}
         aria-label={open ? "Tutup chat" : "Buka chat bantuan"}
         aria-expanded={open}
         className="relative flex h-[56px] w-[56px] items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 ease-out hover:bg-primary-dark hover:scale-105 active:scale-95"

@@ -14,12 +14,30 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function TransactionsSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Skeleton className="h-8 w-56" />
-      <Skeleton className="h-28 rounded-card" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-24 rounded-card" />
-      ))}
+    <div className="mx-auto max-w-4xl animate-fade-up">
+      <div className="mb-6 space-y-2">
+        <Skeleton className="h-7 w-52" />
+        <Skeleton className="h-3.5 w-64" />
+      </div>
+      <Skeleton className="mb-6 h-[104px] rounded-card" />
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between gap-4 rounded-card border border-gray-200/80 bg-white p-5"
+          >
+            <div className="flex min-w-0 items-center gap-4">
+              <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+              <div className="min-w-0 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-56" />
+                <Skeleton className="h-3 w-36" />
+              </div>
+            </div>
+            <Skeleton className="h-5 w-24 shrink-0" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -41,18 +59,21 @@ export default function UserTransactions() {
   const totalSpent = paidOrders.reduce((acc, o) => acc + Number(o.totalPrice), 0);
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Riwayat Transaksi</h1>
-      <p className="text-sm text-gray-500 mb-6">Riwayat pembelian yang telah dibayar.</p>
+    <div className="mx-auto max-w-4xl animate-fade-up">
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Riwayat Transaksi</h1>
+        <p className="mt-1 text-sm text-gray-500">Riwayat pembelian yang telah dibayar.</p>
+      </header>
 
-      <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 mb-6">
-        <p className="text-sm text-gray-500">Total Pengeluaran</p>
+      {/* Ringkasan — pola MiniCard dashboard petani */}
+      <div className="mb-6 rounded-card border border-gray-200/80 bg-white p-5 shadow-soft">
+        <p className="mb-1 text-xs font-medium text-gray-500">Total Pengeluaran</p>
         <CountUp
           value={totalSpent}
           prefix="Rp "
-          className="text-2xl font-extrabold text-primary"
+          className="text-2xl font-bold text-primary"
         />
-        <p className="text-xs text-gray-400 mt-1">{paidOrders.length} transaksi selesai</p>
+        <p className="mt-1 text-xs text-gray-400">{paidOrders.length} transaksi selesai</p>
       </div>
 
       {paidOrders.length === 0 ? (
@@ -66,27 +87,32 @@ export default function UserTransactions() {
             <Link
               key={o.id}
               href={`/user/checkout/${o.id}`}
-              className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5 flex items-center justify-between gap-4 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth animate-fade-up"
+              className="group flex items-center justify-between gap-4 rounded-card border border-gray-200/80 bg-white p-5 shadow-soft transition-shadow duration-300 hover:shadow-lift animate-fade-up"
               style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
             >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 size={22} />
-                </div>
+              <div className="flex min-w-0 items-center gap-4">
+                <span
+                  aria-hidden
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success"
+                >
+                  <CheckCircle2 size={20} strokeWidth={2} />
+                </span>
                 <div className="min-w-0">
-                  <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="truncate text-sm font-bold text-gray-900 group-hover:text-primary transition-colors duration-150">
+                    {o.commodityName}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-gray-500">
                     {o.orderCode} · {formatDateTime(o.createdAt)}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {PAYMENT_METHOD_LABEL[o.paymentMethod ?? ""] ?? "Transfer"} ·{" "}
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
+                    <span>{PAYMENT_METHOD_LABEL[o.paymentMethod ?? ""] ?? "Transfer"}</span>
                     <StatusBadge status={o.paymentStatus ?? "paid"} />
-                  </p>
+                  </div>
                 </div>
               </div>
-              <div className="text-right flex-shrink-0">
-                <p className="font-extrabold text-primary">{formatRupiah(o.totalPrice)}</p>
-                <p className="text-[11px] text-gray-400">Termasuk biaya layanan</p>
+              <div className="shrink-0 text-right">
+                <p className="font-bold text-primary">{formatRupiah(o.totalPrice)}</p>
+                <p className="mt-0.5 text-[11px] text-gray-400">Termasuk biaya layanan</p>
               </div>
             </Link>
           ))}

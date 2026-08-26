@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
+import { toast } from "sonner";
 import { ChevronLeft, PackagePlus } from "lucide-react";
 import { getCategories, createCommodity } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
@@ -19,7 +20,14 @@ export default function AddCommodity() {
     async (prev: ActionState | null, data: FormData) => {
       if (!user) return { success: false, message: "Silakan masuk" };
       const res = await createCommodity(user.id, data);
-      if (res.success) router.push("/petani/dashboard");
+      if (res.success) {
+        toast.success("Komoditas berhasil ditambahkan", {
+          description: "Menunggu verifikasi admin sebelum tayang.",
+        });
+        router.push("/petani/dashboard");
+      } else {
+        toast.error(res.message);
+      }
       return res;
     },
     null,

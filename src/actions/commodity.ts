@@ -110,7 +110,8 @@ export async function getCommoditiesByIds(ids: number[]) {
     .where(inArray(commoditiesTable.id, uniqueIds));
 }
 
-export async function getCommodityById(id: number) {  const [row] = await db
+export async function getCommodityById(id: number) {
+  const [row] = await db
     .select({
       id: commoditiesTable.id,
       farmerId: commoditiesTable.farmerId,
