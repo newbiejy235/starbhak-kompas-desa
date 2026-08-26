@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const reviewsData = [
@@ -83,6 +83,7 @@ function CardBody({ review, isCenter }: { review: typeof reviewsData[0]; isCente
           <img
             src={review.avatar}
             alt={review.name}
+            loading="lazy"
             className="h-11 w-11 rounded-full border-2 border-[#E4F1EB] object-cover"
           />
           {isCenter && (
@@ -101,6 +102,13 @@ function CardBody({ review, isCenter }: { review: typeof reviewsData[0]; isCente
 export default function Testimonial() {
   const [index, setIndex] = useState(0)
   const [locked, setLocked] = useState(false)
+  const reducedMotionRef = useRef(false)
+
+  useEffect(() => {
+    reducedMotionRef.current = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
+  }, [])
 
   const navigate = useCallback(
     (delta: number) => {
@@ -127,6 +135,8 @@ export default function Testimonial() {
   }, [locked])
 
   useEffect(() => {
+    // Hormati prefers-reduced-motion: matikan autoplay (PRD 9.1)
+    if (reducedMotionRef.current) return
     const id = setInterval(() => {
       if (!locked) navigate(1)
     }, 5000)
@@ -137,7 +147,7 @@ export default function Testimonial() {
     <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#fafdfc] px-4 py-20 font-sans">
       {/* Header */}
       <div className="absolute top-12 z-30 w-full max-w-6xl px-4 text-center">
-        <h2 className="mx-auto text-center text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-[34px] md:text-[50px]">
+        <h2 className="mx-auto text-center text-[30px] font-bold leading-tight tracking-tight text-[#1f1f1f] sm:text-[34px] md:text-[38px]">
           Apa Kata <span className="text-[#025246]">Pengguna Kami</span>
         </h2>
         <p className="mt-2 text-xs text-[#75938f] sm:text-sm">
@@ -158,7 +168,8 @@ export default function Testimonial() {
               onClick={() => {
                 if (offset !== 0) navigate(offset)
               }}
-              className={`absolute top-1/2 w-72 sm:w-80 rounded-3xl border bg-white p-6 transition-all duration-700 cubic-bezier(0.34,1.56,0.64,1) ${pos.classes
+              aria-hidden={!isCenter}
+              className={`absolute top-1/2 w-72 sm:w-80 rounded-3xl border bg-white p-6 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${pos.classes
                 } ${!isCenter ? 'cursor-pointer hover:opacity-60' : ''}`}
             >
               <CardBody review={review} isCenter={isCenter} />

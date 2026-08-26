@@ -1,22 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { MotionConfig } from "framer-motion";
 
 import Navbar from "@/components/landingpage/Navbar";
 import DotPattern from "@/components/ui/DotPattern";
 import { DotAnimation } from "@/components/ui/DotAnimation";
-import FadeAnimation from "@/components/animation/Animation";
 import PageLoader from "@/components/landingpage/PageLoader";
 import BentoGridStats from "@/components/landingpage/berandaCard/cardBeranda";
 import ChatWidget from "@/components/shared/chatbot/ChatWidget";
-
-import Link from "next/link";
+import ScrollReveal from "@/components/animation/ScrollReveal";
 import ScrollToTop from "@/components/landingpage/backtotop/BacktoTop";
-
-const ScrollReveal = dynamic(
-  () => import("@/components/animation/ScrollReveal"),
-  { ssr: false }
-);
 
 const PartnerSection = dynamic(
   () => import("@/components/landingpage/mitra/Mitra")
@@ -84,13 +78,13 @@ const FAQSection = dynamic(
 
 export default function KompasDesaPage() {
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <div className="relative z-[999] w-full">
         <Navbar />
       </div>
 
       <PageLoader>
-        <div className="relative min-h-screen bg-white overflow-x-hidden flex flex-col">
+        <div className="landing-page relative min-h-screen bg-white overflow-x-hidden flex flex-col">
           <DotAnimation />
           <DotPattern className="opacity-30" />
           <main className="relative z-25 grow w-full landing-theme">
@@ -155,7 +149,7 @@ export default function KompasDesaPage() {
             </section>
 
             <section
-              id="testimonial"
+              id="testimoni"
               className="bg-white w-full scroll-mt-24"
             >
               <ScrollReveal>
@@ -173,13 +167,13 @@ export default function KompasDesaPage() {
             </section>
           </main>
 
-          <div id="footer" className="relative z-20 w-full">
+          <div id="kontak" className="relative z-20 w-full">
             <Footer />
           </div>
         </div>
         <ScrollToTop />
         <ChatWidget />
       </PageLoader>
-    </>
+    </MotionConfig>
   );
 }

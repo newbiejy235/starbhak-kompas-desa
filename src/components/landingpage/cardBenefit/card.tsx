@@ -76,16 +76,22 @@ export default function CardBenefit() {
       </div>
 
       {/* Animated Tab Switcher */}
-      <div className="inline-flex bg-slate-200/60 p-1.5 rounded-2xl mb-12 border border-slate-200/80 relative">
+      <div
+        className="inline-flex bg-slate-200/60 p-1.5 rounded-2xl mb-12 border border-slate-200/80 relative"
+        role="group"
+        aria-label="Pilih jenis pengguna"
+      >
         <button
           type="button"
           onClick={() => setActiveTab("petani")}
+          aria-pressed={activeTab === "petani"}
           className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 ${activeTab === "petani" ? "text-white" : "text-slate-600 hover:text-slate-900"
             }`}
         >
           {activeTab === "petani" && (
             <motion.div
               layoutId="activeTabPill"
+              aria-hidden="true"
               className="absolute inset-0 bg-[#025246] rounded-xl shadow-md"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
@@ -96,12 +102,14 @@ export default function CardBenefit() {
         <button
           type="button"
           onClick={() => setActiveTab("pembeli")}
+          aria-pressed={activeTab === "pembeli"}
           className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 ${activeTab === "pembeli" ? "text-white" : "text-slate-600 hover:text-slate-900"
             }`}
         >
           {activeTab === "pembeli" && (
             <motion.div
               layoutId="activeTabPill"
+              aria-hidden="true"
               className="absolute inset-0 bg-[#025246] rounded-xl shadow-md"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />
