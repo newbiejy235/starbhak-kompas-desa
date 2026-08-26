@@ -119,7 +119,7 @@ export default function Navbar() {
       <nav
         className={`
     fixed left-1/2 -translate-x-1/2 z-[999]
-    px-8 flex items-center justify-between gap-6 rounded-2xl
+    px-8 flex items-center justify-between gap-6 rounded-3xl
     transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
 
     ${isScrolled
