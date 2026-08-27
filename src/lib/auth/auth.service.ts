@@ -2,10 +2,24 @@ import { db } from "@/db";
 import { usersTable, notificationsTable, verificationCode } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { hashPassword, comparePassword } from "@/lib/auth/bcrypt";
-import { signToken } from "@/lib/auth/jwt";
+import { signToken, verifyToken } from "@/lib/auth/jwt";
 import type { ActionState } from "@/lib/types/auth";
+import { cookies } from "next/headers";
 
 export type RegisterResult = ActionState & { redirect?: string };
+
+export async function verifyAuth() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("kd_token")?.value;
+    if (!token) return null;
+    const payload = verifyToken(token);
+    if (!payload) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 export async function register(data: FormData): Promise<RegisterResult> {
   const fullName = (data.get("fullName") as string)?.trim() || "";

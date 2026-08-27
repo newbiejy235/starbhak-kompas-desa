@@ -11,6 +11,7 @@ import {
   ImageUpload,
 } from "@/db/schema";
 import { eq, and, desc, sql, or, gt } from "drizzle-orm";
+import { verifyAuth } from "@/lib/auth/auth.service";
 
 export async function getOrCreateChatRoom(
   buyerId: number,
@@ -66,6 +67,8 @@ export async function getOrCreateChatRoom(
 }
 
 export async function getChatRoomsForUser(userId: number, role: "pembeli" | "petani") {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== userId) return [];
   try {
     const condition =
       role === "pembeli"
@@ -107,6 +110,8 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
 }
 
 export async function getChatRoomDetail(roomId: number) {
+  const auth = await verifyAuth();
+  if (!auth) return null;
   try {
     const [room] = await db
       .select({
@@ -160,6 +165,8 @@ export async function getChatRoomDetail(roomId: number) {
 }
 
 export async function getChatMessages(roomId: number) {
+  const auth = await verifyAuth();
+  if (!auth) return [];
   try {
     const messages = await db
       .select({
@@ -196,6 +203,8 @@ export async function sendChatMessage(
   offerQuantity?: number,
   replyToId?: number,
 ) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== senderId) return null;
   try {
     const [msg] = await db
       .insert(chatMessagesTable)
@@ -295,6 +304,8 @@ export async function notifyChatMessage(
 }
 
 export async function getNewMessages(roomId: number, afterId: number) {
+  const auth = await verifyAuth();
+  if (!auth) return [];
   try {
     const messages = await db
       .select({
@@ -326,6 +337,8 @@ export async function getNewMessages(roomId: number, afterId: number) {
 }
 
 export async function markMessagesAsRead(roomId: number, userId: number) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== userId) return false;
   try {
     await db
       .update(chatMessagesTable)
@@ -440,6 +453,8 @@ export async function getUnreadCount(userId: number) {
 }
 
 export async function editMessage(messageId: number, userId: number, newContent: string) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== userId) return { success: false, error: "Unauthorized" };
   try {
     const [msg] = await db
       .select()
@@ -468,6 +483,8 @@ export async function editMessage(messageId: number, userId: number, newContent:
 }
 
 export async function deleteMessage(messageId: number, userId: number) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== userId) return { success: false, error: "Unauthorized" };
   try {
     const [msg] = await db
       .select()
@@ -495,6 +512,8 @@ export async function deleteMessage(messageId: number, userId: number) {
 }
 
 export async function getEditedDeletedMessages(roomId: number, lastId: number) {
+  const auth = await verifyAuth();
+  if (!auth) return [];
   try {
     const msgs = await db
       .select({

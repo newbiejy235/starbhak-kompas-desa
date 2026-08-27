@@ -217,20 +217,19 @@ export default function AnalitikPage() {
         </SummaryCard>
       </section>
 
-      {/* Tren volume penjualan */}
       <SalesChartCard
         data={chartLoading ? [] : (chart?.data ?? [])}
         loading={chartLoading}
         range={chartRange}
         onRangeChange={setChartRange}
-      />
+      />  
 
-      {/* Komoditas terlaris */}
+
       {topProducts.length > 0 && (
         <TopCommoditiesCard products={topProducts} />
       )}
 
-      {/* Insight berbahasa manusiawi dari angka nyata */}
+
       {(topInsight || trendInsight) && (
         <section
           aria-label="Ringkasan insight"
