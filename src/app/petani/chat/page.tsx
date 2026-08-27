@@ -16,9 +16,8 @@ type RawRoom = Awaited<ReturnType<typeof getChatRoomsForUser>>[number];
 function toChatRoom(r: RawRoom): ChatRoom {
   return {
     id: r.id,
-    buyerId: r.buyerId,
-    buyerName: r.buyerName,
-    buyerAvatarUrl: r.buyerFotoProfile,
+    otherName: r.buyerName,
+    otherAvatarUrl: r.buyerFotoProfile,
     lastMessage: r.lastMessage ?? "",
     lastMessageAt: r.lastMessageAt ?? r.createdAt,
     unreadCount: r.unreadCount ?? 0,
@@ -80,6 +79,7 @@ export default function PetaniChatPage() {
     () => chatRooms.filter((r) => r.unreadCount > 0).length,
     [chatRooms],
   );
+
   const pinnedCount = useMemo(
     () => chatRooms.filter((r) => r.pinned).length,
     [chatRooms],

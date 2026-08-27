@@ -69,16 +69,16 @@ export default function ChatItem({
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        {room.buyerAvatarUrl ? (
+        {room.otherAvatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={room.buyerAvatarUrl}
-            alt={room.buyerName}
+            src={room.otherAvatarUrl}
+            alt={room.otherName}
             className="h-11 w-11 rounded-full object-cover"
           />
         ) : (
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#025246]/10 text-sm font-semibold text-[#025246]">
-            {getInitials(room.buyerName)}
+            {getInitials(room.otherName)}
           </div>
         )}
       </div>
@@ -93,25 +93,25 @@ export default function ChatItem({
                 : "font-medium text-gray-800"
             }`}
           >
-            {room.buyerName}
+            {room.otherName}
           </p>
-          <span className="shrink-0 text-xs text-gray-400">
+          <span className={`shrink-0 text-xs ${hasUnread ? "font-bold text-[#025246]" : "text-gray-400"}`}>
             {formatChatTime(room.lastMessageAt)}
           </span>
         </div>
 
         <div className="mt-0.5 flex items-center justify-between gap-2">
-          <p className="truncate text-sm text-gray-500">
+          <p className={`truncate text-sm ${hasUnread ? "font-semibold text-gray-800" : "text-gray-500"}`}>
             {room.lastMessage || "Belum ada pesan"}
           </p>
 
           <div className="flex shrink-0 items-center gap-1.5">
             {hasUnread && (
               <span
-                className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#025246] px-1.5 text-[11px] font-semibold text-white"
+                className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#025246] px-2 text-[11px] font-bold text-white shadow-sm"
                 aria-label={`${room.unreadCount} pesan belum dibaca`}
               >
-                {room.unreadCount > 9 ? "9+" : room.unreadCount}
+                {room.unreadCount > 99 ? "99+" : room.unreadCount}
               </span>
             )}
           </div>
@@ -125,8 +125,8 @@ export default function ChatItem({
           onClick={handlePinClick}
           aria-label={
             isPinned
-              ? `Lepas sematan percakapan dengan ${room.buyerName}`
-              : `Sematkan percakapan dengan ${room.buyerName}`
+              ? `Lepas sematan percakapan dengan ${room.otherName}`
+              : `Sematkan percakapan dengan ${room.otherName}`
           }
           aria-pressed={isPinned}
           title={isPinned ? "Lepas Sematan" : "Sematkan"}

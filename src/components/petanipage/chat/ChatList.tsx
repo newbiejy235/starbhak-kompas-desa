@@ -6,9 +6,8 @@ import ChatEmptyState from "./ChatEmptyState";
 
 export interface ChatRoom {
   id: number;
-  buyerId?: number;
-  buyerName: string;
-  buyerAvatarUrl?: string | null;
+  otherName: string;
+  otherAvatarUrl?: string | null;
   lastMessage: string;
   lastMessageAt: string | number | Date;
   unreadCount: number;
@@ -52,7 +51,7 @@ export default function ChatList({
 
     const matchesSearch = (room: ChatRoom) =>
       term.length === 0 ||
-      room.buyerName.toLowerCase().includes(term) ||
+      room.otherName.toLowerCase().includes(term) ||
       room.lastMessage.toLowerCase().includes(term);
 
     const matchesFilter = (room: ChatRoom) => {
