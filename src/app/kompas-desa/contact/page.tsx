@@ -10,6 +10,12 @@ import {
   AtSign
 } from "lucide-react";
 
+const kebutuhanOptions = [
+  { value: "petani", label: "Saya seorang petani" },
+  { value: "pembeli", label: "Saya seorang pembeli" },
+  { value: "mitra", label: "Ingin menjadi mitra" },
+  { value: "lainnya", label: "Pertanyaan lainnya" },
+];
 
 const contactItems = [
   {
@@ -41,13 +47,13 @@ export default function KontakPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-[#025246]" />
 
               <span className="text-xs font-medium text-[#025246]">
-                Hubungi Kompas Desa
+                Hubungi KompasDesa
               </span>
             </div>
 
             <h1 className="max-w-2xl text-4xl font-semibold leading-[1.08] tracking-[-0.03em] text-[#1f1f1f] sm:text-[44px] md:text-[48px]">
               Mari terhubung dengan{" "}
-              <span className="text-[#025246]">Kompas Desa.</span>
+              <span className="text-[#025246]">KompasDesa.</span>
             </h1>
           </div>
 
@@ -220,7 +226,6 @@ export default function KontakPage() {
                   >
                     Kebutuhan
                   </label>
-
                   <select
                     id="subjek"
                     defaultValue=""
@@ -230,10 +235,11 @@ export default function KontakPage() {
                       Pilih kebutuhan
                     </option>
 
-                    <option value="petani">Saya seorang petani</option>
-                    <option value="pembeli">Saya seorang pembeli</option>
-                    <option value="mitra">Ingin menjadi mitra</option>
-                    <option value="lainnya">Pertanyaan lainnya</option>
+                    {kebutuhanOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

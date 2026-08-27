@@ -2,8 +2,10 @@
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import Image from "next/image";
 import Link from "next/link";
+
 import ProductCard from "@/components/userpage/ProductCard";
 import { EmptyState } from "@/components/shared/States";
 import { getPublicCommodities, getCategories } from "@/actions/commodity";
@@ -37,7 +39,6 @@ function CatalogSkeleton() {
         <Skeleton className="h-6 w-52" />
         <Skeleton className="h-3.5 w-72" />
       </div>
-      {/* Grid produk */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="overflow-hidden rounded-card border border-gray-200/80 bg-white">
@@ -82,10 +83,9 @@ function HomeContent() {
   const categories = data?.categories ?? [];
 
   const chipClass = (active: boolean) =>
-    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${
-      active
-        ? "bg-primary text-white"
-        : "border border-gray-200 bg-white text-gray-600 hover:border-primary hover:text-primary"
+    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${active
+      ? "bg-primary text-white"
+      : "border border-gray-200 bg-white text-gray-600 hover:border-primary hover:text-primary"
     }`;
 
   return (

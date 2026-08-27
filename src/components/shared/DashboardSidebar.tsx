@@ -85,11 +85,10 @@ function SidebarGroupMenu({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={panelId}
-        className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-          hasActiveChild
-            ? "text-primary"
-            : "text-gray-600 hover:bg-gray-50 hover:text-primary"
-        }`}
+        className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${hasActiveChild
+          ? "text-primary"
+          : "text-gray-600 hover:bg-gray-50 hover:text-primary"
+          }`}
       >
         {group.icon ? (
           <group.icon size={19} />
@@ -100,18 +99,16 @@ function SidebarGroupMenu({
         <ChevronDown
           size={16}
           aria-hidden
-          className={`shrink-0 text-gray-400 transition-transform duration-200 ease-smooth ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`shrink-0 text-gray-400 transition-transform duration-200 ease-smooth ${open ? "rotate-180" : ""
+            }`}
         />
       </button>
 
       {/* Animasi reveal memakai grid-rows agar tinggi mengikuti konten tanpa JS */}
       <div
         id={panelId}
-        className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-        }`}
+        className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
       >
         <div className="overflow-hidden">
           <ul
@@ -126,11 +123,10 @@ function SidebarGroupMenu({
                     href={child.href}
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
-                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary ${
-                      active
-                        ? "bg-primary/5 font-semibold text-primary"
-                        : "text-gray-500 hover:bg-gray-50 hover:text-primary"
-                    }`}
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary ${active
+                      ? "bg-primary/5 font-semibold text-primary"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-primary"
+                      }`}
                   >
                     <child.icon
                       size={17}
@@ -197,7 +193,7 @@ export default function DashboardSidebar({
   const content = (
     <>
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-        <Link href={brandHref} className="text-xl font-bold text-primary">
+        <Link href={brandHref} className="text-xl font-bold text-primary py-3">
           KompasDesa
         </Link>
         <button
@@ -207,14 +203,6 @@ export default function DashboardSidebar({
         >
           <X size={20} />
         </button>
-      </div>
-
-      <div className="px-6 py-4 border-b border-gray-100 bg-primary/5 flex items-center gap-3">
-        <Avatar src={user?.fotoProfile} name={user?.fullName} size="sm" />
-        <div>
-          <p className="text-sm font-bold text-gray-800">{user?.fullName}</p>
-          <p className="text-xs text-gray-500">{roleLabel}</p>
-        </div>
       </div>
 
       <nav ref={navRef} className="relative p-4 flex flex-col gap-1.5 flex-grow overflow-y-auto">

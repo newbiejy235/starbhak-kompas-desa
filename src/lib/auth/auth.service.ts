@@ -175,6 +175,11 @@ export async function getAuthUser(userId: number) {
       businessType: usersTable.businessType,
       fotoProfile: usersTable.fotoProfile,
       address: usersTable.address,
+      bio: usersTable.bio,
+      farmingExperience: usersTable.farmingExperience,
+      farmArea: usersTable.farmArea,
+      farmingMethod: usersTable.farmingMethod,
+      village: usersTable.village,
       status: usersTable.status,
       createdAt: usersTable.createdAt,
     })

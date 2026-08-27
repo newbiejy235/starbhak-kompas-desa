@@ -16,7 +16,7 @@ export default function PetaniChatRoomPage() {
   const rid = Number(roomId);
 
   const { room, messages, loading, sendMessage, editMessage, deleteMessage } = useChatSSE(
-    rid,
+    rid,    
     userId,
     userFullName
   );

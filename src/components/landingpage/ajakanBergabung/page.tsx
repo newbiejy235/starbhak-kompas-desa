@@ -27,7 +27,7 @@ const contacts = [
   }
 ]
 
-export default function ContactSection() {
+export default function invitationSection() {
   return (
     <section className="w-full bg-white px-5 py-20 sm:px-6 lg:py-24">
       <div className="mx-auto max-w-6xl">

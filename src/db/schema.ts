@@ -85,6 +85,11 @@ export const usersTable = pgTable(
     demandScale: demandScaleEnum().notNull().default(""),
     fotoProfile: text(),
     address: text(),
+    bio: text(),
+    farmingExperience: varchar({ length: 50 }),
+    farmArea: varchar({ length: 50 }),
+    farmingMethod: varchar({ length: 100 }),
+    village: varchar({ length: 100 }),
     status: userStatusEnum().notNull().default("pending"),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
@@ -248,6 +253,24 @@ export const ImageUpload = pgTable("ImageUpload", {
   secureUrl: text("secure_url").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const farmerProfileImagesTable = pgTable(
+  "farmer_profile_images_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    farmerId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    publicId: varchar("public_id", { length: 255 }).notNull(),
+    secureUrl: text("secure_url").notNull(),
+    caption: varchar({ length: 150 }),
+    sortOrder: integer().notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("farmer_profile_images_farmer_idx").on(table.farmerId)],
+);
 
 export const chatbotSessionStatusEnum = pgEnum("chatbot_session_status", [
   "ACTIVE",
@@ -470,3 +493,5 @@ export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;
 export type SalesTarget = typeof salesTargetsTable.$inferSelect;
 export type HarvestRecord = typeof harvestRecordsTable.$inferSelect;
+export type FarmerProfileImage =
+  typeof farmerProfileImagesTable.$inferSelect;
