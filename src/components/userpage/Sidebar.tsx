@@ -7,8 +7,6 @@ import {
   LayoutDashboard,
   ShoppingBag,
   History,
-  Star,
-  Bell,
   LogOut,
   X,
   Menu,
@@ -26,8 +24,6 @@ export default function UserSidebar() {
     { id: "chat", label: "Pesan", icon: MessageCircle, href: "/user/chat" },
     { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },
     { id: "transactions", label: "Riwayat Transaksi", icon: History, href: "/user/transactions" },
-    { id: "reviews", label: "Ulasan Saya", icon: Star, href: "/user/reviews" },
-    { id: "notifications", label: "Notifikasi", icon: Bell, href: "/user/notifications" },
   ];
 
   const logout = () => {

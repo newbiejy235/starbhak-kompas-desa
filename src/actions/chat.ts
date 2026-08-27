@@ -8,9 +8,17 @@ import {
   commoditiesTable,
   usersTable,
   notificationsTable,
+  paymentsTable,
   ImageUpload,
 } from "@/db/schema";
 import { eq, and, desc, sql, or, gt } from "drizzle-orm";
+import { formatRupiah } from "@/lib/format";
+import { getAuthUser } from "@/lib/auth/auth.service";
+import {
+  createOrderFromNegotiation,
+  createOrderFromAcceptedOffer,
+} from "@/actions/order";
+import { NegotiationValidationError } from "@/lib/chat-shared";
 
 export async function getOrCreateChatRoom(
   buyerId: number,
@@ -195,6 +203,175 @@ export async function sendChatMessage(
   replyToId?: number,
 ) {
   try {
+    const [room] = await db
+      .select({
+        id: chatRoomsTable.id,
+        buyerId: chatRoomsTable.buyerId,
+        farmerId: chatRoomsTable.farmerId,
+        commodityId: chatRoomsTable.commodityId,
+      })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+
+    if (!room) {
+      return { success: false, error: "Chat tidak ditemukan" };
+    }
+
+    const isNegotiation =
+      type === "offer" ||
+      type === "counter_offer" ||
+      type === "accept" ||
+      type === "reject";
+
+    if (isNegotiation) {
+      const sender = await getAuthUser(senderId);
+      if (!sender || (sender.role !== "pembeli" && sender.role !== "petani")) {
+        return { success: false, error: "Unauthorized" };
+      }
+      if (room.buyerId !== senderId && room.farmerId !== senderId) {
+        return { success: false, error: "Anda bukan anggota chat ini" };
+      }
+
+      const [commodity] = await db
+        .select()
+        .from(commoditiesTable)
+        .where(eq(commoditiesTable.id, room.commodityId))
+        .limit(1);
+
+      if (!commodity) {
+        return { success: false, error: "Produk tidak ditemukan" };
+      }
+
+      let resultOrderId: number | undefined;
+      let resultOrderCode: string | undefined;
+      let resultOfferId: number | undefined;
+
+      const msg = await db.transaction(async (tx) => {
+        if (type === "offer" || type === "counter_offer") {
+          if (!offerPrice || offerPrice <= 0 || !offerQuantity || offerQuantity <= 0) {
+            throw new NegotiationValidationError("Harga dan jumlah tidak valid");
+          }
+          if (commodity.minPrice && offerPrice < Number(commodity.minPrice)) {
+            throw new NegotiationValidationError(`Harga di bawah minimum ${formatRupiah(Number(commodity.minPrice))}`);
+          }
+          if (commodity.maxPrice && offerPrice > Number(commodity.maxPrice)) {
+            throw new NegotiationValidationError(`Harga di atas maksimum ${formatRupiah(Number(commodity.maxPrice))}`);
+          }
+          if (Number(commodity.stock) < offerQuantity) {
+            throw new NegotiationValidationError(`Stok ${commodity.name} tidak mencukupi`);
+          }
+
+          await tx
+            .update(negotiationOffersTable)
+            .set({ status: "cancelled" })
+            .where(
+              and(
+                eq(negotiationOffersTable.roomId, roomId),
+                eq(negotiationOffersTable.status, "pending"),
+              ),
+            );
+
+          const [offer] = await tx
+            .insert(negotiationOffersTable)
+            .values({
+              roomId,
+              commodityId: room.commodityId,
+              buyerId: room.buyerId,
+              farmerId: room.farmerId,
+              price: offerPrice.toString(),
+              quantity: offerQuantity.toString(),
+              unit: commodity.unit,
+            })
+            .returning({ id: negotiationOffersTable.id });
+          resultOfferId = offer.id;
+        } else {
+          const [pending] = await tx
+            .select()
+            .from(negotiationOffersTable)
+            .where(
+              and(
+                eq(negotiationOffersTable.roomId, roomId),
+                eq(negotiationOffersTable.status, "pending"),
+              ),
+            )
+            .orderBy(desc(negotiationOffersTable.id))
+            .limit(1);
+
+          if (!pending) {
+            throw new NegotiationValidationError("Tidak ada penawaran yang menunggu");
+          }
+
+          if (type === "accept") {
+            await tx
+              .update(negotiationOffersTable)
+              .set({ status: "accepted", acceptedAt: new Date() })
+              .where(eq(negotiationOffersTable.id, pending.id));
+
+            const order = await createOrderFromAcceptedOffer(tx, {
+              offerId: pending.id,
+              buyerId: room.buyerId,
+              farmerId: room.farmerId,
+              commodityId: room.commodityId,
+              quantity: Number(pending.quantity),
+              unitPrice: Number(pending.price),
+            });
+            resultOrderId = order.id;
+            resultOrderCode = order.orderCode;
+
+            await tx
+              .update(notificationsTable)
+              .set({ isRead: true })
+              .where(
+                and(
+                  eq(notificationsTable.userId, senderId),
+                  eq(notificationsTable.relatedRoomId, roomId),
+                  sql`${notificationsTable.relatedOfferId} IS NOT NULL`,
+                ),
+              );
+          } else {
+            await tx
+              .update(negotiationOffersTable)
+              .set({ status: "rejected" })
+              .where(eq(negotiationOffersTable.id, pending.id));
+          }
+        }
+
+        const [msg] = await tx
+          .insert(chatMessagesTable)
+          .values({
+            roomId,
+            senderId,
+            type,
+            content,
+            offerPrice: offerPrice !== undefined ? String(offerPrice) : undefined,
+            offerQuantity: offerQuantity !== undefined ? String(offerQuantity) : undefined,
+            replyToId: replyToId ?? null,
+          })
+          .returning({ id: chatMessagesTable.id });
+
+        await tx
+          .update(chatRoomsTable)
+          .set({
+            status: type === "accept" ? "closed" : "active",
+            lastMessage: content,
+            lastMessageAt: new Date(),
+          })
+          .where(eq(chatRoomsTable.id, roomId));
+
+        return { id: msg.id, offerId: resultOfferId };
+      });
+
+      notifyChatMessage(roomId, senderId, content, type, resultOfferId).catch(() => {});
+
+      return {
+        success: true,
+        id: msg.id,
+        orderId: resultOrderId,
+        orderCode: resultOrderCode,
+      };
+    }
+
     const [msg] = await db
       .insert(chatMessagesTable)
       .values({
@@ -202,8 +379,8 @@ export async function sendChatMessage(
         senderId,
         type,
         content,
-        offerPrice: offerPrice?.toString(),
-        offerQuantity: offerQuantity?.toString(),
+        offerPrice: offerPrice !== undefined ? String(offerPrice) : undefined,
+        offerQuantity: offerQuantity !== undefined ? String(offerQuantity) : undefined,
         replyToId: replyToId ?? null,
       })
       .returning({ id: chatMessagesTable.id });
@@ -222,10 +399,13 @@ export async function sendChatMessage(
     // Notify recipient (best-effort, non-blocking)
     notifyChatMessage(roomId, senderId, content).catch(() => {});
 
-    return result;
+    return { success: true, ...result };
   } catch (error) {
+    if (error instanceof NegotiationValidationError) {
+      return { success: false, error: error.message };
+    }
     console.error(error);
-    return null;
+    return { success: false, error: "Terjadi kesalahan, coba lagi." };
   }
 }
 
@@ -233,6 +413,8 @@ export async function notifyChatMessage(
   roomId: number,
   senderId: number,
   content: string,
+  type: string = "text",
+  offerId?: number,
 ) {
   try {
     const room = await db
@@ -281,11 +463,15 @@ export async function notifyChatMessage(
     const commodityName = commodity?.name ?? "produk";
     const preview = content.length > 60 ? `${content.slice(0, 57)}...` : content;
 
+    const isOfferType = type === "offer" || type === "counter_offer";
+
     await db.insert(notificationsTable).values({
       userId: recipientId,
       title: `Pesan baru dari ${senderName}`,
       message: `${commodityName}: ${preview}`,
       type: "chat",
+      relatedRoomId: isOfferType ? roomId : null,
+      relatedOfferId: isOfferType ? (offerId ?? null) : null,
     });
   } catch (error) {
     console.error("notifyChatMessage error:", error);
@@ -341,6 +527,7 @@ export async function markMessagesAsRead(roomId: number, userId: number) {
   }
 }
 
+// @deprecated - jalur lama, dipertahankan sementara, cek lagi sebelum dihapus permanen
 export async function createNegotiationOffer(
   roomId: number,
   commodityId: number,
@@ -351,6 +538,20 @@ export async function createNegotiationOffer(
   unit: string,
 ) {
   try {
+    const [commodity] = await db
+      .select()
+      .from(commoditiesTable)
+      .where(eq(commoditiesTable.id, commodityId));
+
+    if (!commodity) return null;
+
+    if (commodity.minPrice && price < Number(commodity.minPrice)) {
+      return { error: `Harga di bawah minimum ${formatRupiah(Number(commodity.minPrice))}` };
+    }
+    if (commodity.maxPrice && price > Number(commodity.maxPrice)) {
+      return { error: `Harga di atas maksimum ${formatRupiah(Number(commodity.maxPrice))}` };
+    }
+
     const [offer] = await db
       .insert(negotiationOffersTable)
       .values({
@@ -371,29 +572,56 @@ export async function createNegotiationOffer(
   }
 }
 
+// @deprecated - jalur lama, dipertahankan sementara, cek lagi sebelum dihapus permanen
 export async function respondToOffer(
   offerId: number,
   response: "accepted" | "rejected",
 ) {
   try {
-    await db
-      .update(negotiationOffersTable)
-      .set({
-        status: response,
-        acceptedAt: response === "accepted" ? new Date() : undefined,
-      })
-      .where(eq(negotiationOffersTable.id, offerId));
-
     const [offer] = await db
       .select()
       .from(negotiationOffersTable)
       .where(eq(negotiationOffersTable.id, offerId));
 
-    if (response === "accepted" && offer) {
-      await db
-        .update(chatRoomsTable)
-        .set({ status: "closed" })
-        .where(eq(chatRoomsTable.id, offer.roomId));
+    if (!offer) return { success: false };
+
+    if (response === "accepted") {
+      const [commodity] = await db
+        .select()
+        .from(commoditiesTable)
+        .where(eq(commoditiesTable.id, offer.commodityId));
+
+      if (commodity) {
+        const price = Number(offer.price);
+        if (commodity.minPrice && price < Number(commodity.minPrice)) {
+          return { success: false, error: "Harga di bawah minimum" };
+        }
+        if (commodity.maxPrice && price > Number(commodity.maxPrice)) {
+          return { success: false, error: "Harga di atas maksimum" };
+        }
+      }
+    }
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(negotiationOffersTable)
+        .set({
+          status: response,
+          acceptedAt: response === "accepted" ? new Date() : undefined,
+        })
+        .where(eq(negotiationOffersTable.id, offerId));
+
+      if (response === "accepted") {
+        await tx
+          .update(chatRoomsTable)
+          .set({ status: "closed" })
+          .where(eq(chatRoomsTable.id, offer.roomId));
+      }
+    });
+
+    if (response === "accepted") {
+      const orderResult = await createOrderFromNegotiation(offerId, offer.buyerId);
+      return { success: true, offer, order: orderResult };
     }
 
     return { success: true, offer };

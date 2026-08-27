@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Eye, Star } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
+import WishlistButton from "@/components/shared/WishlistButton";
 
 export interface ProductCardData {
   id: number;
@@ -22,6 +23,7 @@ export interface ProductCardData {
 
 interface ProductCardProps {
   data?: ProductCardData | null;
+  userId?: number | null;
 }
 
 const categoryGradient: Record<string, string> = {
@@ -32,7 +34,7 @@ const categoryGradient: Record<string, string> = {
   Hortikultura: "from-lime-400 to-green-600",
 };
 
-export default function ProductCard({ data }: ProductCardProps) {
+export default function ProductCard({ data, userId }: ProductCardProps) {
   if (!data) return null;
   const img = formatImage(data.image);
   const gradient =
@@ -61,6 +63,9 @@ export default function ProductCard({ data }: ProductCardProps) {
             <span className="text-6xl font-black text-white/90">{initial}</span>
           </div>
         )}
+        <div className="absolute top-2 right-2 z-10">
+          <WishlistButton commodityId={data.id} userId={userId ?? null} size="sm" />
+        </div>
       </div>
 
       <div className="p-5 flex flex-col flex-grow">
@@ -83,7 +88,7 @@ export default function ProductCard({ data }: ProductCardProps) {
           <span className="font-medium text-gray-700">{data.categoryName}</span>
         </p>
 
-        <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+        <div className="mt-auto pt-4 border-t border-gray-100">
           <div>
             <div className="text-lg font-extrabold text-[#025246] h-6">
               {hasRange
@@ -94,9 +99,6 @@ export default function ProductCard({ data }: ProductCardProps) {
               {hasRange ? "bisa nego · " : ""}per {data.unit} · stok {formatNumber(data.stock)} {data.unit}
             </div>
           </div>
-          <span className="w-10 h-10 text-white bg-primary group-hover:bg-primary-dark rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-md cursor-pointer">
-            <Eye size={18} />
-          </span>
         </div>
       </div>
     </Link>

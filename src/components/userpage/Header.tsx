@@ -5,13 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useActionState } from "react";
 import {
   Search,
-  ShoppingCart,
+  Bookmark,
   Bell,
   LogOut,
   ChevronDown,
   UserRound,
   ShoppingBag,
-  Star,
   Sprout,
   X,
   MapPin,
@@ -19,6 +18,7 @@ import {
 import { getClientUser, clearSession, updateSessionRole } from "@/lib/auth/client";
 import { becomePetaniAction } from "@/actions/auth";
 import { getUnreadNotificationCount } from "@/actions/notification";
+import { getWishlistCount } from "@/actions/wishlist";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 
@@ -50,6 +50,12 @@ export default function UserHeader() {
     [user?.id, pathname],
   );
   const unread = Number(unreadCount ?? 0);
+
+  const { data: wishlistCount } = useFetch(
+    () => (user ? getWishlistCount(user.id) : Promise.resolve(0)),
+    [user?.id, pathname],
+  );
+  const wishlistQty = Number(wishlistCount ?? 0);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -97,7 +103,6 @@ export default function UserHeader() {
   const menuItems = [
     { href: "/user/profile", label: "Lihat Profil", icon: UserRound },
     { href: "/user/orders", label: "Pesanan Saya", icon: ShoppingBag },
-    { href: "/user/reviews", label: "Ulasan Saya", icon: Star },
   ];
 
   return (
@@ -110,28 +115,33 @@ export default function UserHeader() {
         }`}
       >
         <div className="flex items-center gap-4 w-full">
-          <form onSubmit={submitSearch} className="hidden sm:flex items-center bg-white/80 border border-gray-200 rounded-full px-4 py-2 w-full max-w-md focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 transition-all">
-            <Search size={18} className="text-gray-400 flex-shrink-0" />
+          <form onSubmit={submitSearch} className="hidden sm:flex items-center bg-white border-2 border-gray-300 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 rounded-xl px-4 py-2.5 w-full max-w-lg transition-all">
+            <Search size={20} className="text-gray-500 flex-shrink-0" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari komoditas..."
-              className="bg-transparent border-none outline-none ml-2 text-sm w-full"
+              placeholder="Cari komoditas, petani, atau lokasi..."
+              className="bg-transparent border-none outline-none ml-2.5 text-sm font-medium w-full placeholder:text-gray-400 placeholder:font-medium"
             />
           </form>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Link
-            href="/user/cart"
-            aria-label="Keranjang belanja"
+            href="/user/wishlist"
+            aria-label="Wishlist"
             className={`relative p-2 rounded-full transition-all duration-200 active:scale-90 ${
-              pathname.startsWith("/user/cart")
+              pathname.startsWith("/user/wishlist")
                 ? "text-primary bg-primary/10"
                 : "text-gray-500 hover:bg-white hover:text-primary hover:shadow-sm"
             }`}
           >
-            <ShoppingCart size={20} />
+            <Bookmark size={20} />
+            {wishlistQty > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full">
+                {wishlistQty > 99 ? "99+" : wishlistQty}
+              </span>
+            )}
           </Link>
           <Link
             href="/user/notifications"

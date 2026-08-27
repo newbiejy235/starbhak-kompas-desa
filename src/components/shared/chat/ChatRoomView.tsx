@@ -9,7 +9,6 @@ import {
   Check,
   CheckCheck,
   X,
-  ShoppingCart,
   MapPin,
   Tag,
   Handshake,
@@ -24,6 +23,7 @@ import {
 } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
+import type { SendChatMessageResult } from "@/lib/chat-shared";
 
 interface ChatRoomData {
   id: number;
@@ -69,8 +69,8 @@ interface ChatRoomViewProps {
   messages: ChatMessageData[];
   currentUserId: number;
   currentRole: "pembeli" | "petani";
-  onSendMessage: (content: string, type?: string, offerPrice?: number, offerQuantity?: number, replyToId?: number) => Promise<void>;
-  onAddToCart: (price: number, quantity: number) => void;
+  onSendMessage: (content: string, type?: string, offerPrice?: number, offerQuantity?: number, replyToId?: number) => Promise<SendChatMessageResult | null>;
+  onOrderCreated?: (orderId: number) => void;
   onBack: () => void;
   onEditMessage?: (messageId: number, newContent: string) => Promise<{ success: boolean; error?: string }>;
   onDeleteMessage?: (messageId: number) => Promise<{ success: boolean; error?: string }>;
@@ -104,7 +104,7 @@ export default function ChatRoomView({
   currentUserId,
   currentRole,
   onSendMessage,
-  onAddToCart,
+  onOrderCreated,
   onBack,
   onEditMessage,
   onDeleteMessage,
@@ -115,6 +115,7 @@ export default function ChatRoomView({
   const [offerQty, setOfferQty] = useState("1");
   const [confirmDeal, setConfirmDeal] = useState<{ price: string; quantity: string } | null>(null);
   const [submittingDeal, setSubmittingDeal] = useState(false);
+  const [acceptedOrderId, setAcceptedOrderId] = useState<number | null>(null);
   const [showProductInfo, setShowProductInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -238,18 +239,34 @@ export default function ChatRoomView({
     setInput("");
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
-    await onSendMessage(text, "text", undefined, undefined, replyId);
+    const result = await onSendMessage(text, "text", undefined, undefined, replyId);
+    if (!result?.success) {
+      alert(result?.error ?? "Pesan gagal dikirim, coba lagi.");
+    }
   };
 
   const handleSendOffer = async (type: "offer" | "counter_offer" = "offer") => {
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
+
+    if (minPrice !== null && price < minPrice) {
+      alert(`Harga tidak boleh di bawah harga minimum ${formatRupiah(minPrice)}.\nSilakan masukkan harga yang sesuai.`);
+      return;
+    }
+    if (maxPrice !== null && price > maxPrice) {
+      alert(`Harga tidak boleh di atas harga maksimum ${formatRupiah(maxPrice)}.\nSilakan masukkan harga yang sesuai.`);
+      return;
+    }
+
     const label = type === "counter_offer" ? "Counter" : "Penawaran";
     const offerText = `${label}: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
-    await onSendMessage(offerText, type, price, qty, replyId);
+    const result = await onSendMessage(offerText, type, price, qty, replyId);
+    if (!result?.success) {
+      alert(result?.error ?? "Penawaran gagal dikirim, coba lagi.");
+    }
     setShowOfferForm(false);
     setOfferPrice("");
     setOfferQty("1");
@@ -260,16 +277,41 @@ export default function ChatRoomView({
     const price = parseFloat(confirmDeal.price);
     const qty = parseFloat(confirmDeal.quantity);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
+
+    if (minPrice !== null && price < minPrice) {
+      alert(`Harga tidak boleh di bawah harga minimum ${formatRupiah(minPrice)}.\nSilakan masukkan harga yang sesuai.`);
+      return;
+    }
+    if (maxPrice !== null && price > maxPrice) {
+      alert(`Harga tidak boleh di atas harga maksimum ${formatRupiah(maxPrice)}.\nSilakan masukkan harga yang sesuai.`);
+      return;
+    }
+
     setSubmittingDeal(true);
     try {
       const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
       const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
       setReplyTo(null);
-      await onSendMessage(acceptText, "accept", price, qty, replyId);
-      if (!isFarmer) onAddToCart(price, qty);
+      const result = await onSendMessage(acceptText, "accept", price, qty, replyId);
+      if (result?.success && result.orderId) {
+        setAcceptedOrderId(result.orderId);
+        onOrderCreated?.(result.orderId);
+      } else {
+        alert(result?.error ?? "Gagal menyetujui penawaran, coba lagi.");
+      }
       setConfirmDeal(null);
     } finally {
       setSubmittingDeal(false);
+    }
+  };
+
+  const handleReject = async () => {
+    const target = latestPendingOffer;
+    if (!target) return;
+    const report = `Penawaran ditolak`;
+    const result = await onSendMessage(report, "reject", Number(target.offerPrice), Number(target.offerQuantity));
+    if (!result?.success) {
+      alert(result?.error ?? "Gagal menolak penawaran, coba lagi.");
     }
   };
 
@@ -523,6 +565,12 @@ export default function ChatRoomView({
               >
                 Counter
               </button>
+              <button
+                onClick={handleReject}
+                className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs font-bold rounded-lg hover:bg-red-50"
+              >
+                Tolak
+              </button>
             </div>
           </div>
         </div>
@@ -551,10 +599,10 @@ export default function ChatRoomView({
             </div>
             {!isFarmer && latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity && (
               <button
-                onClick={() => onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity))}
+                onClick={() => onOrderCreated?.(acceptedOrderId ?? 0)}
                 className="px-3 py-1.5 bg-[#00AA5B] text-white text-xs font-bold rounded-lg hover:bg-[#009A4F] flex items-center gap-1.5 shadow-sm shrink-0"
               >
-                <ShoppingCart size={14} /> Keranjang
+                <Package size={14} /> Lihat Pesanan
               </button>
             )}
           </div>

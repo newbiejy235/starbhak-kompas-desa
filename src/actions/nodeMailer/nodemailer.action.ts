@@ -12,3 +12,5 @@ export async function sendCode(email: string) {
     return { success: false, message: "gagal" };
   }
 }
+
+

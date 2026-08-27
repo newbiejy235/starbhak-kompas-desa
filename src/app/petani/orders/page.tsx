@@ -1,11 +1,11 @@
 "use client";
 
-import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
+import { getFarmerOrders } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
-import { formatRupiah, formatDateTime, ORDER_STATUS_LABEL } from "@/lib/format";
+import { formatRupiah, formatDateTime } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { MapPin, Store, ArrowRight, XCircle } from "lucide-react";
+import { MapPin, Store } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { FarmerOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -25,7 +25,7 @@ function OrdersSkeleton() {
 export default function PetaniOrders() {
   const user = getClientUser();
 
-  const { data: orders, loading, reload } = useFetch(
+  const { data: orders, loading } = useFetch(
     () =>
       user ? getFarmerOrders(user.id) : Promise.resolve([] as FarmerOrder[]),
     [user?.id],
@@ -34,22 +34,6 @@ export default function PetaniOrders() {
   if (loading) return <OrdersSkeleton />;
 
   const list = orders ?? [];
-
-  const nextStatus = (status: string): string | null => {
-    const flow: Record<string, string> = {
-      pending: "confirmed",
-      confirmed: "processing",
-      processing: "shipped",
-      shipped: "completed",
-    };
-    return flow[status] ?? null;
-  };
-
-  const advance = async (id: number, status: string) => {
-    if (!user) return;
-    await updateOrderStatus(id, status, user.id);
-    reload();
-  };
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-up">
@@ -64,7 +48,6 @@ export default function PetaniOrders() {
       ) : (
         <div className="space-y-4">
           {list.map((o, i) => {
-            const next = nextStatus(o.status);
             return (
               <div
                 key={o.id}
@@ -115,27 +98,6 @@ export default function PetaniOrders() {
                     <p className="text-xs text-gray-500 italic bg-gray-50 rounded-lg px-3 py-2">
                       Catatan pembeli: {o.notes}
                     </p>
-                  </div>
-                )}
-
-                {next && (
-                  <div className="px-5 pb-5">
-                    <button
-                      onClick={() => advance(o.id, next)}
-                      className="inline-flex items-center gap-2 w-full sm:w-auto rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-sm"
-                    >
-                      Ubah ke &quot;{ORDER_STATUS_LABEL[next]}&quot; <ArrowRight size={16} />
-                    </button>
-                  </div>
-                )}
-                {o.status === "pending" && (
-                  <div className="px-5 pb-5">
-                    <button
-                      onClick={() => advance(o.id, "cancelled")}
-                      className="inline-flex items-center gap-2 w-full sm:w-auto rounded-xl border border-danger/30 px-6 py-3 text-sm font-bold text-danger hover:bg-danger/5 active:scale-[0.98] transition-all duration-200"
-                    >
-                      <XCircle size={16} /> Batalkan Pesanan
-                    </button>
                   </div>
                 )}
               </div>

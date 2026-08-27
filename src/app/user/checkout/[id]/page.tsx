@@ -13,7 +13,7 @@ import {
   Store,
   MapPin,
 } from "lucide-react";
-import { getOrderById, markOrderPaid } from "@/actions/order";
+import { getOrderById } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDate, formatDateTime, PAYMENT_METHOD_LABEL } from "@/lib/format";
 import { LoadingState } from "@/components/shared/States";
@@ -26,7 +26,7 @@ export default function OrderDetail() {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
 
-  const { data: order, loading, reload } = useFetch(
+  const { data: order, loading } = useFetch(
     () => getOrderById(Number(id)),
     [id],
   );
@@ -51,10 +51,7 @@ export default function OrderDetail() {
   };
 
   const confirmPaid = async () => {
-    const user = getClientUser();
-    if (!user) return;
-    await markOrderPaid(order.id, user.id);
-    reload();
+    alert("Fitur pembayaran akan segera hadir");
   };
 
   const steps = [

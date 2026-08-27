@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { MapPin, Star, Truck, Store, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
+import { MapPin, Star, Truck, Store, ChevronLeft, ShieldCheck, MessageCircle,
 } from "lucide-react";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
 import ProductCard from "@/components/userpage/ProductCard";
 import StatusBadge from "@/components/shared/StatusBadge";
+import WishlistButton from "@/components/shared/WishlistButton";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
 import { getClientUser } from "@/lib/auth/client";
-import { addToCart } from "@/lib/cart";
 import { useFetch } from "@/lib/hooks";
 import type {
   CommodityDetail,
@@ -37,7 +36,7 @@ function DetailSkeleton() {
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [quantity, setQuantity] = useState(1);
+  const user = getClientUser();
 
   const { data, loading } = useFetch(
     async () => {
@@ -86,18 +85,7 @@ export default function ProductDetail() {
   const maxPrice = product.maxPrice ? Number(product.maxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
-  const handleAddToCart = () => {
-    const user = getClientUser();
-    if (!user) {
-      router.push("/auth/login");
-      return;
-    }
-    addToCart(product.id, quantity);
-    router.push("/user/cart");
-  };
-
   const handleNego = async () => {
-    const user = getClientUser();
     if (!user) {
       router.push("/auth/login");
       return;
@@ -204,54 +192,22 @@ export default function ProductDetail() {
               </div>
             )}
 
+            <div className="mb-4 flex items-center gap-2">
+              <WishlistButton commodityId={product.id} userId={user?.id ?? null} />
+              <span className="text-xs text-gray-400">
+                {user ? "Simpan ke wishlist" : "Masuk untuk wishlist"}
+              </span>
+            </div>
+
             {isAvailable && stock > 0 ? (
               <>
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="text-sm font-medium text-gray-700">Jumlah</span>
-                  <div className="flex items-center border border-gray-200 rounded-full">
-                    <button
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
-                      aria-label="Kurangi jumlah"
-                    >
-                      <Minus size={18} />
-                    </button>
-                    <span className="w-10 text-center font-bold">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
-                      className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
-                      aria-label="Tambah jumlah"
-                    >
-                      <Plus size={18} />
-                    </button>
-                  </div>
-                  <span className="text-xs text-gray-400">{product.unit}</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    onClick={handleAddToCart}
-                    className="rounded-2xl border-2 border-primary py-4 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
-                  >
-                    Masukkan ke Keranjang
-                  </button>
-                  {hasPriceRange ? (
-                    <button
-                      onClick={handleNego}
-                      className="rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lift"
-                    >
-                      <MessageCircle size={18} />
-                      Nego Harga
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleAddToCart}
-                      className="rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift"
-                    >
-                      Beli Sekarang
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={handleNego}
+                  className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lift"
+                >
+                  <MessageCircle size={18} />
+                  Negosiasi
+                </button>
               </>
             ) : (
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-500">
@@ -322,7 +278,7 @@ export default function ProductDetail() {
                 className="animate-fade-up"
                 style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
               >
-                <ProductCard data={item} />
+                <ProductCard data={item} userId={user?.id} />
               </div>
             ))}
           </div>

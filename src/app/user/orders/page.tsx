@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { Star } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime } from "@/lib/format";
@@ -26,25 +26,34 @@ function OrdersSkeleton() {
 export default function UserOrders() {
   const user = getClientUser();
 
-  const { data: orders, loading } = useFetch(
+  const { data: orders, loading, reload } = useFetch(
     () =>
       user ? getUserOrders(user.id) : Promise.resolve([] as BuyerOrder[]),
     [user?.id],
   );
 
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     reload();
+  //   }, 5000);
+  //   return () => clearInterval(timer);
+  // }, [reload]);
+
   if (loading) return <OrdersSkeleton />;
 
-  const orderList = orders ?? [];
+  const orderList = (orders ?? []).filter(
+    (o) => o.status !== "completed" && o.status !== "cancelled",
+  );
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-up">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Pesanan Saya</h1>
-      <p className="text-sm text-gray-500 mb-6">Pantau status pesanan Anda di sini.</p>
+      <p className="text-sm text-gray-500 mb-6">Pantau status pesanan yang sedang berjalan.</p>
 
       {orderList.length === 0 ? (
         <EmptyState
-          title="Belum Ada Pesanan"
-          message="Anda belum memiliki pesanan. Yuk mulai belanja komoditas segar!"
+          title="Belum Ada Pesanan Aktif"
+          message="Anda belum memiliki pesanan yang sedang berjalan. Yuk mulai belanja komoditas segar!"
         />
       ) : (
         <div className="space-y-4">
@@ -80,14 +89,6 @@ export default function UserOrders() {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="font-extrabold text-primary">{formatRupiah(o.totalPrice)}</p>
-                  {o.status === "completed" && (
-                    <Link
-                      href={`/user/reviews?order=${o.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-primary font-semibold mt-1 hover:underline"
-                    >
-                      <Star size={12} /> Beri Ulasan
-                    </Link>
-                  )}
                 </div>
               </Link>
             </div>

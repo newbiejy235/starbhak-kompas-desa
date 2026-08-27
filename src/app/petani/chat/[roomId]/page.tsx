@@ -21,8 +21,6 @@ export default function PetaniChatRoomPage() {
     userFullName
   );
 
-  const handleAddToCart = () => {};
-
   if (loading) return <LoadingState />;
   if (!room) return <div className="text-center py-20 text-gray-500">Chat tidak ditemukan.</div>;
 
@@ -33,7 +31,6 @@ export default function PetaniChatRoomPage() {
       currentUserId={userId}
       currentRole="petani"
       onSendMessage={sendMessage}
-      onAddToCart={handleAddToCart}
       onBack={() => router.push("/petani/chat")}
       onEditMessage={editMessage}
       onDeleteMessage={deleteMessage}

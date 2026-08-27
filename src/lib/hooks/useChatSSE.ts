@@ -9,6 +9,7 @@ import {
   editMessage,
   deleteMessage,
 } from "@/actions/chat";
+import type { SendChatMessageResult } from "@/lib/chat-shared";
 
 interface ChatRoomData {
   id: number;
@@ -206,8 +207,8 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
   }, [loading, connectSSE, cleanup]);
 
   const sendMessage = useCallback(
-    async (content: string, type: string = "text", offerPrice?: number, offerQuantity?: number, replyToId?: number) => {
-      if (!userId || !roomId) return;
+    async (content: string, type: string = "text", offerPrice?: number, offerQuantity?: number, replyToId?: number): Promise<SendChatMessageResult | null> => {
+      if (!userId || !roomId) return null;
 
       setMessages((prev) => [
         ...prev,
@@ -229,7 +230,7 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
         },
       ]);
 
-      await sendChatMessage(
+      const result = await sendChatMessage(
         roomId,
         userId,
         content,
@@ -238,6 +239,7 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
         offerQuantity,
         replyToId,
       );
+      return result;
     },
     [roomId, userId, userFullName],
   );

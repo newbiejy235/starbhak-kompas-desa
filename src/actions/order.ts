@@ -8,6 +8,7 @@ import {
   usersTable,
   notificationsTable,
   ImageUpload,
+  negotiationOffersTable,
 } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -28,126 +29,105 @@ function generateOrderCode(): string {
   return `KD-${ymd}-${rand}`;
 }
 
-export async function createOrder(
-  buyerId: number,
-  data: FormData,
-): Promise<ActionState & { orderId?: number; redirect?: string }> {
-  const buyer = await getAuthUser(buyerId);
-  if (!buyer || buyer.role !== "pembeli") {
-    return { success: false, message: "Unauthorized" };
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+export interface CreateOrderFromOfferParams {
+  offerId: number;
+  buyerId: number;
+  farmerId: number;
+  commodityId: number;
+  quantity: number;
+  unitPrice: number;
+}
+
+export async function createOrderFromAcceptedOffer(
+  tx: Tx,
+  params: CreateOrderFromOfferParams,
+) {
+  const [existingOrder] = await tx
+    .select({ id: ordersTable.id, orderCode: ordersTable.orderCode })
+    .from(ordersTable)
+    .where(eq(ordersTable.negotiationId, params.offerId));
+
+  if (existingOrder) {
+    return { id: existingOrder.id, orderCode: existingOrder.orderCode, created: false };
   }
 
-  const commodityId = Number(data.get("commodityId"));
-  const quantity = Number(data.get("quantity"));
-  const deliveryMethod = (data.get("deliveryMethod") as string) || "pickup";
-  const deliveryAddress = (data.get("deliveryAddress") as string)?.trim() || "";
-  const paymentMethod = (data.get("paymentMethod") as string) || "bank_transfer";
-  const notes = (data.get("notes") as string)?.trim() || "";
-
-  if (!commodityId || !quantity || quantity <= 0) {
-    return { success: false, message: "Jumlah pesanan tidak valid" };
-  }
-  if (!["pickup", "expedition"].includes(deliveryMethod)) {
-    return { success: false, message: "Metode penerimaan tidak valid" };
-  }
-  if (deliveryMethod === "expedition" && !deliveryAddress) {
-    return { success: false, message: "Alamat pengiriman wajib diisi" };
-  }
-
-  const [commodity] = await db
+  const [commodity] = await tx
     .select()
     .from(commoditiesTable)
-    .where(eq(commoditiesTable.id, commodityId));
+    .where(eq(commoditiesTable.id, params.commodityId));
 
-  if (!commodity) {
-    return { success: false, message: "Komoditas tidak ditemukan" };
-  }
-  if (Number(commodity.stock) < quantity) {
-    return {
-      success: false,
-      message: `Stok tidak mencukupi (tersedia ${commodity.stock} ${commodity.unit})`,
-    };
+  if (!commodity) throw new Error("Komoditas tidak ditemukan");
+  if (Number(commodity.stock) < params.quantity) {
+    throw new Error(`Stok ${commodity.name} tidak mencukupi`);
   }
 
-  const unitPrice = Number(commodity.price);
+  const quantity = params.quantity;
+  const unitPrice = params.unitPrice;
   const subtotal = unitPrice * quantity;
-  const deliveryFee = deliveryMethod === "expedition" ? 25000 : 0;
   const serviceFee = Math.round(subtotal * 0.025 * 100) / 100;
+  const deliveryFee = 0;
   const totalPrice = subtotal + serviceFee + deliveryFee;
+  const orderCode = generateOrderCode();
 
-  try {
-    const orderCode = generateOrderCode();
-    const [order] = await db
-      .insert(ordersTable)
-      .values({
-        orderCode,
-        buyerId,
-        farmerId: commodity.farmerId,
-        commodityId,
-        quantity: String(quantity),
-        unitPrice: String(unitPrice),
-        subtotal: String(subtotal),
-        serviceFee: String(serviceFee),
-        deliveryFee: String(deliveryFee),
-        totalPrice: String(totalPrice),
-        deliveryMethod: deliveryMethod as "pickup" | "expedition",
-        deliveryAddress,
-        status: "pending",
-        notes,
-      })
-      .returning({ id: ordersTable.id });
-
-    await db
-      .update(commoditiesTable)
-      .set({
-        stock: String(Number(commodity.stock) - quantity),
-        status:
-          Number(commodity.stock) - quantity <= 0 ? "sold_out" : commodity.status,
-      })
-      .where(eq(commoditiesTable.id, commodityId));
-
-    await db.insert(paymentsTable).values({
-      orderId: order.id,
-      buyerId,
-      method: paymentMethod as never,
-      amount: String(totalPrice),
-      fee: String(serviceFee),
+  const [order] = await tx
+    .insert(ordersTable)
+    .values({
+      orderCode,
+      buyerId: params.buyerId,
+      farmerId: params.farmerId,
+      commodityId: params.commodityId,
+      negotiationId: params.offerId,
+      quantity: String(quantity),
+      unitPrice: String(unitPrice),
+      subtotal: String(subtotal),
+      serviceFee: String(serviceFee),
+      deliveryFee: String(deliveryFee),
+      totalPrice: String(totalPrice),
+      deliveryMethod: "pickup",
       status: "pending",
-      referenceCode: `PY-${orderCode.slice(3)}`,
-    });
+    })
+    .returning({ id: ordersTable.id, orderCode: ordersTable.orderCode });
 
-    await db.insert(notificationsTable).values({
-      userId: commodity.farmerId,
-      title: "Pesanan Baru",
-      message: `Ada pesanan baru ${orderCode} sebesar Rp ${totalPrice.toLocaleString("id-ID")}.`,
-      type: "order",
-    });
+  await tx
+    .update(commoditiesTable)
+    .set({
+      stock: String(Number(commodity.stock) - quantity),
+      status:
+        Number(commodity.stock) - quantity <= 0 ? "sold_out" : commodity.status,
+    })
+    .where(eq(commoditiesTable.id, commodity.id));
 
-    await db.insert(notificationsTable).values({
-      userId: buyerId,
-      title: "Pesanan Dibuat",
-      message: `Pesanan ${orderCode} berhasil dibuat. Silakan selesaikan pembayaran.`,
-      type: "order",
-    });
+  await tx.insert(paymentsTable).values({
+    orderId: order.id,
+    buyerId: params.buyerId,
+    method: "bank_transfer",
+    amount: String(totalPrice),
+    fee: String(serviceFee),
+    status: "pending",
+    referenceCode: `PY-${orderCode.slice(3)}`,
+  });
 
-    revalidatePath("/user/home");
-    revalidatePath("/user/orders");
-    revalidatePath("/petani/dashboard");
+  await tx.insert(notificationsTable).values({
+    userId: params.farmerId,
+    title: "Pesanan Baru dari Negosiasi",
+    message: `Pesanan ${orderCode} sebesar Rp ${totalPrice.toLocaleString("id-ID")} dari hasil negosiasi.`,
+    type: "order",
+  });
 
-    return {
-      success: true,
-      message: "Pesanan berhasil dibuat",
-      orderId: order.id,
-      redirect: `/user/checkout/${order.id}`,
-    };
-  } catch (error) {
-    console.error(error);
-    return { success: false, message: "Gagal membuat pesanan" };
-  }
+  await tx.insert(notificationsTable).values({
+    userId: params.buyerId,
+    title: "Pesanan Dibuat",
+    message: `Pesanan ${orderCode} berhasil dibuat dari negosiasi. Silakan selesaikan pembayaran.`,
+    type: "order",
+  });
+
+  return { id: order.id, orderCode, created: true };
 }
 
 export async function getUserOrders(buyerId: number) {
-  return db
+  const rows = await db
     .select({
       id: ordersTable.id,
       orderCode: ordersTable.orderCode,
@@ -176,6 +156,31 @@ export async function getUserOrders(buyerId: number) {
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
     .where(eq(ordersTable.buyerId, buyerId))
     .orderBy(desc(ordersTable.createdAt));
+
+  const now = Date.now();
+  const DEV_AUTO_COMPLETE_MS = 5_000;
+
+  for (const row of rows) {
+    if (row.status === "processing" && row.createdAt) {
+      const elapsed = now - new Date(row.createdAt).getTime();
+      if (elapsed >= DEV_AUTO_COMPLETE_MS) {
+        await db
+          .update(ordersTable)
+          .set({ status: "completed", updatedAt: new Date() })
+          .where(eq(ordersTable.id, row.id));
+
+        await db
+          .update(paymentsTable)
+          .set({ status: "paid", paidAt: new Date() })
+          .where(eq(paymentsTable.orderId, row.id));
+
+        row.status = "completed";
+        row.paymentStatus = "paid";
+      }
+    }
+  }
+
+  return rows;
 }
 
 export async function getFarmerOrders(farmerId: number) {
@@ -402,4 +407,74 @@ export async function getAllOrders() {
     .innerJoin(farmerUser, eq(farmerUser.id, ordersTable.farmerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
     .orderBy(desc(ordersTable.createdAt));
+}
+
+// @deprecated - jalur lama, dipertahankan sementara, cek lagi sebelum dihapus permanen
+export async function createOrderFromNegotiation(
+  offerId: number,
+  buyerId: number,
+): Promise<ActionState & { orderId?: number; orderCode?: string }> {
+  const buyer = await getAuthUser(buyerId);
+  if (!buyer || buyer.role !== "pembeli") {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  try {
+    const [offer] = await db
+      .select()
+      .from(negotiationOffersTable)
+      .where(eq(negotiationOffersTable.id, offerId));
+
+    if (!offer) {
+      return { success: false, message: "Penawaran tidak ditemukan" };
+    }
+
+    if (offer.buyerId !== buyerId) {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    if (offer.status !== "accepted") {
+      return { success: false, message: "Penawaran belum diterima" };
+    }
+
+    const [existingOrder] = await db
+      .select({ id: ordersTable.id })
+      .from(ordersTable)
+      .where(eq(ordersTable.negotiationId, offerId))
+      .limit(1);
+
+    if (existingOrder) {
+      return {
+        success: true,
+        message: "Pesanan sudah dibuat",
+        orderId: existingOrder.id,
+      };
+    }
+
+    let resultOrderId: number | undefined;
+    let resultOrderCode: string | undefined;
+
+    await db.transaction(async (tx) => {
+      const result = await createOrderFromAcceptedOffer(tx, {
+        offerId: offer.id,
+        buyerId: offer.buyerId,
+        farmerId: offer.farmerId,
+        commodityId: offer.commodityId,
+        quantity: Number(offer.quantity),
+        unitPrice: Number(offer.price),
+      });
+      resultOrderId = result.id;
+      resultOrderCode = result.orderCode;
+    });
+
+    return {
+      success: true,
+      message: "Pesanan berhasil dibuat dari negosiasi",
+      orderId: resultOrderId,
+      orderCode: resultOrderCode,
+    };
+  } catch (error) {
+    console.error(error);
+    return { success: false, message: "Gagal membuat pesanan" };
+  }
 }

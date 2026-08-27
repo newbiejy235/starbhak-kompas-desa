@@ -4,10 +4,9 @@ import Link from "next/link";
 import {
   ShoppingBag,
   Package,
-  Star,
-  Bell,
   MessageCircle,
   ArrowRight,
+  History,
 } from "lucide-react";
 
 const greeting = () => {
@@ -21,8 +20,7 @@ const greeting = () => {
 const services = [
   { title: "Belanja Hasil Tani", desc: "Produk segar langsung dari petani desa", icon: ShoppingBag, href: "/user/home", color: "bg-[#025246]", accent: "text-[#025246]" },
   { title: "Pesanan Saya", desc: "Lacak status pesanan yang sedang berjalan", icon: Package, href: "/user/orders", color: "bg-blue-600", accent: "text-blue-600" },
-  { title: "Ulasan Saya", desc: "Kelola ulasan produk yang telah dibeli", icon: Star, href: "/user/reviews", color: "bg-amber-500", accent: "text-amber-500" },
-  { title: "Notifikasi", desc: "Lihat pembaruan pesanan dan penawaran terbaru", icon: Bell, href: "/user/notifications", color: "bg-purple-600", accent: "text-purple-600" },
+  { title: "Riwayat Transaksi", desc: "Lihat riwayat pembelian dan berikan ulasan", icon: History, href: "/user/transactions", color: "bg-amber-500", accent: "text-amber-500" },
 ];
 
 const recentOrders = [
