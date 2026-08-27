@@ -44,17 +44,16 @@ const cardVariants: Variants = {
 
 export default function BentoGridStats() {
   return (
-    <div className="w-full bg-[#FAFDFC] mt-10">
+    <div className="w-full mt-10">
       <div className="mx-auto w-full max-w-[1180px] px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
         {/* ================= HERO ================= */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-4 inline-flex items-center rounded-full border border-[#025246]/10 bg-[#E4F1EB] px-4 py-1.5 font-body text-[12px] font-semibold text-[#025246]">
             #DariDesaUntukNegeri
           </div>
-
           <AnimatedHeading
             text="Membuka Akses Hasil Panen ke Pasar yang Lebih Luas"
-            className="font-display max-w-[760px] text-[38px] leading-[1.08]"
+            className="font-display max-w-[760px] text-[40px] leading-[1.08]"
           />
 
           <p className="mt-4 max-w-[620px] font-body text-[14px] leading-relaxed text-[#75938F] sm:text-[15px]">

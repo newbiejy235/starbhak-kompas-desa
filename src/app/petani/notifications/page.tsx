@@ -22,10 +22,7 @@ import { EmptyState } from "@/components/shared/States";
 import { useFetch } from "@/lib/hooks";
 import type { NotificationRow } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
-
-
-const GREEN = "#025246";
-const GREEN_SOFT = "#F0F7F5";
+import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT } from "@/constants/brand";
 
 const focusRing =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246]";
@@ -210,7 +207,7 @@ function NotificationItem({
                 <span
                   aria-hidden
                   className="mr-2 inline-block h-1.5 w-1.5 -translate-y-px rounded-full align-middle"
-                  style={{ backgroundColor: GREEN }}
+                  style={{ backgroundColor: COLOR_PRIMARY }}
                 />
               </>
             )}
@@ -336,7 +333,7 @@ export default function PetaniNotifications() {
               <span
                 aria-hidden
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ backgroundColor: GREEN_SOFT, color: GREEN }}
+                style={{ backgroundColor: COLOR_PRIMARY_SOFT, color: COLOR_PRIMARY }}
               >
                 <Bell size={20} strokeWidth={2} />
               </span>
@@ -370,7 +367,7 @@ export default function PetaniNotifications() {
           <p aria-live="polite" className="mt-2.5 text-sm text-gray-500">
             {unread > 0 ? (
               <>
-                <span className="font-semibold" style={{ color: GREEN }}>
+                <span className="font-semibold" style={{ color: COLOR_PRIMARY }}>
                   {unread} notifikasi
                 </span>{" "}
                 belum dibaca

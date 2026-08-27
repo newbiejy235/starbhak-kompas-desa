@@ -1,18 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   getClientUser,
+  subscribeToUserChanges,
   getRoleRedirect,
 } from "@/lib/auth/client";
 
 export function useAuth(expectedRole?: string) {
   const router = useRouter();
-  const user = getClientUser();
-  const loading = user === null;
+  const user = useSyncExternalStore(subscribeToUserChanges, getClientUser, () => null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // Hydration detection: mark as hydrated after first client-side effect run
+    // This prevents premature redirects during SSR/hydration mismatch
+    if (!hydrated) setHydrated(true); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!hydrated) return;
     if (!user) {
       router.replace("/auth/login");
       return;
@@ -20,9 +28,9 @@ export function useAuth(expectedRole?: string) {
     if (expectedRole && user.role !== expectedRole) {
       router.replace(getRoleRedirect(user.role));
     }
-  }, [user, expectedRole, router]);
+  }, [hydrated, user, expectedRole, router]);
 
-  return { user, loading };
+  return { user: hydrated ? user : null, loading: !hydrated };
 }
 
 export function useFetch<T>(fn: () => Promise<T>, deps: unknown[] = []) {

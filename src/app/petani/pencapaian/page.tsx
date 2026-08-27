@@ -53,7 +53,6 @@ export default function PencapaianPage() {
         subtitle="Lihat perkembangan dan pencapaian Anda sebagai petani."
       />
 
-      {/* Ringkasan */}
       <section className="mb-6 flex items-center justify-between rounded-card border border-gray-200/80 bg-white px-5 py-4 shadow-soft">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -84,11 +83,10 @@ export default function PencapaianPage() {
             <article
               key={a.id}
               aria-label={`${a.title} — ${a.unlocked ? "tercapai" : "belum tercapai"}`}
-              className={`flex flex-col rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 ${
-                a.unlocked
-                  ? "border-primary/25 bg-white"
-                  : "border-gray-200/80 bg-gray-50/60"
-              }`}
+              className={`flex flex-col rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 ${a.unlocked
+                ? "border-primary/25 bg-white"
+                : "border-gray-200/80 bg-gray-50/60"
+                }`}
               style={{
                 animationDelay: `${Math.min(i * 50, 250)}ms`,
                 animationFillMode: "backwards",
@@ -96,29 +94,26 @@ export default function PencapaianPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                    a.unlocked
-                      ? "bg-gradient-to-br from-primary to-primary-dark text-white shadow-soft"
-                      : "bg-gray-100 text-gray-400"
-                  }`}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${a.unlocked
+                    ? "bg-gradient-to-br from-primary to-primary-dark text-white shadow-soft"
+                    : "bg-gray-100 text-gray-400"
+                    }`}
                 >
                   {a.unlocked ? <Trophy size={20} /> : <Lock size={18} />}
                 </div>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                    a.unlocked
-                      ? "bg-primary/10 text-primary"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${a.unlocked
+                    ? "bg-primary/10 text-primary"
+                    : "bg-gray-100 text-gray-500"
+                    }`}
                 >
                   {a.unlocked ? "Tercapai" : "Terkunci"}
                 </span>
               </div>
 
               <h2
-                className={`mt-3 text-[15px] font-bold ${
-                  a.unlocked ? "text-gray-900" : "text-gray-500"
-                }`}
+                className={`mt-3 text-[15px] font-bold ${a.unlocked ? "text-gray-900" : "text-gray-500"
+                  }`}
               >
                 {a.title}
               </h2>

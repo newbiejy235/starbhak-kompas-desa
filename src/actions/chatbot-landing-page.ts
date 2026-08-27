@@ -1,7 +1,7 @@
 "use server";
 
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { SYSTEM_PROMPT } from "@/app/constants/PROMPT_System";
+import { SYSTEM_PROMPT } from "@/constants/PROMPT_System";
 
 const MODEL_CANDIDATES = ["gemini-3.6-flash"]
 const MAX_OUTPUT_TOKENS = 1024;

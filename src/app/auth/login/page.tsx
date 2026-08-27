@@ -199,7 +199,11 @@ export default function Login() {
             </h1>
 
             <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
+<<<<<<< HEAD
               Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas&apos;Desa.
+=======
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas&rsquo;Desa.
+>>>>>>> 56d08fccaf481a3e657252f6f2b4600a3e29bbc5
             </p>
           </div>
         </div>

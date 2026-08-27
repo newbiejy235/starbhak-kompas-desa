@@ -350,6 +350,62 @@ export async function deleteCommodity(
   }
 }
 
+/**
+ * Perbarui stok satu komoditas milik petani.
+ * Status otomatis mengikuti aturan yang sama dengan alur pesanan:
+ * habis -> sold_out, kembali tersedia dari sold_out -> available.
+ */
+export async function updateStock(
+  id: number,
+  farmerId: number,
+  stock: number,
+): Promise<ActionState> {
+  const user = await getAuthUser(farmerId);
+  if (!user || user.role !== "petani") {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  if (!Number.isFinite(stock) || stock < 0) {
+    return { success: false, message: "Jumlah stok tidak valid" };
+  }
+
+  try {
+    const [existing] = await db
+      .select({
+        status: commoditiesTable.status,
+        stock: commoditiesTable.stock,
+      })
+      .from(commoditiesTable)
+      .where(
+        and(eq(commoditiesTable.id, id), eq(commoditiesTable.farmerId, farmerId)),
+      );
+
+    if (!existing) {
+      return { success: false, message: "Komoditas tidak ditemukan" };
+    }
+
+    let nextStatus = existing.status;
+    if (stock <= 0) {
+      nextStatus = "sold_out";
+    } else if (existing.status === "sold_out") {
+      nextStatus = "available";
+    }
+
+    await db
+      .update(commoditiesTable)
+      .set({ stock: String(stock), status: nextStatus })
+      .where(eq(commoditiesTable.id, id));
+
+    revalidatePath("/petani/stok");
+    revalidatePath("/petani/dashboard");
+    revalidatePath("/user/home");
+    return { success: true, message: "Stok berhasil diperbarui" };
+  } catch (error) {
+    console.error(error);
+    return { success: false, message: "Gagal memperbarui stok" };
+  }
+}
+
 export async function setCommodityStatus(
   id: number,
   status: string,

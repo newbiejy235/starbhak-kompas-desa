@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
@@ -60,7 +62,17 @@ const selectClass =
   "rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 focus:border-primary focus:outline-none";
 
 export default function PetaniOrders() {
+  // useSearchParams dibungkus Suspense agar halaman tetap bisa di-prerender.
+  return (
+    <Suspense fallback={<OrdersSkeleton />}>
+      <OrdersContent />
+    </Suspense>
+  );
+}
+
+function OrdersContent() {
   const user = getClientUser();
+  const searchParams = useSearchParams();
 
   const { data, loading, reload } = useFetch(
     () =>
@@ -69,8 +81,12 @@ export default function PetaniOrders() {
   );
   const orders = useMemo(() => data ?? [], [data]);
 
+  // Status awal dari URL (?status=...) agar tautan dari dashboard langsung tersaring.
+  const urlStatus = searchParams.get("status");
+  const [statusFilter, setStatusFilter] = useState(() =>
+    urlStatus && urlStatus in ORDER_STATUS_LABEL ? urlStatus : "all",
+  );
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [deliveryFilter, setDeliveryFilter] = useState("all");
   const [sort, setSort] = useState("newest");
@@ -78,7 +94,6 @@ export default function PetaniOrders() {
   const [selected, setSelected] = useState<FarmerOrder | null>(null);
   const [cancelTarget, setCancelTarget] = useState<FarmerOrder | null>(null);
   const [advancingKey, setAdvancingKey] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 
   const filtered = useMemo(() => {
@@ -120,12 +135,15 @@ export default function PetaniOrders() {
   const handleAdvance = async (id: number, status: string) => {
     if (!user || advancingKey) return;
     setAdvancingKey(`${id}-${status}`);
-    setActionError(null);
     try {
       const res = await updateOrderStatus(id, status, user.id);
-      if (!res.success) setActionError(res.message);
+      if (!res.success) {
+        toast.error(res.message);
+      }
       await reload();
       setVersion((v) => v + 1);
+    } catch {
+      toast.error("Gagal memperbarui pesanan. Silakan coba lagi.");
     } finally {
       setAdvancingKey(null);
     }
@@ -236,12 +254,6 @@ export default function PetaniOrders() {
             </select>
           </div>
         </div>
-
-        {actionError && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-danger">
-            {actionError}
-          </div>
-        )}
 
         {/* List */}
         {filtered.length === 0 ? (
