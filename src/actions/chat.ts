@@ -18,6 +18,8 @@ export async function getOrCreateChatRoom(
   farmerId: number,
   commodityId: number,
 ) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== buyerId) return null;
   try {
     const existing = await db
       .select({ id: chatRoomsTable.id })
@@ -138,6 +140,10 @@ export async function getChatRoomDetail(roomId: number) {
 
     if (!room) return null;
 
+    if (room.buyerId !== auth.userId && room.farmerId !== auth.userId) {
+      return null;
+    }
+
     const buyer = await db
       .select({ id: usersTable.id, fullName: usersTable.fullName, fotoProfile: usersTable.fotoProfile })
       .from(usersTable)
@@ -168,6 +174,14 @@ export async function getChatMessages(roomId: number) {
   const auth = await verifyAuth();
   if (!auth) return [];
   try {
+    const roomCheck = await db
+      .select({ buyerId: chatRoomsTable.buyerId, farmerId: chatRoomsTable.farmerId })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+    if (roomCheck.length === 0 || (roomCheck[0].buyerId !== auth.userId && roomCheck[0].farmerId !== auth.userId)) {
+      return [];
+    }
     const messages = await db
       .select({
         id: chatMessagesTable.id,
@@ -307,6 +321,14 @@ export async function getNewMessages(roomId: number, afterId: number) {
   const auth = await verifyAuth();
   if (!auth) return [];
   try {
+    const roomCheck = await db
+      .select({ buyerId: chatRoomsTable.buyerId, farmerId: chatRoomsTable.farmerId })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+    if (roomCheck.length === 0 || (roomCheck[0].buyerId !== auth.userId && roomCheck[0].farmerId !== auth.userId)) {
+      return [];
+    }
     const messages = await db
       .select({
         id: chatMessagesTable.id,

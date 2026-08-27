@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { MapPin, Star, Truck, Store, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
+import {
+  MapPin, Star, Truck, Store, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
 } from "lucide-react";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
@@ -38,6 +39,7 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const [negoError, setNegoError] = useState<string | null>(null);
 
   const { data, loading } = useFetch(
     async () => {
@@ -102,9 +104,16 @@ export default function ProductDetail() {
       router.push("/auth/login");
       return;
     }
-    const result = await getOrCreateChatRoom(user.id, product.farmerId, product.id);
-    if (result) {
-      router.push(`/user/chat/${result.roomId}`);
+    setNegoError(null);
+    try {
+      const result = await getOrCreateChatRoom(user.id, product.farmerId, product.id);
+      if (result?.roomId) {
+        router.push(`/user/chat/${result.roomId}`);
+      } else {
+        setNegoError("Gagal membuka chat. Silakan coba lagi.");
+      }
+    } catch {
+      setNegoError("Terjadi kesalahan. Silakan coba lagi.");
     }
   };
 
@@ -252,6 +261,9 @@ export default function ProductDetail() {
                     </button>
                   )}
                 </div>
+                {negoError && (
+                  <p className="text-xs text-red-500 mt-2 text-center">{negoError}</p>
+                )}
               </>
             ) : (
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-500">
