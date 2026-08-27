@@ -121,6 +121,10 @@
 }
 
 html {
+  /* scroll-behavior: smooth moved to body to fix Next.js hydration warning */
+}
+
+body {
   scroll-behavior: smooth;
 }
 

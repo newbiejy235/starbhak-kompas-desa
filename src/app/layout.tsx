@@ -18,6 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+  ),
   title: {
     default: "KompasDesa — Platform Digital Pertanian Desa",
     template: "%s | KompasDesa",

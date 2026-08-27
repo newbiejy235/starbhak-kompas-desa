@@ -1,4 +1,4 @@
-import { partners_Mitra } from "@/app/constants/Kemitraan";
+import { partners_Mitra } from "@/constants/Kemitraan";
 
 export default function PartnerSection() {
   return (

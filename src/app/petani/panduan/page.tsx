@@ -3,97 +3,19 @@
 import { useMemo, useState } from "react";
 import { BookOpen, ChevronDown, Search } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
-
-type Guide = {
-  id: string;
-  title: string;
-  summary: string;
-  steps: string[];
-};
-
-const GUIDES: Guide[] = [
-  {
-    id: "tambah-komoditas",
-    title: "Cara Menambahkan Komoditas",
-    summary:
-      "Daftarkan hasil panen Anda ke katalog agar dapat dilihat dan dipesan pembeli.",
-    steps: [
-      "Buka menu Tambah Komoditas di sidebar.",
-      "Lengkapi nama, kategori, harga, stok, dan lokasi komoditas.",
-      "Unggah foto produk terbaik untuk menarik pembeli.",
-      "Kirim untuk verifikasi admin sebelum tayang di marketplace.",
-    ],
-  },
-  {
-    id: "terima-pesanan",
-    title: "Cara Menerima Pesanan",
-    summary:
-      "Proses pesanan masuk dengan cepat agar pembeli puas dan rating bagus.",
-    steps: [
-      "Buka menu Pesanan Masuk untuk melihat pesanan baru.",
-      "Periksa detail pesanan: jumlah, alamat, dan catatan pembeli.",
-      "Konfirmasi pesanan dalam 1×24 jam.",
-      "Siapkan produk sesuai jadwal pengiriman atau penjemputan.",
-    ],
-  },
-  {
-    id: "atur-stok",
-    title: "Cara Mengatur Stok",
-    summary:
-      "Jaga stok tetap akurat supaya tidak ada pesanan yang gagal dipenuhi.",
-    steps: [
-      "Buka menu Komoditas lalu pilih produk yang ingin diubah.",
-      "Perbarui jumlah stok setiap panen atau penjualan manual.",
-      "Gunakan Catatan Panen untuk merekam hasil panen terbaru.",
-      "Komoditas otomatis berstatus Habis saat stok mencapai nol.",
-    ],
-  },
-  {
-    id: "kirim-pesanan",
-    title: "Cara Mengirim Pesanan",
-    summary: "Kirim pesanan tepat waktu dengan bukti pengiriman yang jelas.",
-    steps: [
-      "Pastikan status pesanan sudah Diproses sebelum pengiriman.",
-      "Kemas produk dengan aman sesuai sifat komoditas.",
-      "Ubah status ke Dikirim setelah paket diserahkan ke kurir.",
-      "Pantau hingga pembeli mengonfirmasi pesanan Selesai.",
-    ],
-  },
-  {
-    id: "tarik-dana",
-    title: "Cara Menarik Dana",
-    summary:
-      "Saldo dari transaksi lunas dapat ditarik ke rekening terdaftar Anda.",
-    steps: [
-      "Pastikan pesanan sudah berstatus Selesai dan pembayaran Lunas.",
-      "Hubungi admin apabila saldo belum muncul pada akun Anda.",
-      "Sertakan nomor rekening aktif atas nama Anda sendiri.",
-      "Pencairan diproses maksimal 2 hari kerja oleh tim platform.",
-    ],
-  },
-  {
-    id: "rating-baik",
-    title: "Cara Mendapatkan Rating Baik",
-    summary:
-      "Rating tinggi membuat produk Anda lebih dipercaya dan sering dipesan.",
-    steps: [
-      "Kirim produk sesuai deskripsi: berat, kualitas, dan foto asli.",
-      "Respons chat pembeli dengan ramah dan cepat.",
-      "Kemas dengan rapi agar produk sampai dalam kondisi baik.",
-      "Minta pembeli memberi ulasan setelah pesanan selesai.",
-    ],
-  },
-];
+import { FARMER_GUIDES } from "@/constants/panduan";
 
 /* ---------------------- PAGE ---------------------- */
 export default function PanduanPage() {
   const [query, setQuery] = useState("");
-  const [openId, setOpenId] = useState<string | null>(GUIDES[0]?.id ?? null);
+  const [openId, setOpenId] = useState<string | null>(
+    FARMER_GUIDES[0]?.id ?? null,
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return GUIDES;
-    return GUIDES.filter(
+    if (!q) return FARMER_GUIDES;
+    return FARMER_GUIDES.filter(
       (g) =>
         g.title.toLowerCase().includes(q) ||
         g.summary.toLowerCase().includes(q) ||

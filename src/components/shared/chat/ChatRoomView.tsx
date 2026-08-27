@@ -481,7 +481,7 @@ export default function ChatRoomView({
           <div className="flex gap-3">
             <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative border border-gray-200">
               {img ? (
-                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" unoptimized />
+                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
                   <Package size={20} className="text-white" />

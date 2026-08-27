@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
-import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type { BuyerOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -39,7 +38,7 @@ function OrdersSkeleton() {
 }
 
 export default function UserOrders() {
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const { data: orders, loading } = useFetch(
     () =>

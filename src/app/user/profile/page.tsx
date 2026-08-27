@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useActionState } from "react";
 import { getProfile, updateProfile } from "@/actions/profile";
-import { getClientUser, saveSession } from "@/lib/auth/client";
+import { saveSession } from "@/lib/auth/client";
 import { formatDate, ROLE_LABEL } from "@/lib/format";
 import StatusBadge from "@/components/shared/StatusBadge";
 import {
@@ -17,7 +17,7 @@ import {
   Shield,
   CalendarDays,
 } from "lucide-react";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { AuthUser } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -37,7 +37,7 @@ function ProfileSkeleton() {
 }
 
 export default function UserProfile() {
-  const user = getClientUser();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

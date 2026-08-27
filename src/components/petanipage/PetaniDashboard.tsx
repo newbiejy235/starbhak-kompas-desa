@@ -53,7 +53,6 @@ export default function PetaniDashboard() {
       <style>{`@keyframes bounceIn{0%{opacity:0;transform:scale(.85) translateY(-10px)}60%{opacity:1;transform:scale(1.03) translateY(2px)}100%{opacity:1;transform:scale(1) translateY(0)}}`}</style>
 
       {alert && (
-        // Fast micro-bounce feedback
         <div
           role="status"
           className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm font-medium animate-[bounceIn_0.3s_ease-out_forwards]"
@@ -152,12 +151,13 @@ export default function PetaniDashboard() {
               </div>
               <span className="hidden sm:block text-xs font-medium text-gray-500">Stok: {p.stock}</span>
               <span
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${p.status === "Tersedia"
-                  ? "bg-green-100 text-green-700"
-                  : p.status === "Stok Rendah"
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-red-100 text-red-600"
-                  }`}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                  p.status === "Tersedia"
+                    ? "bg-green-100 text-green-700"
+                    : p.status === "Stok Rendah"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-red-100 text-red-600"
+                }`}
               >
                 {p.status}
               </span>

@@ -10,7 +10,6 @@ import {
   Check,
   CheckCircle2,
   Clock,
-  Download,
   MapPin,
   MessageCircle,
   Package,
@@ -429,22 +428,14 @@ export default function OrderDetailDrawer({
                 </div>
               </div>
 
-              {/* TODO_BACKEND: sambungkan ke generator PDF asli jika sudah tersedia */}
-              <div className="mt-4 flex gap-2">
+              {/* Cetak invoice via dialog print browser */}
+              <div className="mt-4 flex">
                 <button
                   type="button"
                   onClick={() => window.print()}
                   className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
                 >
-                  <Printer size={15} /> Cetak
-                </button>
-                <button
-                  type="button"
-                  disabled
-                  title="Generator PDF belum tersedia"
-                  className="inline-flex flex-1 cursor-not-allowed items-center justify-center gap-1.5 rounded-xl bg-primary/60 px-4 py-2 text-sm font-semibold text-white"
-                >
-                  <Download size={15} /> Unduh PDF
+                  <Printer size={15} /> Cetak Invoice
                 </button>
               </div>
             </SectionCard>

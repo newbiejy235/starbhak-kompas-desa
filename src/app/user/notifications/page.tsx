@@ -4,11 +4,10 @@ import {
   getUserNotifications,
   markNotificationsRead,
 } from "@/actions/notification";
-import { getClientUser } from "@/lib/auth/client";
 import { formatDateTime } from "@/lib/format";
 import { LoadingState, EmptyState } from "@/components/shared/States";
 import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import Link from "next/link";
 import type { NotificationRow } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -41,7 +40,7 @@ function NotificationsSkeleton() {
 }
 
 export default function UserNotifications() {
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const { data: notifications, loading, reload } = useFetch(
     () =>

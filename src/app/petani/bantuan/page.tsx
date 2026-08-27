@@ -4,12 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
-  CreditCard,
   LifeBuoy,
   MessageSquareWarning,
   Search,
-  ShoppingBag,
-  Truck,
 } from "lucide-react";
 import { getHelpFaqs } from "@/actions/help";
 import type { FaqItem } from "@/lib/types/market";
@@ -17,28 +14,8 @@ import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import PageHeader from "@/components/shared/PageHeader";
 import { ErrorState } from "@/components/shared/States";
+import { FARMER_HELP_CATEGORIES } from "@/constants/bantuan";
 import { Skeleton } from "@/components/ui/Skeleton";
-
-const HELP_CATEGORIES = [
-  {
-    id: "orders",
-    icon: ShoppingBag,
-    title: "Bantuan Pesanan",
-    description: "Konfirmasi, perubahan, dan pembatalan pesanan.",
-  },
-  {
-    id: "payment",
-    icon: CreditCard,
-    title: "Masalah Pembayaran",
-    description: "Pembayaran tertahan, belum lunas, atau refund.",
-  },
-  {
-    id: "delivery",
-    icon: Truck,
-    title: "Masalah Pengiriman",
-    description: "Jadwal kirim, kurir, dan kondisi produk saat tiba.",
-  },
-] as const;
 
 /* ---------------------- SKELETON ---------------------- */
 function HelpSkeleton() {
@@ -92,7 +69,7 @@ export default function BantuanPage() {
 
       {/* Kategori bantuan */}
       <section className="mb-6 grid gap-3 sm:grid-cols-3">
-        {HELP_CATEGORIES.map((cat) => (
+        {FARMER_HELP_CATEGORIES.map((cat) => (
           <article
             key={cat.id}
             className="flex items-start gap-3 rounded-card border border-gray-200/80 bg-white p-4 shadow-soft transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:shadow-lift"
@@ -204,18 +181,16 @@ export default function BantuanPage() {
                     <ChevronDown
                       size={16}
                       aria-hidden
-                      className={`shrink-0 text-gray-400 transition-transform duration-200 ease-smooth ${
-                        open ? "rotate-180" : ""
-                      }`}
+                      className={`shrink-0 text-gray-400 transition-transform duration-200 ease-smooth ${open ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
                   <div
                     id={panelId}
-                    className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
-                      open
-                        ? "grid-rows-[1fr] opacity-100"
-                        : "grid-rows-[0fr] opacity-0"
-                    }`}
+                    className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${open
+                      ? "grid-rows-[1fr] opacity-100"
+                      : "grid-rows-[0fr] opacity-0"
+                      }`}
                   >
                     <div className="overflow-hidden">
                       <p className="border-t border-gray-100 px-4 py-3 text-xs leading-relaxed text-gray-600">

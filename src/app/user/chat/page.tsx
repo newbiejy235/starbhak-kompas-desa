@@ -1,14 +1,13 @@
 "use client";
 
-import { getClientUser } from "@/lib/auth/client";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import { getChatRoomsForUser } from "@/actions/chat";
 import ChatList from "@/components/shared/chat/ChatList";
 import { LoadingState } from "@/components/shared/States";
 import { MessageCircle } from "lucide-react";
 
 export default function UserChatPage() {
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const { data: rooms, loading } = useFetch(
     async () => {

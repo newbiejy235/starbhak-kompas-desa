@@ -5,18 +5,24 @@ import {
   usersTable,
 } from "@/db/schema";
 import { eq, and, gt, inArray, or } from "drizzle-orm";
+import { verifyAuth } from "@/lib/auth/auth.service";
 
 const POLL_INTERVAL_MS = 1500;
 const HEARTBEAT_INTERVAL_MS = 15000;
 
 export async function GET(request: Request) {
+  const auth = await verifyAuth();
+  if (!auth) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const roomId = Number(searchParams.get("roomId"));
-  const userId = Number(searchParams.get("userId"));
   const lastId = Number(searchParams.get("lastId")) || 0;
+  const userId = auth.userId;
 
-  if (!roomId || !userId) {
-    return new Response("Missing roomId or userId", { status: 400 });
+  if (!roomId) {
+    return new Response("Missing roomId", { status: 400 });
   }
 
   const room = await db

@@ -12,9 +12,8 @@ import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
-import { getClientUser } from "@/lib/auth/client";
 import { addToCart } from "@/lib/cart";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type {
   CommodityDetail,
   ReviewForCommodity,
@@ -38,6 +37,8 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const [negoError, setNegoError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const { data, loading } = useFetch(
     async () => {
@@ -86,7 +87,6 @@ export default function ProductDetail() {
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
   const handleAddToCart = () => {
-    const user = getClientUser();
     if (!user) {
       router.push("/auth/login");
       return;
@@ -96,14 +96,20 @@ export default function ProductDetail() {
   };
 
   const handleNego = async () => {
-    const user = getClientUser();
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    const result = await getOrCreateChatRoom(user.id, product.farmerId, product.id);
-    if (result) {
-      router.push(`/user/chat/${result.roomId}`);
+    setNegoError(null);
+    try {
+      const result = await getOrCreateChatRoom(user.id, product.farmerId, product.id);
+      if (result?.roomId) {
+        router.push(`/user/chat/${result.roomId}`);
+      } else {
+        setNegoError("Gagal membuka chat. Silakan coba lagi.");
+      }
+    } catch {
+      setNegoError("Terjadi kesalahan. Silakan coba lagi.");
     }
   };
 
@@ -239,6 +245,9 @@ export default function ProductDetail() {
                     </button>
                   )}
                 </div>
+                {negoError && (
+                  <p className="text-xs text-red-500 mt-2 text-center">{negoError}</p>
+                )}
               </>
             ) : (
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-500">

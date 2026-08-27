@@ -26,11 +26,36 @@ export async function getCategories() {
   return db.select().from(categoriesTable).orderBy(asc(categoriesTable.name));
 }
 
+export async function getCategoriesWithCount() {
+  return db
+    .select({
+      id: categoriesTable.id,
+      name: categoriesTable.name,
+      icon: categoriesTable.icon,
+      count: sql<number>`count(${commoditiesTable.id})::int`,
+    })
+    .from(categoriesTable)
+    .leftJoin(
+      commoditiesTable,
+      and(
+        eq(commoditiesTable.categoryId, categoriesTable.id),
+        or(
+          eq(commoditiesTable.status, "available"),
+          eq(commoditiesTable.status, "verified"),
+        ),
+      ),
+    )
+    .groupBy(categoriesTable.id, categoriesTable.name, categoriesTable.icon)
+    .orderBy(asc(categoriesTable.name));
+}
+
 export async function getPublicCommodities(params?: {
   search?: string;
   categoryId?: number;
   farmerId?: number;
   status?: string;
+  limit?: number;
+  offset?: number;
 }) {
   const conditions = [
     or(
@@ -50,6 +75,9 @@ export async function getPublicCommodities(params?: {
   if (params?.farmerId) {
     conditions.push(eq(commoditiesTable.farmerId, params.farmerId));
   }
+
+  const limit = params?.limit ?? 20;
+  const offset = params?.offset ?? 0;
 
   return db
     .select({
@@ -79,7 +107,9 @@ export async function getPublicCommodities(params?: {
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(and(...conditions))
-    .orderBy(desc(commoditiesTable.createdAt));
+    .orderBy(desc(commoditiesTable.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function getCommoditiesByIds(ids: number[]) {
@@ -347,6 +377,62 @@ export async function deleteCommodity(
   } catch (error) {
     console.error(error);
     return { success: false, message: "Gagal menghapus komoditas" };
+  }
+}
+
+/**
+ * Perbarui stok satu komoditas milik petani.
+ * Status otomatis mengikuti aturan yang sama dengan alur pesanan:
+ * habis -> sold_out, kembali tersedia dari sold_out -> available.
+ */
+export async function updateStock(
+  id: number,
+  farmerId: number,
+  stock: number,
+): Promise<ActionState> {
+  const user = await getAuthUser(farmerId);
+  if (!user || user.role !== "petani") {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  if (!Number.isFinite(stock) || stock < 0) {
+    return { success: false, message: "Jumlah stok tidak valid" };
+  }
+
+  try {
+    const [existing] = await db
+      .select({
+        status: commoditiesTable.status,
+        stock: commoditiesTable.stock,
+      })
+      .from(commoditiesTable)
+      .where(
+        and(eq(commoditiesTable.id, id), eq(commoditiesTable.farmerId, farmerId)),
+      );
+
+    if (!existing) {
+      return { success: false, message: "Komoditas tidak ditemukan" };
+    }
+
+    let nextStatus = existing.status;
+    if (stock <= 0) {
+      nextStatus = "sold_out";
+    } else if (existing.status === "sold_out") {
+      nextStatus = "available";
+    }
+
+    await db
+      .update(commoditiesTable)
+      .set({ stock: String(stock), status: nextStatus })
+      .where(eq(commoditiesTable.id, id));
+
+    revalidatePath("/petani/stok");
+    revalidatePath("/petani/dashboard");
+    revalidatePath("/user/home");
+    return { success: true, message: "Stok berhasil diperbarui" };
+  } catch (error) {
+    console.error(error);
+    return { success: false, message: "Gagal memperbarui stok" };
   }
 }
 

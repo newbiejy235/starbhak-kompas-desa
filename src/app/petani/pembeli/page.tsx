@@ -10,14 +10,8 @@ import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { formatDate, formatNumber, formatRupiah } from "@/lib/format";
+import { formatDate, formatNumber, formatRupiah, getInitials } from "@/lib/format";
 
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
 
 /* ---------------------- SKELETON ---------------------- */
 function BuyerSkeleton() {

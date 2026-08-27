@@ -1,7 +1,4 @@
-/**
- * Creates a cropped image from canvas based on crop area pixels.
- * Returns a File object ready for upload.
- */
+
 export async function getCroppedImg(
   imageSrc: string,
   pixelCrop: { x: number; y: number; width: number; height: number },

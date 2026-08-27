@@ -5,25 +5,25 @@ import Link from 'next/link'
 import { Check, Sprout, Store, ArrowRight, ChevronDown } from 'lucide-react'
 
 const petaniBenefits = [
-  "Membuat Profil",
-  "Mengelola Data Lahan & Tanaman",
-  "Menambahkan Produk Hasil Panen",
-  "Menerima & Mengelola Pesanan",
-  "Monitoring Penjualan",
-  "Notifikasi Informasi Terbaru",
-  "Terhubung dengan Pembeli",
-  "Memperluas Jangkauan Pasar",
-  "Melihat Riwayat Transaksi",
-]
+  "Mengelola Profil dan Informasi Usaha",
+  "Mengelola Lahan, Tanaman, dan Jadwal Panen",
+  "Mengelola Komoditas, Harga, dan Stok",
+  "Menampilkan Hasil Panen ke Pasar Lebih Luas",
+  "Menerima dan Memproses Pesanan dengan Mudah",
+  "Memantau Penjualan, Pelanggan, dan Performa Usaha",
+  "Membangun Reputasi dan Memperluas Peluang Penjualan",
+  "Memanfaatkan Chatbot untuk Mendapatkan Bantuan dan Informasi"
+];
 
 const pelangganBenefits = [
-  "Mencari & Memfilter Komoditas",
-  "Melihat Detail Produk Pertanian",
+  "Mencari dan Memfilter Komoditas",
+  "Melihat Detail Produk dan Informasi Petani",
   "Menemukan Petani Terpercaya",
-  "Melakukan Pemesanan Produk",
-  "Melacak Status Pesanan",
+  "Melakukan Pemesanan Produk dengan Mudah",
+  "Melacak Status dan Riwayat Pesanan",
   "Menyimpan Produk Pilihan",
-  "Notifikasi Pesanan"
+  "Mendapatkan Notifikasi Pesanan",
+  "Memanfaatkan Chatbot untuk Mendapatkan Bantuan dan Informasi",
 ]
 
 interface BenefitListProps {
@@ -34,38 +34,76 @@ interface BenefitListProps {
 
 function BenefitList({ benefits, initialCount = 4, iconBg }: BenefitListProps) {
   const [expanded, setExpanded] = useState(false)
+
   const primary = benefits.slice(0, initialCount)
   const rest = benefits.slice(initialCount)
 
+  const renderBenefit = (benefit: string) => (
+    <li
+      key={benefit}
+      className="group/benefit flex items-start gap-3.5 rounded-lg px-2 py-1.5 -mx-2 transition-all duration-200 hover:bg-[#F6FAF8]"
+    >
+      {/* Check */}
+      <span
+        className={`
+          relative mt-0.5 flex h-[22px] w-[22px] shrink-0
+          items-center justify-center rounded-full
+          ${iconBg}
+          text-[#025246]
+          ring-1 ring-[#025246]/10
+          shadow-[0_1px_3px_rgba(2,82,70,0.06)]
+          transition-all duration-300
+          group-hover/benefit:bg-[#025246]
+          group-hover/benefit:text-white
+          group-hover/benefit:ring-[#025246]/20
+          group-hover/benefit:shadow-[0_3px_8px_rgba(2,82,70,0.15)]
+          group-hover/benefit:scale-105
+        `}
+      >
+        <Check
+          className="
+            h-3 w-3
+            transition-transform duration-300
+            group-hover/benefit:scale-110
+          "
+          strokeWidth={3}
+        />
+      </span>
+
+      {/* Text */}
+      <span
+        className="
+          pt-[1px]
+          font-body
+          text-[14.5px]
+          leading-[1.5]
+          text-[#3C4D49]
+          transition-colors duration-200
+          group-hover/benefit:text-[#14231F]
+        "
+      >
+        {benefit}
+      </span>
+    </li>
+  )
+
   return (
     <div className="mb-8">
-      <ul className="space-y-3.5">
-        {primary.map((benefit) => (
-          <li key={benefit} className="flex items-start gap-3">
-            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${iconBg} text-[#025246]`}>
-              <Check className="h-3 w-3" strokeWidth={3} />
-            </span>
-            <span className="font-body text-[14.5px] leading-snug text-[#3C4D49]">{benefit}</span>
-          </li>
-        ))}
+      <ul className="space-y-2">
+        {primary.map(renderBenefit)}
       </ul>
 
       {rest.length > 0 && (
         <>
           <div
             className="grid transition-[grid-template-rows] duration-300 ease-out"
-            style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+            style={{
+              gridTemplateRows: expanded ? '1fr' : '0fr',
+            }}
           >
             <div className="overflow-hidden">
-              <ul className="space-y-3.5 pt-3.5">
-                {rest.map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-3">
-                    <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${iconBg} text-[#025246]`}>
-                      <Check className="h-3 w-3" strokeWidth={3} />
-                    </span>
-                    <span className="font-body text-[14.5px] leading-snug text-[#3C4D49]">{benefit}</span>
-                  </li>
-                ))}
+              <ul className="space-y-2 pt-2">
+                {rest.map(renderBenefit)}
               </ul>
             </div>
           </div>
@@ -74,11 +112,43 @@ function BenefitList({ benefits, initialCount = 4, iconBg }: BenefitListProps) {
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="mt-3.5 inline-flex items-center gap-1.5 rounded font-body text-[13px] font-semibold text-[#025246] transition-colors duration-200 hover:text-[#013e35] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#025246] focus-visible:ring-offset-2"
+            className="
+              group/more
+              mt-4
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-md
+              px-2
+              py-1
+              -mx-2
+              font-body
+              text-[13px]
+              font-semibold
+              text-[#025246]
+              transition-all
+              duration-200
+              hover:bg-[#F0F7F4]
+              hover:text-[#013E35]
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-[#025246]
+              focus-visible:ring-offset-2
+            "
           >
-            {expanded ? 'Sembunyikan' : `+ ${rest.length} manfaat lainnya`}
+            <span>
+              {expanded
+                ? 'Sembunyikan'
+                : `+ ${rest.length} manfaat lainnya`}
+            </span>
+
             <ChevronDown
-              className={`h-3.5 w-3.5 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+              className={`
+                h-3.5 w-3.5
+                transition-transform duration-300
+                ${expanded ? 'rotate-180' : ''}
+                group-hover/more:translate-y-0.5
+              `}
             />
           </button>
         </>
@@ -162,7 +232,7 @@ export default function CardMembership() {
               className="mt-1 font-body text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8A9C98]"
               style={{ writingMode: 'vertical-rl' }}
             >
-              Alur Nilai
+              Atau
             </span>
           </div>
 
