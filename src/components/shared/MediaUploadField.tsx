@@ -32,10 +32,7 @@ interface MediaItem {
   error?: string;
 }
 
-interface MediaUploadFieldProps {
-  defaultImages?: string[];
-  defaultVideoUrl?: string | null;
-}
+interface MediaUploadFieldProps {}
 
 async function uploadItem(
   item: MediaItem,
@@ -225,19 +222,8 @@ export default function MediaUploadField(
     }
   };
 
-  const imagesJson = JSON.stringify(
-    items
-      .filter((i) => i.type === "image" && i.uploadedUrl)
-      .map((i) => i.uploadedUrl),
-  );
-
-  const videoUrlValue =
-    items.find((i) => i.type === "video" && i.uploadedUrl)?.uploadedUrl ?? "";
-
   return (
     <div className="space-y-3">
-      <input type="hidden" name="images" value={imagesJson} />
-      <input type="hidden" name="videoUrl" value={videoUrlValue} />
 
       <div className="flex items-center justify-between">
         <label className="block text-xs font-medium text-gray-600">
