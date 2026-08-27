@@ -63,6 +63,8 @@ export async function getPublicCommodities(params?: {
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -97,6 +99,8 @@ export async function getCommoditiesByIds(ids: number[]) {
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -127,6 +131,8 @@ export async function getCommodityById(id: number) {
       location: commoditiesTable.location,
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -165,6 +171,8 @@ export async function getFarmerCommodities(farmerId: number) {
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
       imageId: commoditiesTable.image,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       createdAt: commoditiesTable.createdAt,
       categoryName: categoriesTable.name,
@@ -200,6 +208,9 @@ export async function createCommodity(
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
   const imageRaw = (data.get("image") as string)?.trim() || "";
   const image = imageRaw ? Number(imageRaw) : null;
+  const imagesRaw = (data.get("images") as string)?.trim() || "[]";
+  const images: string[] = JSON.parse(imagesRaw);
+  const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
 
   if (!name || !categoryId || !price || !stock || !location) {
     return { success: false, message: "Lengkapi semua field wajib" };
@@ -222,6 +233,8 @@ export async function createCommodity(
         ? new Date(harvestEstimateRaw)
         : null,
       image,
+      images,
+      videoUrl,
       status: "pending",
     });
 
@@ -270,6 +283,9 @@ export async function updateCommodity(
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
   const imageRaw = (data.get("image") as string)?.trim() || "";
   const image = imageRaw ? Number(imageRaw) : null;
+  const imagesRaw = (data.get("images") as string)?.trim() || "[]";
+  const images: string[] = JSON.parse(imagesRaw);
+  const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
   const status = (data.get("status") as string) || undefined;
 
   if (!name || !categoryId || !price || !stock || !location) {
@@ -294,6 +310,8 @@ export async function updateCommodity(
           ? new Date(harvestEstimateRaw)
           : null,
         image,
+        images,
+        videoUrl,
         ...(status ? { status: status as never } : {}),
       })
       .where(eq(commoditiesTable.id, id));
@@ -433,6 +451,8 @@ export async function getRelatedCommodities(
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
       categoryName: categoriesTable.name,

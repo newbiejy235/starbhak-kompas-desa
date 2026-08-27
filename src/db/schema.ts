@@ -8,6 +8,7 @@ import {
   boolean,
   pgEnum,
   index,
+  json,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
@@ -127,6 +128,8 @@ export const commoditiesTable = pgTable(
     image: integer().references(() => ImageUpload.id, {
       onDelete: "set null",
     }),
+    images: json("images").$type<string[]>().default([]),
+    videoUrl: text("video_url"),
     status: commodityStatusEnum().notNull().default("pending"),
     rating: numeric({ precision: 3, scale: 2 }).notNull().default("0"),
     reviewCount: integer().notNull().default(0),

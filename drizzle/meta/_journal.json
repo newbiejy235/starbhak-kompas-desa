@@ -47,6 +47,7 @@
     {
       "idx": 6,
       "version": "7",
+<<<<<<< HEAD
       "when": 1787772951089,
       "tag": "0006_regular_hex",
       "breakpoints": true
@@ -56,6 +57,10 @@
       "version": "7",
       "when": 1787800000000,
       "tag": "0007_chat_pin",
+=======
+      "when": 1787740000000,
+      "tag": "0007_multimedia_commodities",
+>>>>>>> 631726203bb404b9d2e7b021f8277c7378c6c52f
       "breakpoints": true
     }
   ]
