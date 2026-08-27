@@ -341,6 +341,8 @@ export const chatRoomsTable = pgTable(
       .notNull()
       .references(() => commoditiesTable.id, { onDelete: "cascade" }),
     status: chatRoomStatusEnum().notNull().default("active"),
+    buyerPinned: boolean().notNull().default(false),
+    farmerPinned: boolean().notNull().default(false),
     lastMessage: text(),
     lastMessageAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

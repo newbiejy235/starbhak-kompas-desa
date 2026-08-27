@@ -4,14 +4,6 @@ import { useMemo } from "react";
 import ChatItem from "./ChatItem";
 import ChatEmptyState from "./ChatEmptyState";
 
-/**
- * Bentuk data satu percakapan.
- *
- * CATATAN INTEGRASI: sesuaikan field di bawah ini dengan bentuk data asli
- * yang dikembalikan oleh `getChatRoomsForUser` di project Anda. Field
- * `pinned` bersifat opsional — jika backend belum menyimpan status pin,
- * cukup biarkan undefined dan gunakan state lokal (lihat page.tsx).
- */
 export interface ChatRoom {
   id: number;
   buyerId?: number;
@@ -20,7 +12,6 @@ export interface ChatRoom {
   lastMessage: string;
   lastMessageAt: string | number | Date;
   unreadCount: number;
-  /** Status pin dari backend, jika sudah tersedia. */
   pinned?: boolean;
 }
 
@@ -31,14 +22,9 @@ interface ChatListProps {
   currentUserId: number;
   role: "petani" | "pembeli";
   basePath: string;
-  /** Room yang sedang dibuka (untuk highlight state aktif). */
   activeRoomId?: number;
-  /** Filter yang sedang aktif, dikelola dari halaman induk. */
   activeFilter?: ChatFilter;
-  /** Kata kunci pencarian, dikelola dari halaman induk. */
   searchTerm?: string;
-  /** Daftar id chat yang disematkan secara lokal (client-side). */
-  pinnedIds?: number[];
   onTogglePin?: (roomId: number) => void;
 }
 
@@ -50,14 +36,12 @@ export default function ChatList({
   activeRoomId,
   activeFilter = "all",
   searchTerm = "",
-  pinnedIds = [],
   onTogglePin,
 }: ChatListProps) {
-  void currentUserId; // dicadangkan untuk kebutuhan integrasi mendatang (mis. read receipts)
+  void currentUserId;
   void role;
 
-  const isPinned = (room: ChatRoom) =>
-    room.pinned ?? pinnedIds.includes(room.id);
+  const isPinned = (room: ChatRoom) => room.pinned === true;
 
   const handleTogglePin = (roomId: number) => {
     onTogglePin?.(roomId);
@@ -86,14 +70,16 @@ export default function ChatList({
     const others = filtered.filter((r) => !isPinned(r)).sort(sortByRecency);
 
     return { pinnedRooms: pinned, otherRooms: others };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, searchTerm, activeFilter, pinnedIds]);
+  }, [rooms, searchTerm, activeFilter]);
 
   const totalVisible = pinnedRooms.length + otherRooms.length;
 
   if (totalVisible === 0) {
     if (searchTerm.trim().length > 0) {
       return <ChatEmptyState variant="search" searchTerm={searchTerm} />;
+    }
+    if (activeFilter === "unread") {
+      return <ChatEmptyState variant="unread" />;
     }
     if (activeFilter === "pinned") {
       return <ChatEmptyState variant="pinned" />;

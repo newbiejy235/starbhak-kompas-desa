@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
-import { getChatRoomsForUser } from "@/actions/chat";
+import { getChatRoomsForUser, toggleChatRoomPin } from "@/actions/chat";
 import ChatList, {
   ChatFilter,
   ChatRoom,
@@ -13,16 +13,16 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 type RawRoom = Awaited<ReturnType<typeof getChatRoomsForUser>>[number];
 
-// Backend belum menyediakan `unreadCount`/`pinned` — mapping ke bentuk
-// yang dibutuhkan ChatList di sini agar komponen tetap bersih.
 function toChatRoom(r: RawRoom): ChatRoom {
   return {
     id: r.id,
     buyerId: r.buyerId,
     buyerName: r.buyerName,
+    buyerAvatarUrl: r.buyerFotoProfile,
     lastMessage: r.lastMessage ?? "",
     lastMessageAt: r.lastMessageAt ?? r.createdAt,
-    unreadCount: 0,
+    unreadCount: r.unreadCount ?? 0,
+    pinned: r.pinned ?? false,
   };
 }
 
@@ -62,41 +62,36 @@ function ChatSkeleton() {
 
 export default function PetaniChatPage() {
   const user = getClientUser();
-
-  const { data: rooms, loading } = useFetch(
-    async () => {
-      if (!user) return [];
-      return getChatRoomsForUser(user.id, "petani");
-    },
-    [user?.id]
-  );
+  const userId = user?.id ?? 0;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<ChatFilter>("all");
 
-  // Status pin sementara di client. Ganti dengan data dari backend begitu
-  // field pin tersedia di `getChatRoomsForUser` — cukup baca `room.pinned`
-  // di ChatList dan hapus state ini.
-  const [pinnedIds, setPinnedIds] = useState<number[]>([]);
+  const fetchRooms = useCallback(async () => {
+    if (!userId) return [];
+    return getChatRoomsForUser(userId, "petani");
+  }, [userId]);
 
-  const togglePin = (roomId: number) => {
-    setPinnedIds((prev) =>
-      prev.includes(roomId)
-        ? prev.filter((id) => id !== roomId)
-        : [...prev, roomId]
-    );
-  };
+  const { data: rooms, loading, reload } = useFetch(fetchRooms, [userId]);
 
   const chatRooms = useMemo(() => (rooms || []).map(toChatRoom), [rooms]);
 
   const unreadCount = useMemo(
     () => chatRooms.filter((r) => r.unreadCount > 0).length,
-    [chatRooms]
+    [chatRooms],
   );
   const pinnedCount = useMemo(
-    () =>
-      chatRooms.filter((r) => r.pinned ?? pinnedIds.includes(r.id)).length,
-    [chatRooms, pinnedIds]
+    () => chatRooms.filter((r) => r.pinned).length,
+    [chatRooms],
+  );
+
+  const handleTogglePin = useCallback(
+    async (roomId: number) => {
+      if (!userId) return;
+      await toggleChatRoomPin(roomId, userId);
+      reload();
+    },
+    [userId, reload],
   );
 
   if (loading) return <ChatSkeleton />;
@@ -182,13 +177,12 @@ export default function PetaniChatPage() {
       <main className="min-h-0 flex-1 overflow-hidden">
         <ChatList
           rooms={chatRooms}
-          currentUserId={user?.id || 0}
+          currentUserId={userId}
           role="petani"
           basePath="/petani/chat"
           activeFilter={activeFilter}
           searchTerm={searchTerm}
-          pinnedIds={pinnedIds}
-          onTogglePin={togglePin}
+          onTogglePin={handleTogglePin}
         />
       </main>
 

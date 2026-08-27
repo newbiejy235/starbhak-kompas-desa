@@ -30,6 +30,14 @@ interface ChatRoomData {
   farmerName: string;
   farmerFoto: string | null;
   farmerAddress: string | null;
+  pendingOffer: {
+    id: number;
+    price: string;
+    quantity: string;
+    unit: string;
+    status: string;
+    createdAt: Date;
+  } | null;
 }
 
 export interface ChatMessageData {
@@ -123,6 +131,17 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
       lastMsgIdRef.current = maxId;
 
       markMessagesAsRead(roomId, userId).catch(() => {});
+
+      const hasNegotiationEvent = newMsgs.some(
+        (m) => m.type === "accept" || m.type === "reject" || m.type === "offer",
+      );
+      if (hasNegotiationEvent) {
+        getChatRoomDetail(roomId).then((updated) => {
+          if (mountedRef.current && updated) {
+            setRoom(updated as ChatRoomData);
+          }
+        }).catch(() => {});
+      }
     });
 
     es.addEventListener("edit_delete", (e) => {
@@ -238,6 +257,14 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
         offerQuantity,
         replyToId,
       );
+
+      if (type === "accept" || type === "reject" || type === "offer") {
+        getChatRoomDetail(roomId).then((updated) => {
+          if (mountedRef.current && updated) {
+            setRoom(updated as ChatRoomData);
+          }
+        }).catch(() => {});
+      }
     },
     [roomId, userId, userFullName],
   );
