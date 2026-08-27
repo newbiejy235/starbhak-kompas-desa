@@ -10,6 +10,7 @@ import {
 import type { SalesTargetOverview } from "@/lib/types/market";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
+import { toISODate } from "@/utils/date";
 import PageHeader from "@/components/shared/PageHeader";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import Modal from "@/components/ui/Modal";
@@ -17,16 +18,6 @@ import Button from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import CountUp from "@/components/ui/CountUp";
 import { formatDate, formatRupiah } from "@/lib/format";
-
-/* ---------------------- HELPER DATES ---------------------- */
-function toISODate(dateVal: Date | string | number): string {
-  const d = new Date(dateVal);
-  if (isNaN(d.getTime())) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 /* ---------------------- SKELETON ---------------------- */
 function TargetSkeleton() {

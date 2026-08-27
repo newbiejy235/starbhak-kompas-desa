@@ -13,6 +13,7 @@ import { getFarmerCommodities } from "@/actions/commodity";
 import type { FarmerCommodity } from "@/lib/types/market";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
+import { toISODate } from "@/utils/date";
 import PageHeader from "@/components/shared/PageHeader";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import Modal from "@/components/ui/Modal";
@@ -21,13 +22,6 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { formatDate, formatNumber } from "@/lib/format";
 
 const QUALITY_OPTIONS = ["A", "B", "C"];
-
-function toISODate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 /* ---------------------- SKELETON ---------------------- */
 function NotesSkeleton() {

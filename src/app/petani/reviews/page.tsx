@@ -4,31 +4,23 @@ import { useMemo, useState } from "react";
 import { ChevronDown, MessageSquareText, Package, Search, Star } from "lucide-react";
 import { getReviewsForFarmer } from "@/actions/review";
 import { getClientUser } from "@/lib/auth/client";
-import { formatDate } from "@/lib/format";
+import { formatDate, getInitials } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import { useFetch } from "@/lib/hooks";
 import type { ReviewForFarmer } from "@/lib/types/market";
 import CountUp from "@/components/ui/CountUp";
 import { Skeleton } from "@/components/ui/Skeleton";
-
-/* ============================================================
-   Design tokens (Kompas Desa)
-   ============================================================ */
-const GREEN = "#025246";
-const GREEN_SOFT = "#F0F7F5";
-const GREEN_AVATAR = "#EAF4F1";
+import {
+  COLOR_PRIMARY,
+  COLOR_PRIMARY_AVATAR,
+  COLOR_PRIMARY_SOFT,
+} from "@/constants/brand";
 
 type RatingDistItem = { star: number; count: number };
 
 /* ============================================================
    Helpers
    ============================================================ */
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
 
 function Stars({
   value,
@@ -172,7 +164,7 @@ function RatingOverview({
                 className={`flex min-h-9 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors duration-200 ${focusRing} ${
                   isActive ? "" : "hover:bg-gray-50"
                 }`}
-                style={isActive ? { backgroundColor: GREEN_SOFT } : undefined}
+                style={isActive ? { backgroundColor: COLOR_PRIMARY_SOFT } : undefined}
               >
                 <span
                   className={`inline-flex w-9 shrink-0 items-center gap-1 text-xs font-semibold tabular-nums ${
@@ -288,7 +280,7 @@ function ReviewCard({ review }: { review: ReviewForFarmer }) {
         <div
           aria-hidden
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold"
-          style={{ backgroundColor: GREEN_AVATAR, color: GREEN }}
+          style={{ backgroundColor: COLOR_PRIMARY_AVATAR, color: COLOR_PRIMARY }}
         >
           {getInitials(review.buyerName)}
         </div>
@@ -405,7 +397,7 @@ export default function PetaniReviews() {
             <span
               aria-hidden
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-              style={{ backgroundColor: GREEN_SOFT, color: GREEN }}
+              style={{ backgroundColor: COLOR_PRIMARY_SOFT, color: COLOR_PRIMARY }}
             >
               <MessageSquareText size={20} strokeWidth={2} />
             </span>
