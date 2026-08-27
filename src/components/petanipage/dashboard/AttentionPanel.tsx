@@ -101,7 +101,7 @@ export default function AttentionPanel({
       ) : (
         <>
           <h2 className="mb-3 text-sm font-bold text-neutral-900">
-            Perlu Perhatian Hari Ini
+            Perhatian Hari Ini
           </h2>
           <ul className="space-y-2.5">
             {items.map((item) => (

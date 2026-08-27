@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   getClientUser,
+  subscribeToUserChanges,
   getRoleRedirect,
 } from "@/lib/auth/client";
 
 export function useAuth(expectedRole?: string) {
   const router = useRouter();
-  const user = getClientUser();
-  const loading = user === null;
+  const user = useSyncExternalStore(subscribeToUserChanges, getClientUser, () => null);
+  const loading = user === undefined;
 
   useEffect(() => {
+    if (loading) return;
     if (!user) {
       router.replace("/auth/login");
       return;
@@ -20,9 +22,9 @@ export function useAuth(expectedRole?: string) {
     if (expectedRole && user.role !== expectedRole) {
       router.replace(getRoleRedirect(user.role));
     }
-  }, [user, expectedRole, router]);
+  }, [loading, user, expectedRole, router]);
 
-  return { user, loading };
+  return { user: user ?? null, loading };
 }
 
 export function useFetch<T>(fn: () => Promise<T>, deps: unknown[] = []) {

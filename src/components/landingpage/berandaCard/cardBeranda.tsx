@@ -44,7 +44,7 @@ const cardVariants: Variants = {
 
 export default function BentoGridStats() {
   return (
-    <div className="w-full bg-[#FAFDFC] mt-10">
+    <div className="w-full mt-10">
       <div className="mx-auto w-full max-w-[1180px] px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
         {/* ================= HERO ================= */}
         <div className="flex flex-col items-center text-center">

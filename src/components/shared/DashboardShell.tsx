@@ -39,12 +39,12 @@ export default function DashboardShell({
     // Skeleton loading, bukan spinner polos (PRD 8.3 & 16)
     return (
       <div className="min-h-screen bg-[#F6F6F6]">
-        <div className="hidden lg:block fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 p-6 space-y-4">
+        <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 flex-col p-6 space-y-4">
           <Skeleton className="h-6 w-32 mb-8" />
           {Array.from({ length: 7 }).map((_, i) => (
             <Skeleton key={i} className="h-9 w-full rounded-xl" />
           ))}
-        </div>
+        </aside>
         <div className="lg:pl-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 space-y-6">
           <Skeleton className="h-8 w-56" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -12,8 +12,8 @@ import ChatWidget from "@/components/shared/chatbot/ChatWidget";
 import ScrollReveal from "@/components/animation/ScrollReveal";
 import ScrollToTop from "@/components/landingpage/backtotop/BacktoTop";
 
-const ContactSection = dynamic(
-  () => import("@/components/landingpage/contact/page")
+const InvitationSection = dynamic(
+  () => import("@/components/landingpage/ajakanBergabung/page")
 );
 
 const PartnerSection = dynamic(
@@ -90,10 +90,14 @@ export default function KompasDesaPage() {
       <PageLoader>
         <div className="landing-page relative min-h-screen bg-white overflow-x-hidden flex flex-col">
           <DotAnimation />
-          <DotPattern className="opacity-30" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-screen overflow-hidden"
+          >
+            <DotPattern className="opacity-7" />
+          </div>
           <main className="relative z-25 grow w-full landing-theme">
-
-            <section id="beranda" className="bg-white w-full scroll-mt-24">
+            <section id="beranda" className="w-full">
               <ScrollReveal>
                 <BentoGridStats />
               </ScrollReveal>
@@ -171,10 +175,10 @@ export default function KompasDesaPage() {
             </section>
 
             <section
-              id="kontak"
+              id="ajakan"
               className="bg-white w-full py-10">
               <ScrollReveal>
-                <ContactSection />
+                <InvitationSection />
               </ScrollReveal>
             </section>
           </main>

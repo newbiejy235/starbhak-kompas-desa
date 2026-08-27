@@ -1,8 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarRange, Target, Wallet } from "lucide-react";
+import {
+  CalendarRange,
+  CheckCircle2,
+  Clock,
+  Target,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import {
   getSalesTargetOverview,
   saveSalesTarget,
@@ -19,17 +26,88 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import CountUp from "@/components/ui/CountUp";
 import { formatDate, formatRupiah } from "@/lib/format";
 
+/* ---------------------- HELPERS ---------------------- */
+function safePercent(val: unknown): number {
+  const n = Number(val);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function getStatusInfo(percent: number, endDate: Date, now: Date) {
+  if (percent >= 100) {
+    return {
+      label: "Target Tercapai",
+      description: "Selamat! Target penjualan Anda sudah tercapai.",
+      color: "text-success",
+      bgColor: "bg-success/10",
+      icon: CheckCircle2,
+    };
+  }
+
+  const isEnded = now > endDate;
+
+  if (isEnded) {
+    return {
+      label: "Periode Berakhir",
+      description: `Target tercapai ${percent}% dari yang ditetapkan.`,
+      color: "text-warning",
+      bgColor: "bg-warning/10",
+      icon: Clock,
+    };
+  }
+
+  if (percent >= 75) {
+    return {
+      label: "Hampir Tercapai",
+      description: `Sangat baik! Anda sudah mencapai ${percent}% dari target.`,
+      color: "text-success",
+      bgColor: "bg-success/10",
+      icon: TrendingUp,
+    };
+  }
+
+  if (percent > 0) {
+    return {
+      label: "Sedang Berjalan",
+      description: `Target Anda sedang berjalan, ${percent}% sudah tercapai.`,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+      icon: Target,
+    };
+  }
+
+  return {
+    label: "Belum Ada Pencapaian",
+    description: "Target penjualan sudah aktif. Mulai capai dari transaksi pertama Anda.",
+    color: "text-neutral-500",
+    bgColor: "bg-neutral-100",
+    icon: Target,
+  };
+}
+
+function getRemainingDays(endDate: Date, now: Date): number {
+  const diff = endDate.getTime() - now.getTime();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
 /* ---------------------- SKELETON ---------------------- */
 function TargetSkeleton() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-52 rounded-card" />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Skeleton className="h-[72px] rounded-xl" />
-        <Skeleton className="h-[72px] rounded-xl" />
-        <Skeleton className="h-[72px] rounded-xl" />
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-11 w-11 shrink-0 rounded-2xl" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-6 w-44" />
+          <Skeleton className="h-4 w-64" />
+        </div>
       </div>
+      <Skeleton className="h-56 rounded-card" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
+      </div>
+      <Skeleton className="h-16 rounded-xl" />
     </div>
   );
 }
@@ -47,32 +125,58 @@ export default function TargetPenjualanPage() {
     user
       ? getSalesTargetOverview(user.id)
       : Promise.resolve({
-        target: null,
-        achievedAmount: 0,
-        percent: 0,
-        remaining: 0,
-      } as SalesTargetOverview),
+          target: null,
+          achievedAmount: 0,
+          percent: 0,
+          remaining: 0,
+        } as SalesTargetOverview),
     [user?.id],
   );
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Default periode: Awal bulan s.d. Akhir bulan saat ini
-  const now = new Date();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const now = mounted ? new Date() : new Date(0);
+
   const defaultStart = toISODate(
-    new Date(now.getFullYear(), now.getMonth(), 1),
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
   const defaultEnd = toISODate(
-    new Date(now.getFullYear(), now.getMonth() + 1, 0),
+    new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
   );
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
-    const formData = new FormData(e.currentTarget);
-    setSaving(true);
 
+    const formData = new FormData(e.currentTarget);
+    const targetAmount = Number(formData.get("targetAmount"));
+    const startDate = String(formData.get("startDate") ?? "");
+    const endDate = String(formData.get("endDate") ?? "");
+
+    if (!targetAmount || targetAmount <= 0) {
+      toast.error("Nominal target harus lebih dari 0");
+      return;
+    }
+    if (!startDate) {
+      toast.error("Tanggal mulai wajib diisi");
+      return;
+    }
+    if (!endDate) {
+      toast.error("Tanggal selesai wajib diisi");
+      return;
+    }
+    if (new Date(endDate) <= new Date(startDate)) {
+      toast.error("Tanggal selesai harus setelah tanggal mulai");
+      return;
+    }
+
+    setSaving(true);
     const res = await saveSalesTarget(user.id, formData);
     setSaving(false);
 
@@ -88,18 +192,20 @@ export default function TargetPenjualanPage() {
   if (loading) return <TargetSkeleton />;
 
   const target = overview?.target ?? null;
+  const achievedAmount = Number(overview?.achievedAmount ?? 0);
+  const percent = safePercent(overview?.percent);
+  const remaining = Number(overview?.remaining ?? 0);
+  const targetAmount = target ? Number(target.targetAmount) : 0;
+  const visualPercent = Math.min(percent, 100);
 
   return (
     <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
       <PageHeader
         icon={Target}
         title="Target Penjualan"
-        subtitle="Tetapkan target dan pantau pencapaian penjualan Anda."
+        subtitle="Tetapkan target penjualan dan pantau pencapaiannya dalam satu periode."
         action={
-          <Button
-            size="sm"
-            onClick={() => setOpen(true)}
-          >
+          <Button size="sm" onClick={() => setOpen(true)}>
             <Target size={16} />
             {target ? "Ubah Target" : "Atur Target"}
           </Button>
@@ -124,103 +230,211 @@ export default function TargetPenjualanPage() {
         </EmptyState>
       ) : (
         <>
-          {/* Kartu Utama Target */}
-          <section className="relative mb-4 overflow-hidden rounded-card bg-gradient-to-br from-primary to-primary-dark p-6 shadow-lift sm:p-8">
-            <div
-              aria-hidden
-              className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10"
-            />
-            <div
-              aria-hidden
-              className="absolute -bottom-20 right-24 h-40 w-40 rounded-full bg-white/5"
-            />
-            <div className="relative">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="flex items-center gap-1.5 text-sm font-medium text-white/70">
-                    <Wallet size={14} />
-                    Target Pendapatan
-                  </p>
-                  <CountUp
-                    value={Number(target.targetAmount)}
-                    prefix="Rp "
-                    className="mt-1 block text-3xl font-black tracking-tight text-white sm:text-4xl"
-                  />
-                  <p className="mt-1.5 flex items-center gap-1 text-xs text-white/60">
-                    <CalendarRange size={12} />
-                    {formatDate(target.startDate)} — {formatDate(target.endDate)}
-                  </p>
-                </div>
+          {/* ---- MAIN TARGET OVERVIEW ---- */}
+          <section className="rounded-card border border-gray-200 bg-white p-6 shadow-soft sm:p-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+              {/* Left: Target amount */}
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                  <Wallet size={14} className="text-primary" />
+                  Target Pendapatan
+                </p>
+                <CountUp
+                  value={targetAmount}
+                  prefix="Rp "
+                  className="mt-2 block text-3xl font-black tracking-tight text-gray-900 sm:text-4xl"
+                />
+                <p className="mt-1.5 flex items-center gap-1 text-xs text-gray-400">
+                  <CalendarRange size={12} />
+                  {formatDate(target.startDate)} — {formatDate(target.endDate)}
+                </p>
+              </div>
 
-                <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm">
-                  <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">
-                    Tercapai
+              {/* Right: Percentage circle-style display */}
+              <div className="flex items-center gap-4">
+                <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
+                  {/* Background circle */}
+                  <svg
+                    className="h-20 w-20 -rotate-90"
+                    viewBox="0 0 80 80"
+                    aria-hidden
+                  >
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="34"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      className="text-gray-100"
+                    />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="34"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 34}`}
+                      strokeDashoffset={`${2 * Math.PI * 34 * (1 - visualPercent / 100)}`}
+                      className="text-primary transition-all duration-700 ease-smooth"
+                    />
+                  </svg>
+                  <span className="absolute text-lg font-bold text-gray-900">
+                    {percent}%
+                  </span>
+                </div>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-semibold text-gray-900">
+                    Pencapaian
                   </p>
-                  <p className="text-lg font-extrabold text-white">
-                    {formatRupiah(overview?.achievedAmount ?? 0)}
+                  <p className="text-xs text-gray-500">
+                    {formatRupiah(achievedAmount)} tercapai
                   </p>
                 </div>
               </div>
+            </div>
 
-              {/* Progress bar */}
-              <div className="mt-6">
+            {/* ---- PROGRESS BAR ---- */}
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
+                <span className="font-medium text-gray-700">
+                  Progres Pencapaian
+                </span>
+                <span className="font-semibold text-gray-900">
+                  {formatRupiah(achievedAmount)} dari{" "}
+                  {formatRupiah(targetAmount)}
+                </span>
+              </div>
+              <div
+                role="progressbar"
+                aria-valuenow={percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Progres pencapaian target"
+                className="h-3 w-full overflow-hidden rounded-full bg-gray-100"
+              >
                 <div
-                  role="progressbar"
-                  aria-valuenow={overview?.percent ?? 0}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label="Progres pencapaian target"
-                  className="h-3 w-full overflow-hidden rounded-full bg-white/15"
-                >
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-secondary to-emerald-300 transition-all duration-700 ease-smooth animate-grow-x"
-                    style={{ width: `${overview?.percent ?? 0}%` }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-xs text-white/70">
-                  <span className="font-bold text-white">
-                    {overview?.percent ?? 0}% tercapai
+                  className="h-full rounded-full bg-primary transition-all duration-700 ease-smooth animate-grow-x"
+                  style={{ width: `${visualPercent}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-400">
+                {percent >= 100 ? (
+                  <span className="font-medium text-success">
+                    Target penjualan Anda sudah tercapai.
                   </span>
-                  <span>
-                    Sisa{" "}
-                    <span className="font-semibold text-white">
-                      {formatRupiah(overview?.remaining ?? 0)}
-                    </span>
+                ) : remaining > 0 ? (
+                  <>
+                    Masih ada{" "}
+                    <span className="font-medium text-gray-700">
+                      {formatRupiah(remaining)}
+                    </span>{" "}
+                    untuk mencapai target.
+                  </>
+                ) : (
+                  "Belum ada transaksi yang masuk dalam perhitungan target."
+                )}
+              </p>
+            </div>
+          </section>
+
+          {/* ---- SUPPORTING STATISTICS ---- */}
+          <section className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard
+              label="Target"
+              value={formatRupiah(targetAmount)}
+              icon={<Wallet size={14} className="text-primary" />}
+            />
+            <StatCard
+              label="Tercapai"
+              value={formatRupiah(achievedAmount)}
+              icon={<TrendingUp size={14} className="text-success" />}
+              valueColor="text-success"
+            />
+            <StatCard
+              label="Sisa"
+              value={formatRupiah(remaining)}
+              icon={<Target size={14} className="text-warning" />}
+              valueColor={percent >= 100 ? "text-success" : "text-gray-900"}
+            />
+            <StatCard
+              label="Persentase"
+              value={`${percent}%`}
+              icon={<CheckCircle2 size={14} className="text-secondary" />}
+              valueColor="text-gray-900"
+            />
+          </section>
+
+          {/* ---- STATUS + PERIOD ---- */}
+          <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Status card */}
+            <StatusCard
+              percent={percent}
+              endDate={
+                target?.endDate ? new Date(target.endDate) : new Date()
+              }
+              now={now}
+            />
+
+            {/* Period card */}
+            <div className="rounded-xl border border-gray-200/80 bg-white px-5 py-4 shadow-soft">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+                Periode Target
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Tanggal Mulai</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatDate(target.startDate)}
                   </span>
                 </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Tanggal Selesai</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatDate(target.endDate)}
+                  </span>
+                </div>
+                {mounted && (
+                  <>
+                    <div className="border-t border-gray-100 pt-2">
+                      {now > new Date(target.endDate) ? (
+                        <p className="text-xs font-medium text-warning">
+                          Periode sudah berakhir
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          Sisa waktu:{" "}
+                          <span className="font-semibold text-gray-900">
+                            {getRemainingDays(
+                              new Date(target.endDate),
+                              now,
+                            )}{" "}
+                            hari
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </section>
 
-          {/* Rincian */}
-          <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-              <p className="text-xs text-gray-500">Nominal Target</p>
-              <p className="mt-0.5 text-lg font-black text-gray-900">
-                {formatRupiah(target.targetAmount)}
-              </p>
-            </div>
-            <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-              <p className="text-xs text-gray-500">Sudah Tercapai</p>
-              <p className="mt-0.5 text-lg font-black text-primary">
-                {formatRupiah(overview?.achievedAmount ?? 0)}
-              </p>
-            </div>
-            <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-              <p className="text-xs text-gray-500">Periode Berakhir</p>
-              <p className="mt-0.5 text-base font-black text-gray-900">
-                {formatDate(target.endDate)}
-              </p>
-            </div>
-          </section>
-
+          {/* ---- FOOTER NOTE ---- */}
           <p className="mt-3 px-1 text-xs text-gray-400">
             Pencapaian dihitung dari transaksi lunas pada periode target berjalan.
           </p>
         </>
       )}
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Atur Target Penjualan">
+      {/* ---- MODAL ---- */}
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Atur Target Penjualan"
+      >
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label
@@ -300,6 +514,66 @@ export default function TargetPenjualanPage() {
           </div>
         </form>
       </Modal>
+    </div>
+  );
+}
+
+/* ---------------------- STAT CARD ---------------------- */
+function StatCard({
+  label,
+  value,
+  icon,
+  valueColor = "text-gray-900",
+}: {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  valueColor?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
+      <div className="mb-1 flex items-center gap-1.5">
+        {icon}
+        <p className="text-xs text-gray-500">{label}</p>
+      </div>
+      <p className={`text-base font-bold ${valueColor} sm:text-lg`}>{value}</p>
+    </div>
+  );
+}
+
+/* ---------------------- STATUS CARD ---------------------- */
+function StatusCard({
+  percent,
+  endDate,
+  now,
+}: {
+  percent: number;
+  endDate: Date;
+  now: Date;
+}) {
+  const status = getStatusInfo(percent, endDate, now);
+  const StatusIcon = status.icon;
+
+  return (
+    <div className="rounded-xl border border-gray-200/80 bg-white px-5 py-4 shadow-soft">
+      <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+        Status Target
+      </p>
+      <div className="flex items-start gap-3">
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${status.bgColor}`}
+        >
+          <StatusIcon size={18} className={status.color} />
+        </div>
+        <div className="min-w-0">
+          <p className={`text-sm font-bold ${status.color}`}>
+            {status.label}
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
+            {status.description}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
