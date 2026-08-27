@@ -19,6 +19,7 @@ import { formatNumber } from "@/lib/format";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity, CategoryRow } from "@/lib/types/market";
 import Image from "next/image";
+import MediaUploadField from "@/components/shared/MediaUploadField";
 
 interface CommodityFormPopupProps {
   open: boolean;
@@ -314,58 +315,49 @@ export default function CommodityFormPopup({
             </div>
 
             <div className="border-t border-gray-100 pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Latar Gambar
-              </label>
               <input type="hidden" name="image" value={imageId} />
               {preview ? (
-                <div className="flex items-center gap-3">
-                  <div className="relative w-36 h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
-                    <Image
-                      src={preview}
-                      alt="Pratinjau"
-                      fill
-                      sizes="144px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImageId("");
-                        setPreview("");
-                      }}
-                      className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger/80 active:scale-95 transition-all"
-                    >
-                      <Trash2 size={13} /> Hapus
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark active:scale-95 transition-all"
-                    >
-                      <ImagePlus size={13} /> Ganti
-                    </button>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Latar Gambar (Legacy)
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-36 h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+                      <Image
+                        src={preview}
+                        alt="Pratinjau"
+                        fill
+                        sizes="144px"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageId("");
+                          setPreview("");
+                        }}
+                        className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger/80 active:scale-95 transition-all"
+                      >
+                        <Trash2 size={13} /> Hapus
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark active:scale-95 transition-all"
+                      >
+                        <ImagePlus size={13} /> Ganti
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="w-full h-28 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-primary hover:text-primary hover:bg-primary/[0.03] active:scale-[0.99] transition-all duration-200 disabled:opacity-50"
-                >
-                  {uploading ? (
-                    <Loader2 size={22} className="animate-spin" />
-                  ) : (
-                    <ImagePlus size={22} />
-                  )}
-                  <span className="text-xs">
-                    {uploading ? "Mengunggah..." : "Pilih gambar"}
-                  </span>
-                </button>
+                <MediaUploadField
+                  defaultImages={commodity?.images ?? []}
+                  defaultVideoUrl={commodity?.videoUrl}
+                />
               )}
               <input
                 ref={fileInputRef}

@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { MapPin, Star, Truck, Store, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
 } from "lucide-react";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
 import ProductCard from "@/components/userpage/ProductCard";
+import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { EmptyState, formatImage } from "@/components/shared/States";
+import { EmptyState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
 import { getClientUser } from "@/lib/auth/client";
 import { addToCart } from "@/lib/cart";
@@ -77,7 +77,6 @@ export default function ProductDetail() {
     );
   }
 
-  const img = formatImage(product.image);
   const stock = Number(product.stock);
   const isAvailable =
     product.status === "available" || product.status === "verified";
@@ -119,24 +118,12 @@ export default function ProductDetail() {
 
       <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-hidden">
         <div className="grid md:grid-cols-2">
-          <div className="aspect-[4/3] bg-gray-100 relative group overflow-hidden">
-            {img ? (
-              <Image
-                src={img}
-                alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-smooth"
-                unoptimized
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-                <span className="text-8xl font-black text-white/90">
-                  {product.name?.charAt(0)?.toUpperCase()}
-                </span>
-              </div>
-            )}
-          </div>
+          <ProductGallery
+            primaryImage={product.image}
+            images={product.images}
+            videoUrl={product.videoUrl}
+            productName={product.name}
+          />
 
           <div className="p-6 sm:p-8 flex flex-col">
             <div className="flex items-center gap-2 mb-2">

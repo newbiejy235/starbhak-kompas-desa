@@ -11,7 +11,7 @@ import {
 } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
 import { formatNumber } from "@/lib/format";
-import ImageUploadField from "@/components/shared/ImageUploadField";
+import MediaUploadField from "@/components/shared/MediaUploadField";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity } from "@/lib/types/market";
@@ -175,9 +175,9 @@ export default function EditCommodity() {
           </div>
         </div>
 
-        <ImageUploadField
-          defaultValue={commodity.image ?? undefined}
-          defaultImageId={commodity.imageId}
+        <MediaUploadField
+          defaultImages={commodity.images ?? []}
+          defaultVideoUrl={commodity.videoUrl}
         />
 
         {state && !state.success && (

@@ -43,6 +43,13 @@
       "when": 1787651540899,
       "tag": "0005_smart_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787740000000,
+      "tag": "0007_multimedia_commodities",
+      "breakpoints": true
     }
   ]
 }

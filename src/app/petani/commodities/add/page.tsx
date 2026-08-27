@@ -8,7 +8,7 @@ import { getCategories, createCommodity } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
-import ImageUploadField from "@/components/shared/ImageUploadField";
+import MediaUploadField from "@/components/shared/MediaUploadField";
 
 export default function AddCommodity() {
   const router = useRouter();
@@ -133,7 +133,7 @@ export default function AddCommodity() {
           </div>
         </div>
 
-        <ImageUploadField />
+        <MediaUploadField />
 
         {state && !state.success && (
           <p className="text-sm text-danger animate-shake">{state.message}</p>
