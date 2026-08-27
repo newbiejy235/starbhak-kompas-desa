@@ -11,28 +11,54 @@ import {
   Sprout,
   MapPin,
   Package,
+  Plus,
+  X,
 } from "lucide-react";
 import { saveRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
 export default function ProfilPetani() {
   const router = useRouter();
-  const [komoditas, setKomoditas] = useState("");
+  
+  // Ubah state komoditas menjadi array of string (default 1 input kosong)
+  const [komoditasList, setKomoditasList] = useState<string[]>([""]);
+  
   const [lokasi, setLokasi] = useState("");
   const [estimasi, setEstimasi] = useState("");
 
   const containerRef = useRef<HTMLDivElement>(null);
   const compassRef = useRef<SVGSVGElement>(null);
 
+  // Fungsi untuk menggabungkan array komoditas menjadi string dengan koma
+  const getKomoditasString = () => {
+    return komoditasList.filter((k) => k.trim() !== "").join(", ");
+  };
+
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    saveRegisterDraft({ komoditas, lokasi, estimasi });
+    saveRegisterDraft({ komoditas: getKomoditasString(), lokasi, estimasi });
     router.push("/auth/register/petani/password");
   };
 
   const handleBack = () => {
-    saveRegisterDraft({ komoditas, lokasi, estimasi });
+    saveRegisterDraft({ komoditas: getKomoditasString(), lokasi, estimasi });
     router.back();
+  };
+
+  // Handler untuk form dinamis komoditas
+  const handleAddKomoditas = () => {
+    setKomoditasList([...komoditasList, ""]);
+  };
+
+  const handleRemoveKomoditas = (index: number) => {
+    const newList = komoditasList.filter((_, i) => i !== index);
+    setKomoditasList(newList);
+  };
+
+  const handleChangeKomoditas = (index: number, value: string) => {
+    const newList = [...komoditasList];
+    newList[index] = value;
+    setKomoditasList(newList);
   };
 
   useEffect(() => {
@@ -202,10 +228,6 @@ export default function ProfilPetani() {
           </div>
 
           <div className="relative z-10 w-full max-w-[420px] xl:max-w-[460px]">
-            <div className="left-anim-item inline-flex items-center gap-1.5 px-3 py-1 xl:px-3.5 xl:py-1.5 rounded-full bg-[#E3A93B]/10 lg:bg-[#E3A93B]/15 border border-[#E3A93B]/30 text-[#E3A93B] lg:text-[#FCD34D] text-[10px] xl:text-[11px] font-bold tracking-[0.15em] uppercase mb-3 xl:mb-5 backdrop-blur-sm shadow-sm w-max">
-              <Compass size={12} className="xl:w-[13px] xl:h-[13px]" />
-              Profil Lahan & Hasil Panen
-            </div>
 
             <h1 className="left-anim-item text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.1] mb-2 xl:mb-4 drop-shadow-sm">
               Kenalkan Hasil <br />
@@ -247,32 +269,58 @@ export default function ProfilPetani() {
 
             <form onSubmit={handleNext} className="flex flex-col gap-2.5 xl:gap-3.5">
               
-              {/* Komoditas Utama */}
+              {/* Komoditas Utama - Dynamic Inputs */}
               <div className="right-anim-item flex flex-col gap-1">
-                <label
-                  htmlFor="komoditas"
-                  className="text-[11px] xl:text-[12px] font-bold text-neutral-700 ml-1"
-                >
-                  Komoditas Utama yang Ditanam
+                <label className="text-[11px] xl:text-[12px] font-bold text-neutral-700 ml-1 flex justify-between items-end">
+                  <span>Komoditas Utama yang Ditanam</span>
                 </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Sprout size={15} strokeWidth={2.5} />
-                  </div>
-                  <input
-                    id="komoditas"
-                    type="text"
-                    value={komoditas}
-                    onChange={(e) => setKomoditas(e.target.value)}
-                    placeholder="Contoh: Padi, Jagung, Cabai..."
-                    className="w-full rounded-xl border-2 border-neutral-200 bg-neutral-50/50 lg:bg-white py-2 xl:py-2.5 pl-9 pr-3 text-xs xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-600/10"
-                    required
-                  />
+                
+                {/* Scrollable Container (Maksimal terlihat ~2 input) */}
+                <div className="flex flex-col gap-2 max-h-[95px] xl:max-h-[105px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-200 hover:[&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors">
+                  {komoditasList.map((komoditas, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="relative group flex-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                          <Sprout size={15} strokeWidth={2.5} />
+                        </div>
+                        <input
+                          type="text"
+                          value={komoditas}
+                          onChange={(e) => handleChangeKomoditas(idx, e.target.value)}
+                          placeholder="Contoh: Padi, Jagung, Cabai..."
+                          className="w-full rounded-xl border-2 border-neutral-200 bg-neutral-50/50 lg:bg-white py-2 xl:py-2.5 pl-9 pr-3 text-xs xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-600/10"
+                          required={idx === 0} // Wajib diisi minimal 1 (index 0)
+                        />
+                      </div>
+                      
+                      {/* Tombol Hapus: Hanya muncul jika input lebih dari 1 */}
+                      {komoditasList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveKomoditas(idx)}
+                          className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 flex-shrink-0"
+                          title="Hapus komoditas"
+                        >
+                          <X size={18} strokeWidth={2.5} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
+
+                {/* Tombol Tambah */}
+                <button
+                  type="button"
+                  onClick={handleAddKomoditas}
+                  className="self-start mt-1 ml-1 flex items-center gap-1.5 text-[11px] xl:text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  <Plus size={14} strokeWidth={3} />
+                  Tambah Komoditas Lainnya
+                </button>
               </div>
 
               {/* Lokasi Lahan */}
-              <div className="right-anim-item flex flex-col gap-1">
+              <div className="right-anim-item flex flex-col gap-1 mt-1">
                 <label
                   htmlFor="lokasi"
                   className="text-[11px] xl:text-[12px] font-bold text-neutral-700 ml-1"

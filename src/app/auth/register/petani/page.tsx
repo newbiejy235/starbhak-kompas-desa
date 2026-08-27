@@ -202,10 +202,6 @@ export default function RegisterPetani() {
           </div>
 
           <div className="relative z-10 w-full max-w-[420px] xl:max-w-[460px]">
-            <div className="left-anim-item inline-flex items-center gap-1.5 px-3 py-1 xl:px-3.5 xl:py-1.5 rounded-full bg-[#E3A93B]/10 lg:bg-[#E3A93B]/15 border border-[#E3A93B]/30 text-[#E3A93B] lg:text-[#FCD34D] text-[10px] xl:text-[11px] font-bold tracking-[0.15em] uppercase mb-3 xl:mb-5 backdrop-blur-sm shadow-sm w-max">
-              <Compass size={12} className="xl:w-[13px] xl:h-[13px]" />
-              Pendaftaran Petani
-            </div>
 
             <h1 className="left-anim-item text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.1] mb-2 xl:mb-4 drop-shadow-sm">
               Bergabung Bersama <br />
@@ -307,7 +303,7 @@ export default function RegisterPetani() {
                   </div>
                   <input
                     id="phone"
-                    type="tel"
+                    type="number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Contoh: 08123456789"

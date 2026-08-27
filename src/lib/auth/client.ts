@@ -31,6 +31,10 @@ export function saveSession(token: string, user: ClientUser) {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
   localStorage.setItem("user_role", user.role);
+<<<<<<< HEAD
+=======
+  document.cookie = `kd_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+>>>>>>> 56d08fccaf481a3e657252f6f2b4600a3e29bbc5
   _cachedRaw = null;
   _cachedUser = null;
   getChannel()?.postMessage("update");
@@ -83,6 +87,10 @@ export function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem("user_role");
+<<<<<<< HEAD
+=======
+  document.cookie = "kd_token=; path=/; max-age=0";
+>>>>>>> 56d08fccaf481a3e657252f6f2b4600a3e29bbc5
   _cachedRaw = null;
   _cachedUser = null;
 }
