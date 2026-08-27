@@ -74,6 +74,15 @@ interface ChatRoomViewProps {
   onBack: () => void;
   onEditMessage?: (messageId: number, newContent: string) => Promise<{ success: boolean; error?: string }>;
   onDeleteMessage?: (messageId: number) => Promise<{ success: boolean; error?: string }>;
+  negotiationStatus?: {
+    offerId: number;
+    status: string;
+    buyerAccepted: boolean;
+    farmerAccepted: boolean;
+    price: string;
+    quantity: string;
+  } | null;
+  onRefreshNegotiation?: () => Promise<void>;
 }
 
 function formatTime(date: Date) {
@@ -108,6 +117,8 @@ export default function ChatRoomView({
   onBack,
   onEditMessage,
   onDeleteMessage,
+  negotiationStatus,
+  onRefreshNegotiation,
 }: ChatRoomViewProps) {
   const [input, setInput] = useState("");
   const [showOfferForm, setShowOfferForm] = useState(false);
@@ -134,16 +145,23 @@ export default function ChatRoomView({
   const isFarmer = currentRole === "petani";
 
   const latestPendingOffer = useMemo(() => {
+    const isStillPending = negotiationStatus && negotiationStatus.status === "pending";
+    const onePartyAccepted = isStillPending && (
+      (negotiationStatus!.buyerAccepted && !negotiationStatus!.farmerAccepted) ||
+      (!negotiationStatus!.buyerAccepted && negotiationStatus!.farmerAccepted)
+    );
+
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
       if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId !== currentUserId) {
+        if (onePartyAccepted) return msg;
         const next = messages[i + 1];
         if (next && (next.type === "accept" || next.type === "reject")) continue;
         return msg;
       }
     }
     return null;
-  }, [messages, currentUserId]);
+  }, [messages, currentUserId, negotiationStatus]);
 
   const latestAcceptedOffer = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -165,7 +183,10 @@ export default function ChatRoomView({
     return null;
   }, [messages, currentUserId]);
 
-  const hasAcceptedDeal = useMemo(() => messages.some((m) => m.type === "accept"), [messages]);
+  const hasAcceptedDeal = useMemo(() => {
+    if (negotiationStatus && negotiationStatus.status === "accepted") return true;
+    return messages.some((m) => m.type === "accept" && m.content.startsWith("Deal!"));
+  }, [messages, negotiationStatus]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -289,13 +310,30 @@ export default function ChatRoomView({
 
     setSubmittingDeal(true);
     try {
-      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
       const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
       setReplyTo(null);
+
+      const isBothAccepted =
+        negotiationStatus &&
+        ((isFarmer && negotiationStatus.buyerAccepted) ||
+          (!isFarmer && negotiationStatus.farmerAccepted));
+
+      let acceptText: string;
+      if (isBothAccepted) {
+        acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
+      } else {
+        acceptText = `Menyetujui penawaran ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}. Menunggu persetujuan pihak lain...`;
+      }
+
       const result = await onSendMessage(acceptText, "accept", price, qty, replyId);
-      if (result?.success && result.orderId) {
-        setAcceptedOrderId(result.orderId);
-        onOrderCreated?.(result.orderId);
+      if (result?.success) {
+        if (result.orderId) {
+          setAcceptedOrderId(result.orderId);
+          onOrderCreated?.(result.orderId);
+        }
+        if (onRefreshNegotiation) {
+          await onRefreshNegotiation();
+        }
       } else {
         alert(result?.error ?? "Gagal menyetujui penawaran, coba lagi.");
       }
@@ -550,6 +588,14 @@ export default function ChatRoomView({
                     </span>
                   )}
                 </p>
+                {negotiationStatus && negotiationStatus.status === "pending" && (
+                  (isFarmer && negotiationStatus.buyerAccepted && !negotiationStatus.farmerAccepted) ||
+                  (!isFarmer && negotiationStatus.farmerAccepted && !negotiationStatus.buyerAccepted)
+                ) && (
+                    <p className="text-[11px] text-blue-600 font-medium mt-0.5">
+                      {isFarmer ? "Pembeli" : "Petani"} sudah menyetujui. Tekan Setuju untuk menyelesaikan deal.
+                    </p>
+                  )}
               </div>
             </div>
             <div className="flex gap-1.5 shrink-0">
@@ -701,7 +747,7 @@ export default function ChatRoomView({
         )}
 
         <div className="flex items-center gap-2">
-          {!showOfferForm && hasPriceRange && (
+          {!showOfferForm && (
             <button
               onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
               className="px-3 py-2.5 bg-[#00AA5B] text-white text-xs font-bold rounded-xl hover:bg-[#009A4F] flex items-center gap-1.5 shrink-0 shadow-sm"

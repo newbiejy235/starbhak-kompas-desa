@@ -282,6 +282,8 @@ export async function sendChatMessage(
               price: offerPrice.toString(),
               quantity: offerQuantity.toString(),
               unit: commodity.unit,
+              buyerAccepted: false,
+              farmerAccepted: false,
             })
             .returning({ id: negotiationOffersTable.id });
           resultOfferId = offer.id;
@@ -303,21 +305,57 @@ export async function sendChatMessage(
           }
 
           if (type === "accept") {
+            const isBuyer = senderId === room.buyerId;
+            const isFarmer = senderId === room.farmerId;
+
+            if (!isBuyer && !isFarmer) {
+              throw new NegotiationValidationError("Unauthorized");
+            }
+
+            if (isBuyer && pending.buyerAccepted) {
+              throw new NegotiationValidationError("Anda sudah menyetujui penawaran ini");
+            }
+            if (isFarmer && pending.farmerAccepted) {
+              throw new NegotiationValidationError("Anda sudah menyetujui penawaran ini");
+            }
+
+            const updateData: Record<string, unknown> = isBuyer
+              ? { buyerAccepted: true }
+              : { farmerAccepted: true };
+
             await tx
               .update(negotiationOffersTable)
-              .set({ status: "accepted", acceptedAt: new Date() })
+              .set(updateData)
               .where(eq(negotiationOffersTable.id, pending.id));
 
-            const order = await createOrderFromAcceptedOffer(tx, {
-              offerId: pending.id,
-              buyerId: room.buyerId,
-              farmerId: room.farmerId,
-              commodityId: room.commodityId,
-              quantity: Number(pending.quantity),
-              unitPrice: Number(pending.price),
-            });
-            resultOrderId = order.id;
-            resultOrderCode = order.orderCode;
+            const [updated] = await tx
+              .select({
+                buyerAccepted: negotiationOffersTable.buyerAccepted,
+                farmerAccepted: negotiationOffersTable.farmerAccepted,
+              })
+              .from(negotiationOffersTable)
+              .where(eq(negotiationOffersTable.id, pending.id))
+              .limit(1);
+
+            const bothAccepted = updated.buyerAccepted && updated.farmerAccepted;
+
+            if (bothAccepted) {
+              await tx
+                .update(negotiationOffersTable)
+                .set({ status: "accepted", acceptedAt: new Date() })
+                .where(eq(negotiationOffersTable.id, pending.id));
+
+              const order = await createOrderFromAcceptedOffer(tx, {
+                offerId: pending.id,
+                buyerId: room.buyerId,
+                farmerId: room.farmerId,
+                commodityId: room.commodityId,
+                quantity: Number(pending.quantity),
+                unitPrice: Number(pending.price),
+              });
+              resultOrderId = order.id;
+              resultOrderCode = order.orderCode;
+            }
 
             await tx
               .update(notificationsTable)
@@ -332,7 +370,7 @@ export async function sendChatMessage(
           } else {
             await tx
               .update(negotiationOffersTable)
-              .set({ status: "rejected" })
+              .set({ status: "cancelled" })
               .where(eq(negotiationOffersTable.id, pending.id));
           }
         }
@@ -353,7 +391,6 @@ export async function sendChatMessage(
         await tx
           .update(chatRoomsTable)
           .set({
-            status: type === "accept" ? "closed" : "active",
             lastMessage: content,
             lastMessageAt: new Date(),
           })
@@ -585,44 +622,24 @@ export async function respondToOffer(
 
     if (!offer) return { success: false };
 
-    if (response === "accepted") {
-      const [commodity] = await db
-        .select()
-        .from(commoditiesTable)
-        .where(eq(commoditiesTable.id, offer.commodityId));
-
-      if (commodity) {
-        const price = Number(offer.price);
-        if (commodity.minPrice && price < Number(commodity.minPrice)) {
-          return { success: false, error: "Harga di bawah minimum" };
-        }
-        if (commodity.maxPrice && price > Number(commodity.maxPrice)) {
-          return { success: false, error: "Harga di atas maksimum" };
-        }
-      }
-    }
-
     await db.transaction(async (tx) => {
-      await tx
-        .update(negotiationOffersTable)
-        .set({
-          status: response,
-          acceptedAt: response === "accepted" ? new Date() : undefined,
-        })
-        .where(eq(negotiationOffersTable.id, offerId));
-
       if (response === "accepted") {
+        const isBuyer = true;
+        const updateData: Record<string, unknown> = isBuyer
+          ? { buyerAccepted: true }
+          : { farmerAccepted: true };
+
         await tx
-          .update(chatRoomsTable)
-          .set({ status: "closed" })
-          .where(eq(chatRoomsTable.id, offer.roomId));
+          .update(negotiationOffersTable)
+          .set(updateData)
+          .where(eq(negotiationOffersTable.id, offerId));
+      } else {
+        await tx
+          .update(negotiationOffersTable)
+          .set({ status: "cancelled" })
+          .where(eq(negotiationOffersTable.id, offerId));
       }
     });
-
-    if (response === "accepted") {
-      const orderResult = await createOrderFromNegotiation(offerId, offer.buyerId);
-      return { success: true, offer, order: orderResult };
-    }
 
     return { success: true, offer };
   } catch (error) {
@@ -741,5 +758,37 @@ export async function getEditedDeletedMessages(roomId: number, lastId: number) {
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function getRoomNegotiationStatus(roomId: number) {
+  try {
+    const [offer] = await db
+      .select({
+        id: negotiationOffersTable.id,
+        status: negotiationOffersTable.status,
+        buyerAccepted: negotiationOffersTable.buyerAccepted,
+        farmerAccepted: negotiationOffersTable.farmerAccepted,
+        price: negotiationOffersTable.price,
+        quantity: negotiationOffersTable.quantity,
+      })
+      .from(negotiationOffersTable)
+      .where(eq(negotiationOffersTable.roomId, roomId))
+      .orderBy(desc(negotiationOffersTable.id))
+      .limit(1);
+
+    if (!offer) return null;
+
+    return {
+      offerId: offer.id,
+      status: offer.status,
+      buyerAccepted: offer.buyerAccepted,
+      farmerAccepted: offer.farmerAccepted,
+      price: offer.price,
+      quantity: offer.quantity,
+    };
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }

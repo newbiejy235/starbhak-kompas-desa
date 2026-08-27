@@ -403,6 +403,8 @@ export const negotiationOffersTable = pgTable(
     quantity: numeric({ precision: 12, scale: 2 }).notNull(),
     unit: varchar({ length: 30 }).notNull().default("kg"),
     status: negotiationStatusEnum().notNull().default("pending"),
+    buyerAccepted: boolean().notNull().default(false),
+    farmerAccepted: boolean().notNull().default(false),
     acceptedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },

@@ -142,7 +142,7 @@ function ChatRoomPanel({
   onBack: () => void;
 }) {
   const router = useRouter();
-  const { room, messages, loading, sendMessage, editMessage, deleteMessage } =
+  const { room, messages, loading, sendMessage, editMessage, deleteMessage, negotiationStatus, refreshNegotiationStatus } =
     useChatSSE(roomId, userId, userFullName);
 
   const handleOrderCreated = () => {
@@ -178,6 +178,8 @@ function ChatRoomPanel({
       onBack={onBack}
       onEditMessage={editMessage}
       onDeleteMessage={deleteMessage}
+      negotiationStatus={negotiationStatus}
+      onRefreshNegotiation={refreshNegotiationStatus}
     />
   );
 }

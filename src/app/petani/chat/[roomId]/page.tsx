@@ -15,7 +15,7 @@ export default function PetaniChatRoomPage() {
   const userFullName = currentUser?.fullName ?? "Petani";
   const rid = Number(roomId);
 
-  const { room, messages, loading, sendMessage, editMessage, deleteMessage } = useChatSSE(
+  const { room, messages, loading, sendMessage, editMessage, deleteMessage, negotiationStatus, refreshNegotiationStatus } = useChatSSE(
     rid,
     userId,
     userFullName
@@ -34,6 +34,8 @@ export default function PetaniChatRoomPage() {
       onBack={() => router.push("/petani/chat")}
       onEditMessage={editMessage}
       onDeleteMessage={deleteMessage}
+      negotiationStatus={negotiationStatus}
+      onRefreshNegotiation={refreshNegotiationStatus}
     />
   );
 }

@@ -15,7 +15,7 @@ export default function UserChatRoomPage() {
   const userFullName = currentUser?.fullName ?? "Anda";
   const rid = Number(roomId);
 
-  const { room, messages, loading, sendMessage, editMessage, deleteMessage } = useChatSSE(rid, userId, userFullName);
+  const { room, messages, loading, sendMessage, editMessage, deleteMessage, negotiationStatus, refreshNegotiationStatus } = useChatSSE(rid, userId, userFullName);
 
   const handleOrderCreated = (orderId?: number) => {
     if (orderId && orderId > 0) {
@@ -39,6 +39,8 @@ export default function UserChatRoomPage() {
       onBack={() => router.push("/user/chat")}
       onEditMessage={editMessage}
       onDeleteMessage={deleteMessage}
+      negotiationStatus={negotiationStatus}
+      onRefreshNegotiation={refreshNegotiationStatus}
     />
   );
 }

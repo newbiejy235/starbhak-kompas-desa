@@ -8,6 +8,7 @@ import {
   markMessagesAsRead,
   editMessage,
   deleteMessage,
+  getRoomNegotiationStatus,
 } from "@/actions/chat";
 import type { SendChatMessageResult } from "@/lib/chat-shared";
 
@@ -52,11 +53,21 @@ export interface ChatMessageData {
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
+export interface NegotiationStatus {
+  offerId: number;
+  status: string;
+  buyerAccepted: boolean;
+  farmerAccepted: boolean;
+  price: string;
+  quantity: string;
+}
+
 export function useChatSSE(roomId: number, userId: number, userFullName: string) {
   const [room, setRoom] = useState<ChatRoomData | null>(null);
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
+  const [negotiationStatus, setNegotiationStatus] = useState<NegotiationStatus | null>(null);
 
   const tempIdRef = useRef(0);
   const lastMsgIdRef = useRef(0);
@@ -178,13 +189,15 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
 
     (async () => {
       try {
-        const [roomData, msgs] = await Promise.all([
+        const [roomData, msgs, negoStatus] = await Promise.all([
           getChatRoomDetail(roomId),
           getChatMessages(roomId),
+          getRoomNegotiationStatus(roomId),
         ]);
         if (cancelled) return;
         setRoom(roomData as ChatRoomData);
         setMessages(msgs as unknown as ChatMessageData[]);
+        setNegotiationStatus(negoStatus as NegotiationStatus | null);
         const maxId = msgs.reduce((max, m) => Math.max(max, Number(m.id)), 0);
         lastMsgIdRef.current = maxId;
         if (roomData) await markMessagesAsRead(roomId, userId);
@@ -274,13 +287,25 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
     [userId],
   );
 
+  const refreshNegotiationStatus = useCallback(async () => {
+    if (!roomId) return;
+    try {
+      const status = await getRoomNegotiationStatus(roomId);
+      setNegotiationStatus(status as NegotiationStatus | null);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [roomId]);
+
   return {
     room,
     messages,
     loading,
     connectionStatus,
+    negotiationStatus,
     sendMessage,
     editMessage: handleEditMessage,
     deleteMessage: handleDeleteMessage,
+    refreshNegotiationStatus,
   };
 }
