@@ -84,29 +84,6 @@ export function HeaderActions() {
       >
         <ShoppingCart size={19} />
       </Link>
-      <Link
-        href="/user/notifications"
-        aria-label={
-          unread > 0 ? `Notifikasi (${unread} belum dibaca)` : "Notifikasi"
-        }
-        aria-current={
-          pathname.startsWith("/user/notifications") ? "page" : undefined
-        }
-        className={`${iconBtn} ${pathname.startsWith("/user/notifications")
-          ? "bg-primary/10 text-primary"
-          : ""
-          }`}
-      >
-        <Bell size={19} />
-        {unread > 0 && (
-          <span
-            aria-hidden
-            className="absolute -top-0.5 -right-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white"
-          >
-            {unread > 99 ? "99+" : unread}
-          </span>
-        )}
-      </Link>
     </div>
   );
 }
