@@ -65,12 +65,12 @@ export async function getPublicCommodities(params?: {
   offset?: number;
 }) {
   const conditions = [
+    eq(commoditiesTable.isPublished, true),
     or(
       eq(commoditiesTable.status, "available"),
       eq(commoditiesTable.status, "verified"),
     ),
   ];
-
   if (params?.search) {
     conditions.push(
       or(
@@ -128,8 +128,6 @@ export async function getPublicCommodities(params?: {
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
-      images: commoditiesTable.images,
-      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -214,8 +212,6 @@ export async function getCommoditiesByIds(ids: number[]) {
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
-      images: commoditiesTable.images,
-      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -246,8 +242,6 @@ export async function getCommodityById(id: number) {
       location: commoditiesTable.location,
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
-      images: commoditiesTable.images,
-      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -286,9 +280,8 @@ export async function getFarmerCommodities(farmerId: number) {
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
       imageId: commoditiesTable.image,
-      images: commoditiesTable.images,
-      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
+      isPublished: commoditiesTable.isPublished,
       createdAt: commoditiesTable.createdAt,
       categoryName: categoriesTable.name,
     })
@@ -323,9 +316,6 @@ export async function createCommodity(
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
   const imageRaw = (data.get("image") as string)?.trim() || "";
   const image = imageRaw ? Number(imageRaw) : null;
-  const imagesRaw = (data.get("images") as string)?.trim() || "[]";
-  const images: string[] = JSON.parse(imagesRaw);
-  const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
 
   if (!name || !categoryId || !price || !stock || !location) {
     return { success: false, message: "Lengkapi semua field wajib" };
@@ -348,8 +338,6 @@ export async function createCommodity(
         ? new Date(harvestEstimateRaw)
         : null,
       image,
-      images,
-      videoUrl,
       status: "pending",
     });
 
@@ -398,9 +386,6 @@ export async function updateCommodity(
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
   const imageRaw = (data.get("image") as string)?.trim() || "";
   const image = imageRaw ? Number(imageRaw) : null;
-  const imagesRaw = (data.get("images") as string)?.trim() || "[]";
-  const images: string[] = JSON.parse(imagesRaw);
-  const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
   const status = (data.get("status") as string) || undefined;
 
   if (!name || !categoryId || !price || !stock || !location) {
@@ -425,8 +410,6 @@ export async function updateCommodity(
           ? new Date(harvestEstimateRaw)
           : null,
         image,
-        images,
-        videoUrl,
         ...(status ? { status: status as never } : {}),
       })
       .where(eq(commoditiesTable.id, id));
@@ -462,6 +445,55 @@ export async function deleteCommodity(
   } catch (error) {
     console.error(error);
     return { success: false, message: "Gagal menghapus komoditas" };
+  }
+}
+
+export async function toggleCommodityPublication(
+  id: number,
+  farmerId: number,
+): Promise<ActionState> {
+  const user = await getAuthUser(farmerId);
+  if (!user || user.role !== "petani") {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  try {
+    const [existing] = await db
+      .select({
+        farmerId: commoditiesTable.farmerId,
+        isPublished: commoditiesTable.isPublished,
+      })
+      .from(commoditiesTable)
+      .where(eq(commoditiesTable.id, id));
+
+    if (!existing || existing.farmerId !== farmerId) {
+      return { success: false, message: "Komoditas tidak ditemukan" };
+    }
+
+    const newIsPublished = !existing.isPublished;
+
+    await db
+      .update(commoditiesTable)
+      .set({ isPublished: newIsPublished })
+      .where(eq(commoditiesTable.id, id));
+
+    revalidatePath("/petani/dashboard");
+    revalidatePath("/petani/commodities");
+    revalidatePath("/kompas-desa/cari-komoditas");
+    revalidatePath("/user/home");
+
+    return {
+      success: true,
+      message: newIsPublished
+        ? "Komoditas berhasil dipublikasikan"
+        : "Komoditas berhasil disembunyikan dari marketplace",
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: "Gagal mengubah status publikasi",
+    };
   }
 }
 
@@ -566,8 +598,6 @@ export async function getRelatedCommodities(
       quality: commoditiesTable.quality,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
-      images: commoditiesTable.images,
-      videoUrl: commoditiesTable.videoUrl,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
       categoryName: categoriesTable.name,
@@ -581,6 +611,7 @@ export async function getRelatedCommodities(
       and(
         eq(commoditiesTable.categoryId, categoryId),
         gt(commoditiesTable.id, -1),
+        eq(commoditiesTable.isPublished, true),
         or(
           eq(commoditiesTable.status, "available"),
           eq(commoditiesTable.status, "verified"),

@@ -22,7 +22,7 @@ import {
   AlertTriangle,
   Reply,
 } from "lucide-react";
-import { formatRupiah, formatNumber } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 import Avatar from "@/components/ui/Avatar";
 
@@ -238,7 +238,7 @@ export default function ChatRoomView({
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
+    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
     await onSendMessage(offerText, "offer", price, qty, replyId);
@@ -253,7 +253,7 @@ export default function ChatRoomView({
     try {
       const price = Number(pendingOffer.price);
       const qty = Number(pendingOffer.quantity);
-      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
+      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)} = ${formatRupiah(price * qty)}`;
       await onSendMessage(acceptText, "accept", price, qty);
     } finally {
       setSubmittingDeal(false);
@@ -307,27 +307,27 @@ export default function ChatRoomView({
           )}
           <div className={`max-w-full`}>
             {!isMe && (
-              <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
+              <p className="text-[11px] font-semibold text-primary mb-0.5 ml-3">{msg.senderName}</p>
             )}
           <div
             className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe
-              ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
+              ? "bg-primary text-white rounded-2xl rounded-br-sm"
               : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
               } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
           >
             {/* Reply quote */}
             {replyMsg && !msg.isDeleted && (
               <div
-                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-[#025246] bg-gray-50"
+                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-primary bg-gray-50"
                   } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
                 onClick={() => {
                   const el = document.getElementById(`msg-${replyMsg.id}`);
                   el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  el?.classList.add("ring-2", "ring-[#00AA5B]", "ring-offset-1");
-                  setTimeout(() => el?.classList.remove("ring-2", "ring-[#00AA5B]", "ring-offset-1"), 1500);
+                  el?.classList.add("ring-2", "ring-success", "ring-offset-1");
+                  setTimeout(() => el?.classList.remove("ring-2", "ring-success", "ring-offset-1"), 1500);
                 }}
               >
-                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-[#025246]"}`}>
+                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-primary"}`}>
                   {replyMsg.senderId === currentUserId ? "Anda" : replyMsg.senderName}
                 </p>
                 <p className={`text-[11px] truncate ${isMe ? "text-white/70" : "text-gray-500"} max-w-[200px]`}>
@@ -338,19 +338,19 @@ export default function ChatRoomView({
 
             {isOffer && (
               <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
-                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-[#025246]"}`}>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-primary"}`}>
                   <Tag size={12} />
                   {msg.type === "counter_offer" ? "Counter" : "Penawaran"}
                 </div>
                 {msg.offerPrice && (
-                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-[#025246]"}`}>
+                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-primary"}`}>
                     {formatRupiah(msg.offerPrice)}
                     <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
                       {" "}per {room.commodityUnit}
                     </span>
                     {msg.offerQuantity && (
                       <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                        {" "}&bull; {formatNumber(msg.offerQuantity)} {room.commodityUnit}
+                        {" "}&bull; {formatWeight(msg.offerQuantity, room.commodityUnit)}
                       </span>
                     )}
                   </p>
@@ -435,7 +435,7 @@ export default function ChatRoomView({
   return (
     <div className="flex flex-col h-[100dvh] lg:h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-[#025246] text-white shrink-0 shadow-md">
+      <div className="flex items-center gap-3 px-4 py-3 bg-primary text-white shrink-0 shadow-md">
         <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors">
           <ArrowLeft size={20} />
         </button>
@@ -461,9 +461,9 @@ export default function ChatRoomView({
       {/* Product Info Toggle */}
       <button
         onClick={() => setShowProductInfo(!showProductInfo)}
-        className="flex items-center justify-center gap-2 py-2.5 bg-white border-b border-gray-200 text-[#025246] text-xs font-semibold shrink-0 hover:bg-gray-50 transition-colors"
+        className="flex items-center justify-center gap-2 py-2.5 bg-white border-b border-gray-200 text-primary text-xs font-semibold shrink-0 hover:bg-gray-50 transition-colors"
       >
-        <div className="w-5 h-5 bg-[#025246] rounded flex items-center justify-center">
+        <div className="w-5 h-5 bg-primary rounded flex items-center justify-center">
           <Package size={12} className="text-white" />
         </div>
         {room.commodityName}
@@ -480,15 +480,15 @@ export default function ChatRoomView({
               {img ? (
                 <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
                   <Package size={20} className="text-white" />
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatNumber(room.commodityStock)}</span> {room.commodityUnit}</p>
+              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatWeight(room.commodityStock, room.commodityUnit)}</span></p>
               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                <MapPin size={10} className="text-[#025246]" /> {room.farmerAddress || "Lokasi tidak diketahui"}
+                <MapPin size={10} className="text-primary" /> {room.farmerAddress || "Lokasi tidak diketahui"}
               </p>
             </div>
           </div>
@@ -507,11 +507,11 @@ export default function ChatRoomView({
                 <p className="text-[11px] text-amber-600 font-medium">
                   {isPendingFarmer ? "Penawaran dari pembeli" : "Penawaran Anda"}
                 </p>
-                <p className="text-sm font-extrabold text-[#025246]">
+                <p className="text-sm font-extrabold text-primary">
                   {formatRupiah(pendingOffer.price)}
                   {pendingOffer.quantity && (
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(pendingOffer.quantity)} {pendingOffer.unit}
+                      {" "}x {formatWeight(pendingOffer.quantity, pendingOffer.unit)}
                     </span>
                   )}
                 </p>
@@ -525,7 +525,7 @@ export default function ChatRoomView({
                 <button
                   onClick={handleAcceptOffer}
                   disabled={submittingDeal}
-                  className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm disabled:opacity-40"
+                  className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark shadow-sm disabled:opacity-40"
                 >
                   {submittingDeal ? "Proses..." : "Terima"}
                 </button>
@@ -553,10 +553,10 @@ export default function ChatRoomView({
               <div>
                 <p className="text-[11px] text-green-600 font-medium">Deal Tercapai!</p>
                 {latestAcceptedOffer && (
-                  <p className="text-sm font-extrabold text-[#025246]">
+                  <p className="text-sm font-extrabold text-primary">
                     {formatRupiah(latestAcceptedOffer.offerPrice)}
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(latestAcceptedOffer.offerQuantity)} {room.commodityUnit} = {" "}
+                      {" "}x {formatWeight(latestAcceptedOffer.offerQuantity, room.commodityUnit)} = {" "}
                       {formatRupiah(Number(latestAcceptedOffer.offerPrice) * Number(latestAcceptedOffer.offerQuantity))}
                     </span>
                   </p>
@@ -566,7 +566,7 @@ export default function ChatRoomView({
             {!isFarmer && latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity && (
               <button
                 onClick={() => onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity))}
-                className="px-3 py-1.5 bg-[#00AA5B] text-white text-xs font-bold rounded-lg hover:bg-[#009A4F] flex items-center gap-1.5 shadow-sm shrink-0"
+                className="px-3 py-1.5 bg-success text-white text-xs font-bold rounded-lg hover:bg-success/90 flex items-center gap-1.5 shadow-sm shrink-0"
               >
                 <ShoppingCart size={14} /> Keranjang
               </button>
@@ -600,9 +600,9 @@ export default function ChatRoomView({
       <div className="shrink-0 bg-white border-t border-gray-200 px-3 py-3">
         {/* Reply preview */}
         {replyTo && (
-          <div className="bg-gray-50 rounded-xl p-2.5 mb-2 border-l-2 border-[#025246] flex items-start justify-between gap-2">
+          <div className="bg-gray-50 rounded-xl p-2.5 mb-2 border-l-2 border-primary flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold text-[#025246]">
+              <p className="text-[10px] font-bold text-primary">
                 Membalas {replyTo.senderId === currentUserId ? "Anda" : replyTo.senderName}
               </p>
               <p className="text-[11px] text-gray-500 truncate">
@@ -637,7 +637,7 @@ export default function ChatRoomView({
                 value={offerPrice}
                 onChange={(e) => setOfferPrice(e.target.value)}
                 placeholder="Harga"
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
               />
               <input
                 type="number"
@@ -646,18 +646,18 @@ export default function ChatRoomView({
                 min="1"
                 max={stock}
                 placeholder={`Qty (${room.commodityUnit})`}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
               />
             </div>
             {offerPrice && offerQty && (
-              <p className="text-xs font-bold text-[#025246] mb-2">
+              <p className="text-xs font-bold text-primary mb-2">
                 Total: {formatRupiah(parseFloat(offerPrice) * parseFloat(offerQty || "1"))}
               </p>
             )}
             <button
               onClick={handleSendOffer}
               disabled={!offerPrice || parseFloat(offerPrice) <= 0 || hasPendingOffer}
-              className="w-full bg-[#025246] text-white text-xs font-bold py-2 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
+              className="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg hover:bg-primary-dark disabled:opacity-40 transition-colors"
             >
               Kirim Penawaran
             </button>
@@ -668,7 +668,7 @@ export default function ChatRoomView({
           {!showOfferForm && hasPriceRange && !hasPendingOffer && (
             <button
               onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
-              className="px-3 py-2.5 bg-[#00AA5B] text-white text-xs font-bold rounded-xl hover:bg-[#009A4F] flex items-center gap-1.5 shrink-0 shadow-sm"
+              className="px-3 py-2.5 bg-success text-white text-xs font-bold rounded-xl hover:bg-success/90 flex items-center gap-1.5 shrink-0 shadow-sm"
             >
               <Tag size={14} /> Nego
             </button>
@@ -681,13 +681,13 @@ export default function ChatRoomView({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ketik pesan..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:bg-white focus:ring-1 focus:ring-[#025246]/20 transition-all"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary/20 transition-all"
             />
           </div>
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="w-10 h-10 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] disabled:opacity-40 shrink-0 shadow-sm transition-colors"
+            className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-dark disabled:opacity-40 shrink-0 shadow-sm transition-colors"
           >
             <Send size={16} />
           </button>
@@ -706,7 +706,7 @@ export default function ChatRoomView({
               onClick={handleReply}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <Reply size={15} className="text-[#025246]" />
+              <Reply size={15} className="text-primary" />
               Balas Pesan
             </button>
           )}
@@ -715,7 +715,7 @@ export default function ChatRoomView({
               onClick={handleEdit}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <Pencil size={15} className="text-[#025246]" />
+              <Pencil size={15} className="text-primary" />
               Edit Pesan
             </button>
           )}

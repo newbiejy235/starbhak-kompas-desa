@@ -4,7 +4,15 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { X, SlidersHorizontal, ArrowUpDown, ChevronDown, Star, Users, Package,
+import type { SearchPublicFarmer } from "@/lib/types/market";
+import {
+  X,
+  SlidersHorizontal,
+  ArrowUpDown,
+  ChevronDown,
+  Star,
+  Users,
+  Package,
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
 import FarmerCard from "@/components/kompasdesa/FarmerCard";
@@ -19,11 +27,13 @@ import {
 } from "@/actions/farmer";
 import { useFetch } from "@/lib/hooks";
 import { formatRupiah } from "@/lib/format";
+
+import type { PublicCommodity } from "@/lib/types/market";
+
 import { Skeleton } from "@/components/ui/Skeleton";
-import type { PublicCommodity, SearchPublicFarmer } from "@/lib/types/market";
 
 const focusRing =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 type CategoryWithCount = {
   id: number;
@@ -81,6 +91,7 @@ function CatalogSkeleton() {
         <Skeleton className="h-6 w-52" />
         <Skeleton className="h-3.5 w-72" />
       </div>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
@@ -88,11 +99,16 @@ function CatalogSkeleton() {
             className="overflow-hidden rounded-card border border-gray-200/80 bg-white"
           >
             <Skeleton className="aspect-[4/3] rounded-none" />
-            <div className="space-y-3 p-5">
-              <Skeleton className="h-3 w-24" />
+            <div className="space-y-2.5 p-4">
+              <Skeleton className="h-3 w-20" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="mt-2 h-6 w-28" />
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-3 w-20" />
+              <div className="border-t border-gray-100 pt-2.5">
+                <Skeleton className="h-3 w-32" />
+              </div>
             </div>
           </div>
         ))}
@@ -141,11 +157,10 @@ function FarmerFilterPanel({
           <button
             type="button"
             onClick={() => onFilterChange({ categoryId: undefined })}
-            className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition ${
-              !filters.categoryId
-                ? "bg-primary font-semibold text-white"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
+            className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition ${!filters.categoryId
+              ? "bg-primary font-semibold text-white"
+              : "text-gray-600 hover:bg-gray-50"
+              }`}
           >
             Semua
           </button>
@@ -154,11 +169,10 @@ function FarmerFilterPanel({
               key={c.id}
               type="button"
               onClick={() => onFilterChange({ categoryId: c.id })}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${
-                filters.categoryId === c.id
-                  ? "bg-primary font-semibold text-white"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${filters.categoryId === c.id
+                ? "bg-primary font-semibold text-white"
+                : "text-gray-600 hover:bg-gray-50"
+                }`}
             >
               <span>
                 {c.icon && <span className="mr-1">{c.icon}</span>}
@@ -177,23 +191,18 @@ function FarmerFilterPanel({
         <div className="space-y-1.5">
           {PRICE_PRESETS.map((preset) => {
             const isActive =
-              filters.minPrice === preset.min &&
-              filters.maxPrice === preset.max;
+              filters.minPrice === preset.min && filters.maxPrice === preset.max;
             return (
               <button
                 key={preset.label}
                 type="button"
                 onClick={() =>
-                  onFilterChange({
-                    minPrice: preset.min,
-                    maxPrice: preset.max,
-                  })
+                  onFilterChange({ minPrice: preset.min, maxPrice: preset.max })
                 }
-                className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition ${
-                  isActive
-                    ? "bg-primary font-semibold text-white"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
+                className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition ${isActive
+                  ? "bg-primary font-semibold text-white"
+                  : "text-gray-600 hover:bg-gray-50"
+                  }`}
               >
                 {preset.label}
               </button>
@@ -236,19 +245,16 @@ function FarmerFilterPanel({
               key={opt.label}
               type="button"
               onClick={() => onFilterChange({ minRating: opt.value })}
-              className={`flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition ${
-                filters.minRating === opt.value
-                  ? "bg-primary text-white"
-                  : "border border-gray-200 text-gray-600 hover:border-primary hover:text-primary"
-              }`}
+              className={`flex flex-1 items-center justify-center gap-1 rounded-lg py-2 text-xs font-semibold transition ${filters.minRating === opt.value
+                ? "bg-primary text-white"
+                : "border border-gray-200 text-gray-600 hover:border-primary hover:text-primary"
+                }`}
             >
               {opt.value !== undefined && (
                 <Star
                   size={11}
                   className={
-                    filters.minRating === opt.value
-                      ? "text-white"
-                      : "text-amber-400"
+                    filters.minRating === opt.value ? "text-white" : "text-amber-400"
                   }
                   fill="currentColor"
                 />
@@ -273,9 +279,7 @@ function FarmerFilterPanel({
     <>
       <aside className="hidden lg:block w-60 shrink-0">
         <div className="sticky top-24 rounded-card border border-gray-200/80 bg-white p-5 shadow-soft">
-          <h2 className="mb-4 text-sm font-bold text-gray-900">
-            Filter Petani
-          </h2>
+          <h2 className="mb-4 text-sm font-bold text-gray-900">Filter Petani</h2>
           {content}
         </div>
       </aside>
@@ -288,9 +292,7 @@ function FarmerFilterPanel({
           />
           <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-6 animate-slide-up">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">
-                Filter Petani
-              </h2>
+              <h2 className="text-lg font-bold text-gray-900">Filter Petani</h2>
               <button
                 type="button"
                 onClick={onClose}
@@ -318,29 +320,31 @@ function HomeContent() {
   const [activeTab, setActiveTab] = useState<Tab>(tabParam);
 
   const [farmerFilters, setFarmerFilters] = useState<FarmerFilterState>({
-    categoryId: searchParams.get("cat")
-      ? Number(searchParams.get("cat"))
-      : undefined,
-    minPrice: searchParams.get("minP")
-      ? Number(searchParams.get("minP"))
-      : undefined,
-    maxPrice: searchParams.get("maxP")
-      ? Number(searchParams.get("maxP"))
-      : undefined,
+    categoryId: searchParams.get("cat") ? Number(searchParams.get("cat")) : undefined,
+    minPrice: searchParams.get("minP") ? Number(searchParams.get("minP")) : undefined,
+    maxPrice: searchParams.get("maxP") ? Number(searchParams.get("maxP")) : undefined,
     minRating: searchParams.get("rating")
       ? Number(searchParams.get("rating"))
       : undefined,
     location: searchParams.get("loc") ?? undefined,
   });
-  const [farmerSort, setFarmerSort] = useState(
-    searchParams.get("sort") ?? "relevance",
-  );
+  const [farmerSort, setFarmerSort] = useState(searchParams.get("sort") ?? "relevance");
   const [farmerPage, setFarmerPage] = useState(1);
   const [farmerFilterOpen, setFarmerFilterOpen] = useState(false);
   const [farmerSortOpen, setFarmerSortOpen] = useState(false);
 
   const FARMER_LIMIT = 12;
 
+  // Sinkronkan activeTab kalau query param ?tab berubah dari luar (mis. tombol back/forward)
+  const prevTabRef = useRef(tabParam);
+  useEffect(() => {
+    if (prevTabRef.current !== tabParam) {
+      prevTabRef.current = tabParam;
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  // Semua hooks di atas ini ada di top-level komponen (bukan di dalam callback lain).
   const switchTab = useCallback(
     (tab: Tab) => {
       setActiveTab(tab);
@@ -351,14 +355,6 @@ function HomeContent() {
     },
     [router, search],
   );
-
-  const prevTabRef = useRef(tabParam);
-  useEffect(() => {
-    if (prevTabRef.current !== tabParam) {
-      prevTabRef.current = tabParam;
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
 
   const { data: products, loading: productsLoading } = useFetch(
     () =>
@@ -416,24 +412,9 @@ function HomeContent() {
   ]);
 
   const { data: farmers, loading: farmersLoading } = useFetch(fetchFarmers, [
-    search,
-    farmerFilters.categoryId,
-    farmerFilters.minPrice,
-    farmerFilters.maxPrice,
-    farmerFilters.minRating,
-    farmerFilters.location,
-    farmerSort,
-    farmerPage,
+    fetchFarmers,
   ]);
-
-  const { data: farmerCount } = useFetch(fetchFarmerCount, [
-    search,
-    farmerFilters.categoryId,
-    farmerFilters.minPrice,
-    farmerFilters.maxPrice,
-    farmerFilters.minRating,
-    farmerFilters.location,
-  ]);
+  const { data: farmerCount } = useFetch(fetchFarmerCount, [fetchFarmerCount]);
 
   const productList = products ?? [];
   const categoryList = categories ?? [];
@@ -441,18 +422,41 @@ function HomeContent() {
   const fCount = farmerCount ?? 0;
   const hasMoreFarmers = farmerPage * FARMER_LIMIT < fCount;
 
+  const categoryOrder = [
+    "Sayuran",
+    "Buah-buahan",
+    "Umbi-umbian",
+    "Padi & Serealia",
+    "Kacang-kacangan",
+    "Rempah-rempah",
+    "Tanaman Perkebunan",
+    "Tanaman Herbal",
+    "Tanaman Hias",
+    "Lainnya",
+  ];
+
+  const sortedCategories = [...categoryList].sort((a, b) => {
+    const indexA = categoryOrder.indexOf(a.name);
+    const indexB = categoryOrder.indexOf(b.name);
+
+    // Kategori yang tidak ada di daftar diletakkan paling belakang.
+    if (indexA === -1 && indexB === -1) return 0;
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+
+    return indexA - indexB;
+  });
+
   const chipClass = (active: boolean) =>
-    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${
-      active
-        ? "bg-primary text-white"
-        : "border border-gray-200 bg-white text-gray-600 hover:border-primary hover:text-primary"
+    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${active
+      ? "bg-primary text-white"
+      : "border border-gray-200 bg-white text-gray-600 hover:border-primary hover:text-primary"
     }`;
 
   const tabClass = (active: boolean) =>
-    `inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${focusRing} ${
-      active
-        ? "bg-primary text-white shadow-md"
-        : "bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-gray-200"
+    `inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${focusRing} ${active
+      ? "bg-primary text-white shadow-md"
+      : "bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-gray-200"
     }`;
 
   const activeFarmerFilterCount = [
@@ -462,56 +466,38 @@ function HomeContent() {
     farmerFilters.location,
   ].filter(Boolean).length;
 
-  const activeFarmerFilters: {
-    key: string;
-    label: string;
-    onRemove: () => void;
-  }[] = [];
+  const activeFarmerFilters: { key: string; label: string; onRemove: () => void }[] = [];
 
   if (farmerFilters.categoryId) {
     const cat = categoryList.find((c) => c.id === farmerFilters.categoryId);
     activeFarmerFilters.push({
       key: "cat",
       label: cat?.name ?? "Kategori",
-      onRemove: () =>
-        setFarmerFilters((f) => ({ ...f, categoryId: undefined })),
+      onRemove: () => setFarmerFilters((f) => ({ ...f, categoryId: undefined })),
     });
   }
-  if (
-    farmerFilters.minPrice !== undefined ||
-    farmerFilters.maxPrice !== undefined
-  ) {
-    const minL = farmerFilters.minPrice
-      ? formatRupiah(farmerFilters.minPrice)
-      : "Rp0";
-    const maxL = farmerFilters.maxPrice
-      ? formatRupiah(farmerFilters.maxPrice)
-      : "∞";
+  if (farmerFilters.minPrice !== undefined || farmerFilters.maxPrice !== undefined) {
+    const minL = farmerFilters.minPrice ? formatRupiah(farmerFilters.minPrice) : "Rp0";
+    const maxL = farmerFilters.maxPrice ? formatRupiah(farmerFilters.maxPrice) : "∞";
     activeFarmerFilters.push({
       key: "price",
       label: `${minL} - ${maxL}`,
       onRemove: () =>
-        setFarmerFilters((f) => ({
-          ...f,
-          minPrice: undefined,
-          maxPrice: undefined,
-        })),
+        setFarmerFilters((f) => ({ ...f, minPrice: undefined, maxPrice: undefined })),
     });
   }
   if (farmerFilters.minRating) {
     activeFarmerFilters.push({
       key: "rating",
       label: `${farmerFilters.minRating}+ Bintang`,
-      onRemove: () =>
-        setFarmerFilters((f) => ({ ...f, minRating: undefined })),
+      onRemove: () => setFarmerFilters((f) => ({ ...f, minRating: undefined })),
     });
   }
   if (farmerFilters.location) {
     activeFarmerFilters.push({
       key: "loc",
       label: farmerFilters.location,
-      onRemove: () =>
-        setFarmerFilters((f) => ({ ...f, location: undefined })),
+      onRemove: () => setFarmerFilters((f) => ({ ...f, location: undefined })),
     });
   }
 
@@ -523,8 +509,8 @@ function HomeContent() {
 
   return (
     <div className="animate-fade-up">
-      {/* HERO */}
-      <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
+      {/* Hero */}
+      {/* <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
         <div className="relative z-10 max-w-xl">
           <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl lg:text-3xl">
             Panen Segar Langsung dari Petani Lokal
@@ -540,22 +526,37 @@ function HomeContent() {
           </Link>
         </div>
         <div className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 opacity-15 md:block">
-          <Image
-            src="/images/user/HeaderImageUser.svg"
-            alt=""
-            width={160}
-            height={160}
-          />
+          <Image src="/images/user/HeaderImageUser.svg" alt="" width={160} height={160} />
         </div>
-      </section>
-    
+      </section> */}
+
+      {/* Tab switcher */}
+      <div className="mb-6 flex gap-2">
+        <button
+          type="button"
+          onClick={() => switchTab("komoditas")}
+          className={tabClass(activeTab === "komoditas")}
+        >
+          <Package size={16} />
+          Komoditas
+        </button>
+        <button
+          type="button"
+          onClick={() => switchTab("petani")}
+          className={tabClass(activeTab === "petani")}
+        >
+          <Users size={16} />
+          Petani
+        </button>
+      </div>
+
       {activeTab === "komoditas" && (
         <>
           <section id="katalog" className="mb-7 scroll-mt-24">
-            <h2 className="mb-1 text-lg font-bold tracking-tight text-neutral-900">
+            <h2 className="mb-1 text-2xl font-bold tracking-tight text-neutral-900">
               Kategori
             </h2>
-            <p className="mb-3 text-xs text-gray-500">
+            <p className="mb-3 text-sm text-gray-500">
               Saring komoditas sesuai kebutuhan Anda.
             </p>
             <div
@@ -572,22 +573,18 @@ function HomeContent() {
                 >
                   Semua
                 </button>
-                {categoryList.map((c) => (
+                {sortedCategories.map((c) => (
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() =>
-                      router.push(`/user/home?category=${c.id}`)
-                    }
+                    onClick={() => router.push(`/user/home?category=${c.id}`)}
                     aria-pressed={catParam === String(c.id)}
                     className={chipClass(catParam === String(c.id))}
                   >
                     {c.icon && <span className="mr-1">{c.icon}</span>}
                     {c.name}
                     {c.count > 0 && (
-                      <span className="ml-1.5 text-xs opacity-60">
-                        ({c.count})
-                      </span>
+                      <span className="ml-1.5 text-xs opacity-60">({c.count})</span>
                     )}
                   </button>
                 ))}
@@ -634,7 +631,12 @@ function HomeContent() {
                       animationFillMode: "backwards",
                     }}
                   >
-                    <ProductCard data={item} />
+                    <ProductCard
+                      data={{
+                        ...item,
+                        images: item.image ? [item.image] : [],
+                      }}
+                    />
                   </div>
                 ))}
               </div>
@@ -652,7 +654,6 @@ function HomeContent() {
         </>
       )}
 
-      {/* PETANI TAB */}
       {activeTab === "petani" && (
         <section aria-label="Pencarian petani">
           <div className="flex gap-6">
@@ -661,9 +662,7 @@ function HomeContent() {
               onClose={() => setFarmerFilterOpen(false)}
               categories={categoryList}
               filters={farmerFilters}
-              onFilterChange={(f) =>
-                setFarmerFilters((prev) => ({ ...prev, ...f }))
-              }
+              onFilterChange={(f) => setFarmerFilters((prev) => ({ ...prev, ...f }))}
               onReset={resetFarmerFilters}
             />
 
@@ -691,9 +690,7 @@ function HomeContent() {
                       className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-600 transition hover:border-primary hover:text-primary"
                     >
                       <ArrowUpDown size={15} />
-                      {FARMER_SORT_OPTIONS.find(
-                        (s) => s.value === farmerSort,
-                      )?.label}
+                      {FARMER_SORT_OPTIONS.find((s) => s.value === farmerSort)?.label}
                       <ChevronDown size={14} />
                     </button>
 
@@ -712,11 +709,10 @@ function HomeContent() {
                                 setFarmerSort(opt.value);
                                 setFarmerSortOpen(false);
                               }}
-                              className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition ${
-                                farmerSort === opt.value
-                                  ? "bg-primary/5 font-semibold text-primary"
-                                  : "text-gray-600 hover:bg-gray-50"
-                              }`}
+                              className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition ${farmerSort === opt.value
+                                ? "bg-primary/5 font-semibold text-primary"
+                                : "text-gray-600 hover:bg-gray-50"
+                                }`}
                             >
                               {opt.label}
                             </button>
@@ -829,7 +825,7 @@ function HomeContent() {
   );
 }
 
-export default function UserHome() {
+export default function Home() {
   return (
     <Suspense fallback={<CatalogSkeleton />}>
       <HomeContent />

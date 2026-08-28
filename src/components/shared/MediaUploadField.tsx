@@ -33,8 +33,10 @@ interface MediaItem {
 }
 
 interface MediaUploadFieldProps {
-  defaultImages?: string[];
-  defaultVideoUrl?: string | null;
+  /** URL gambar yang sudah ada (mis. saat edit komoditas). */
+  defaultImages?: (string | null)[];
+  /** URL video yang sudah ada (mis. saat edit komoditas). */
+  defaultVideoUrl?: string;
 }
 
 async function uploadItem(
@@ -75,13 +77,13 @@ async function uploadItem(
 }
 
 export default function MediaUploadField(
-  _props: MediaUploadFieldProps,
+  props: MediaUploadFieldProps,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaItem[]>(() => {
     const initial: MediaItem[] = [];
-    if (_props.defaultImages?.length) {
-      _props.defaultImages.forEach((url, i) => {
+    if (props.defaultImages?.length) {
+      props.defaultImages.forEach((url, i) => {
         if (url) {
           initial.push({
             id: `default-img-${i}-${Date.now()}`,
@@ -92,12 +94,12 @@ export default function MediaUploadField(
         }
       });
     }
-    if (_props.defaultVideoUrl) {
+    if (props.defaultVideoUrl) {
       initial.push({
         id: `default-vid-${Date.now()}`,
-        preview: _props.defaultVideoUrl,
+        preview: props.defaultVideoUrl,
         type: "video",
-        uploadedUrl: _props.defaultVideoUrl,
+        uploadedUrl: props.defaultVideoUrl,
       });
     }
     return initial;
@@ -250,19 +252,8 @@ export default function MediaUploadField(
     }
   };
 
-  const imagesJson = JSON.stringify(
-    items
-      .filter((i) => i.type === "image" && i.uploadedUrl)
-      .map((i) => i.uploadedUrl),
-  );
-
-  const videoUrlValue =
-    items.find((i) => i.type === "video" && i.uploadedUrl)?.uploadedUrl ?? "";
-
   return (
     <div className="space-y-3">
-      <input type="hidden" name="images" value={imagesJson} />
-      <input type="hidden" name="videoUrl" value={videoUrlValue} />
 
       <div className="flex items-center justify-between">
         <label className="block text-xs font-medium text-gray-600">

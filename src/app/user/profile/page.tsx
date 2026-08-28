@@ -31,8 +31,8 @@ function ProfileSkeleton() {
     <div className="space-y-6">
       <Skeleton className="h-8 w-40" />
       <div className="flex gap-6">
-        <Skeleton className="w-[380px] h-[420px] rounded-2xl" />
-        <Skeleton className="flex-1 h-[420px] rounded-2xl" />
+        <Skeleton className="w-[380px] h-[420px] rounded-card" />
+        <Skeleton className="flex-1 h-[420px] rounded-card" />
       </div>
     </div>
   );
@@ -135,7 +135,7 @@ export default function UserProfile() {
   const currentFoto = removeFoto ? null : (previewUrl || p.fotoProfile);
 
   const inputCls =
-    "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/15 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition";
+    "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition";
 
   return (
     <div className="space-y-6 animate-fade-up max-w-7xl mx-auto">
@@ -143,15 +143,15 @@ export default function UserProfile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-            <div className="h-28 bg-gradient-to-br from-[#025246] to-[#047857]" />
+          <div className="bg-white rounded-card border border-gray-200 shadow-soft overflow-hidden">
+            <div className="h-28 bg-gradient-to-br from-primary to-primary-dark" />
             <div className="px-6 pb-6 -mt-14 text-center">
               <div className="relative inline-block">
                 <Avatar src={currentFoto} name={p.fullName} size="xl" className="w-28 h-28 text-3xl ring-4 ring-white shadow-lg" />
                 {isEditing && (
                   <label
                     htmlFor="foto-upload"
-                    className="absolute bottom-0 right-0 w-8 h-8 bg-[#025246] text-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-[#024036] transition-colors"
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-primary-dark transition-colors"
                     title="Ganti Foto"
                   >
                     <Camera size={14} />
@@ -178,7 +178,7 @@ export default function UserProfile() {
                   />
                   <label
                     htmlFor="foto-upload"
-                    className="w-full py-2.5 bg-[#025246] text-white text-xs font-bold rounded-xl hover:bg-[#024036] cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                    className="w-full py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <Camera size={13} />
                     {p.fotoProfile || selectedFile ? "Ganti Foto Profil" : "Pilih Foto"}
@@ -199,19 +199,19 @@ export default function UserProfile() {
 
               <div className="pt-4 border-t border-gray-100 text-left space-y-3">
                 <div className="flex items-center gap-3 text-xs text-gray-600">
-                  <Mail size={14} className="text-[#025246] shrink-0" />
+                  <Mail size={14} className="text-primary shrink-0" />
                   <span className="truncate">{p.email}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-600">
-                  <Phone size={14} className="text-[#025246] shrink-0" />
+                  <Phone size={14} className="text-primary shrink-0" />
                   <span>{p.noTelp || "-"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-600">
-                  <MapPin size={14} className="text-[#025246] shrink-0" />
+                  <MapPin size={14} className="text-primary shrink-0" />
                   <span className="truncate">{p.address || "-"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-600">
-                  <CalendarDays size={14} className="text-[#025246] shrink-0" />
+                  <CalendarDays size={14} className="text-primary shrink-0" />
                   <span>Bergabung {formatDate(p.createdAt)}</span>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function UserProfile() {
         </div>
 
         <div className="lg:col-span-8">
-          <form id="profile-form" action={formAction} className="bg-white rounded-2xl border border-gray-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+          <form id="profile-form" action={formAction} className="bg-white rounded-card border border-gray-200 shadow-soft overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-gray-900">Informasi Lengkap Profile</h3>
@@ -230,7 +230,7 @@ export default function UserProfile() {
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#025246] text-white text-xs font-bold rounded-xl hover:bg-[#024036] transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-sm"
                 >
                   <Pencil size={14} />
                   Ubah Informasi
@@ -283,8 +283,8 @@ export default function UserProfile() {
             <div className="px-6 pb-6">
               <div className="border border-gray-200 bg-gray-50/50 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#025246]/10 flex items-center justify-center shrink-0">
-                    <LockKeyhole size={18} className="text-[#025246]" />
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <LockKeyhole size={18} className="text-primary" />
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-gray-800">Keamanan & Sandi</h4>
@@ -320,7 +320,7 @@ export default function UserProfile() {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="px-8 py-2.5 bg-[#025246] text-white text-sm font-bold rounded-xl hover:bg-[#024036] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="px-8 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isPending ? (
                       <>

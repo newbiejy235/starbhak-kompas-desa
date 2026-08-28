@@ -178,11 +178,10 @@ export default function StokPage() {
                 type="button"
                 onClick={() => setFilter(f.value)}
                 aria-pressed={isActive}
-                className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
-                  isActive
-                    ? "bg-primary text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200/70 hover:text-gray-900"
-                }`}
+                className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${isActive
+                  ? "bg-primary text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200/70 hover:text-gray-900"
+                  }`}
               >
                 {f.label}
                 {typeof count === "number" && count > 0 && ` (${count})`}
@@ -209,7 +208,7 @@ export default function StokPage() {
         <div className="space-y-2.5">
           {filtered.map((item, i) => {
             const state = stockState(item);
-            const img = formatImage(item.image) ?? formatImage(item.images?.[0] ?? null);
+            const img = formatImage(item.image);
             return (
               <article
                 key={item.id}

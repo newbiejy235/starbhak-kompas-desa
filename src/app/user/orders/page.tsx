@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { ShoppingBag, Star } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
 import { formatRupiah, formatDateTime } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
+import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { useAuth, useFetch } from "@/lib/hooks";
 import type { BuyerOrder } from "@/lib/types/market";
@@ -52,10 +53,11 @@ export default function UserOrders() {
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-up">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Pesanan Saya</h1>
-        <p className="mt-1 text-sm text-gray-500">Pantau status pesanan dan pembayaran Anda.</p>
-      </header>
+      <PageHeader
+        icon={ShoppingBag}
+        title="Pesanan Saya"
+        subtitle="Pantau status pesanan dan pembayaran Anda."
+      />
 
       {orderList.length === 0 ? (
         <EmptyState

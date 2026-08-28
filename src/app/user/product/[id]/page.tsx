@@ -8,11 +8,11 @@ import {
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
-import ProductCard from "@/components/userpage/ProductCard";
+import ProductCard from "@/components/shared/ProductCard";
 import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/States";
-import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
+import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
 import { addToCart } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
 import type {
@@ -127,8 +127,6 @@ export default function ProductDetail() {
         <div className="grid md:grid-cols-2">
           <ProductGallery
             primaryImage={product.image}
-            images={product.images}
-            videoUrl={product.videoUrl}
             productName={product.name}
           />
 
@@ -180,7 +178,7 @@ export default function ProductDetail() {
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-gray-600">
                 <Truck size={14} className="text-primary" />
-                Stok {formatNumber(product.stock)} {product.unit}
+                Stok {formatWeight(product.stock, product.unit)}
               </span>
               {product.harvestEstimate && (
                 <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 text-amber-700">
@@ -219,7 +217,7 @@ export default function ProductDetail() {
                       <Plus size={18} />
                     </button>
                   </div>
-                  <span className="text-xs text-gray-400">{product.unit}</span>
+                  <span className="text-xs text-gray-400">{formatWeight(1, product.unit)}</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -314,13 +312,12 @@ export default function ProductDetail() {
           <h2 className="text-xl font-bold text-gray-900 mb-6">Produk Lainnya</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {related.map((item, i) => (
-              <div
+              <ProductCard
                 key={item.id}
-                className="animate-fade-up"
-                style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
-              >
-                <ProductCard data={item} />
-              </div>
+                data={item}
+                href={`/user/product/${item.id}`}
+                index={i}
+              />
             ))}
           </div>
         </div>

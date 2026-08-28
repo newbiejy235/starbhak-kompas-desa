@@ -114,14 +114,14 @@ export default function BuyerFarmerStorePage() {
 
       {/* STORE HEADER */}
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-soft">
-        <div className="relative h-32 bg-gradient-to-r from-[#025246] to-[#047857] sm:h-40">
+        <div className="relative h-32 bg-gradient-to-r from-primary to-primary-dark sm:h-40">
           <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10" />
           <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
         </div>
 
         <div className="px-5 pb-5 sm:px-8">
           <div className="flex flex-col items-center sm:flex-row sm:items-end sm:gap-6">
-            <div className="-mt-12 relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-white bg-[#EEF3F0] shadow-lg sm:h-28 sm:w-28">
+            <div className="-mt-12 relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-white bg-primary/5 shadow-lg sm:h-28 sm:w-28">
               {store.fotoProfile ? (
                 <Image
                   src={store.fotoProfile}
@@ -132,7 +132,7 @@ export default function BuyerFarmerStorePage() {
                   unoptimized
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-[#025246]">
+                <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-primary">
                   {store.fullName?.charAt(0)?.toUpperCase() || "P"}
                 </div>
               )}
@@ -144,7 +144,7 @@ export default function BuyerFarmerStorePage() {
                   {store.fullName}
                 </h1>
                 {store.isVerified && (
-                  <span className="inline-flex items-center gap-0.5 rounded-full bg-[#EAF3EF] px-2 py-0.5 text-[10px] font-bold text-[#025246]">
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/5 px-2 py-0.5 text-[10px] font-bold text-primary">
                     <BadgeCheck size={12} />
                     Terverifikasi
                   </span>
@@ -152,7 +152,7 @@ export default function BuyerFarmerStorePage() {
               </div>
               <div className="mt-1 flex flex-wrap items-center justify-center gap-3 text-sm text-gray-500 sm:justify-start">
                 <span className="inline-flex items-center gap-1">
-                  <MapPin size={14} className="text-[#025246]" />
+                  <MapPin size={14} className="text-primary" />
                   {store.village || "Lokasi tidak tersedia"}
                 </span>
                 {avgRating !== null && avgRating > 0 && (
@@ -172,7 +172,7 @@ export default function BuyerFarmerStorePage() {
             <div className="mt-4 flex gap-2 sm:mt-0">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-[#025246] hover:text-[#025246]"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-primary hover:text-primary"
               >
                 <MessageCircle size={16} />
                 Chat
@@ -186,7 +186,7 @@ export default function BuyerFarmerStorePage() {
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-2xl border border-gray-200/80 bg-white p-4 text-center">
           <div className="flex items-center justify-center gap-2">
-            <Package size={16} className="text-[#025246]" />
+            <Package size={16} className="text-primary" />
             <span className="text-lg font-bold text-gray-900">
               {commodities.length}
             </span>
@@ -216,7 +216,7 @@ export default function BuyerFarmerStorePage() {
         )}
         <div className="rounded-2xl border border-gray-200/80 bg-white p-4 text-center">
           <div className="flex items-center justify-center gap-2">
-            <Calendar size={16} className="text-[#025246]" />
+            <Calendar size={16} className="text-primary" />
             <span className="text-sm font-bold text-gray-900">
               {formatDate(store.createdAt)}
             </span>
@@ -234,13 +234,13 @@ export default function BuyerFarmerStorePage() {
             onClick={() => setActiveTab(tab)}
             className={`relative px-5 py-3 text-sm font-semibold capitalize transition ${
               activeTab === tab
-                ? "text-[#025246]"
+                ? "text-primary"
                 : "text-gray-400 hover:text-gray-600"
             }`}
           >
             {tab === "produk" ? "Produk" : "Tentang"}
             {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#025246]" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
           </button>
         ))}
@@ -305,8 +305,8 @@ export default function BuyerFarmerStorePage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {store.farmingExperience && (
                 <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EAF3EF]">
-                    <Leaf size={18} className="text-[#025246]" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5">
+                    <Leaf size={18} className="text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Pengalaman</p>
@@ -318,8 +318,8 @@ export default function BuyerFarmerStorePage() {
               )}
               {store.farmArea && (
                 <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EAF3EF]">
-                    <Map size={18} className="text-[#025246]" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5">
+                    <Map size={18} className="text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Luas Lahan</p>
@@ -331,8 +331,8 @@ export default function BuyerFarmerStorePage() {
               )}
               {store.farmingMethod && (
                 <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EAF3EF]">
-                    <Tractor size={18} className="text-[#025246]" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5">
+                    <Tractor size={18} className="text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Metode Bertani</p>
@@ -344,8 +344,8 @@ export default function BuyerFarmerStorePage() {
               )}
               {store.address && (
                 <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EAF3EF]">
-                    <MapPin size={18} className="text-[#025246]" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5">
+                    <MapPin size={18} className="text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Alamat</p>

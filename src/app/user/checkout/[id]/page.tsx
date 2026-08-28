@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   ChevronLeft,
   Copy,
@@ -14,11 +15,35 @@ import {
   MapPin,
 } from "lucide-react";
 import { getOrderById, markOrderPaid } from "@/actions/order";
-import { formatRupiah, formatDate, formatDateTime, PAYMENT_METHOD_LABEL } from "@/lib/format";
-import { LoadingState } from "@/components/shared/States";
+import {
+  formatRupiah,
+  formatDate,
+  formatDateTime,
+  formatWeight,
+  PAYMENT_METHOD_LABEL,
+} from "@/lib/format";
+import { formatImage } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { useAuth, useFetch } from "@/lib/hooks";
-import type { OrderDetail } from "@/lib/types/market";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function OrderDetailSkeleton() {
+  return (
+    <div className="mx-auto max-w-4xl animate-fade-up">
+      <div className="mb-6">
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <Skeleton className="mb-6 h-28 rounded-card" />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Skeleton className="h-44 rounded-card" />
+          <Skeleton className="h-64 rounded-card" />
+        </div>
+        <Skeleton className="h-48 rounded-card" />
+      </div>
+    </div>
+  );
+}
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -31,11 +56,11 @@ export default function OrderDetail() {
     [id],
   );
 
-  if (loading) return <LoadingState />;
+  if (loading) return <OrderDetailSkeleton />;
 
   if (!order) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500">
+      <div className="rounded-card border border-gray-200/80 bg-white p-10 text-center text-gray-500 shadow-soft">
         Pesanan tidak ditemukan.
       </div>
     );
@@ -69,18 +94,21 @@ export default function OrderDetail() {
   const cancelled = order.status === "cancelled";
 
   const vaNumber = "8801 0826 0000 " + String(order.id).padStart(6, "0");
+  const orderImage =
+    formatImage(order.commodityImage) ??
+    formatImage(order.commodityImages?.[0] ?? null);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-fade-up">
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#025246] mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary mb-6"
       >
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-        <div className="bg-gradient-to-r from-[#025246] to-[#047857] px-6 py-5 text-white flex items-center justify-between">
+      <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-hidden mb-6">
+        <div className="bg-gradient-to-r from-primary to-primary-dark px-6 py-5 text-white flex items-center justify-between">
           <div>
             <p className="text-xs text-white/70">No. Pesanan</p>
             <p className="font-bold text-lg">{order.orderCode}</p>
@@ -100,7 +128,7 @@ export default function OrderDetail() {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         i <= currentStep
-                          ? "bg-[#025246] text-white"
+                          ? "bg-primary text-white"
                           : "bg-gray-100 text-gray-400"
                       }`}
                     >
@@ -113,7 +141,7 @@ export default function OrderDetail() {
                   {i < steps.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 ${
-                        i < currentStep ? "bg-[#025246]" : "bg-gray-200"
+                        i < currentStep ? "bg-primary" : "bg-gray-200"
                       }`}
                     />
                   )}
@@ -126,30 +154,44 @@ export default function OrderDetail() {
 
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h2 className="font-bold text-[#111111] mb-4 flex items-center gap-2">
-              <Store size={18} className="text-[#025246]" /> Detail Produk
+          <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
+            <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Store size={18} className="text-primary" /> Detail Produk
             </h2>
             <div className="flex gap-4">
-              <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-[#025246] to-[#047857] text-white text-2xl font-black">
-                {order.commodityName?.charAt(0)?.toUpperCase()}
+              <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                {orderImage ? (
+                  <Image
+                    src={orderImage}
+                    alt={order.commodityName ?? "Komoditas"}
+                    width={80}
+                    height={80}
+                    sizes="80px"
+                    className="object-cover w-full h-full"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-black">
+                    {order.commodityName?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-gray-900">{order.commodityName}</h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {order.quantity} {order.commodityUnit} × {formatRupiah(order.unitPrice)}
+                  {formatWeight(order.quantity, order.commodityUnit)} × {formatRupiah(order.unitPrice)}
                 </p>
-                <p className="text-sm font-semibold text-[#025246] mt-2">
+                <p className="text-sm font-semibold text-primary mt-2">
                   {formatRupiah(order.subtotal)}
                 </p>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-gray-100 text-sm space-y-1.5">
               <p className="flex items-center gap-2 text-gray-600">
-                <Store size={14} className="text-[#025246]" /> Petani: {order.farmerName}
+                <Store size={14} className="text-primary" /> Petani: {order.farmerName}
               </p>
               <p className="flex items-center gap-2 text-gray-600">
-                <MapPin size={14} className="text-[#025246]" />
+                <MapPin size={14} className="text-primary" />
                 {order.deliveryMethod === "pickup"
                   ? "Metode: Pick Up (ambil di lokasi petani)"
                   : `Metode: Ekspedisi — ${order.deliveryAddress}`}
@@ -160,9 +202,9 @@ export default function OrderDetail() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h2 className="font-bold text-[#111111] mb-4 flex items-center gap-2">
-              <CreditCard size={18} className="text-[#025246]" /> Pembayaran
+          <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
+            <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <CreditCard size={18} className="text-primary" /> Pembayaran
             </h2>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
@@ -179,7 +221,7 @@ export default function OrderDetail() {
               </div>
               <div className="border-t border-gray-100 pt-3 flex justify-between">
                 <span className="font-bold">Total Pembayaran</span>
-                <span className="text-xl font-extrabold text-[#025246]">
+                <span className="text-xl font-extrabold text-primary">
                   {formatRupiah(order.totalPrice)}
                 </span>
               </div>
@@ -199,7 +241,7 @@ export default function OrderDetail() {
                       <span className="font-mono font-bold text-gray-800">{vaNumber}</span>
                       <button
                         onClick={() => copyRef(vaNumber)}
-                        className="inline-flex items-center gap-1 text-xs text-[#025246] font-medium"
+                        className="inline-flex items-center gap-1 text-xs text-primary font-medium"
                       >
                         <Copy size={14} /> {copied ? "Tersalin!" : "Salin"}
                       </button>
@@ -212,7 +254,7 @@ export default function OrderDetail() {
 
                 <button
                   onClick={confirmPaid}
-                  className="w-full rounded-xl bg-[#025246] py-3 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
                 >
                   Saya Sudah Bayar
                 </button>
@@ -234,8 +276,8 @@ export default function OrderDetail() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 h-fit sticky top-4">
-          <h2 className="font-bold text-[#111111] mb-4">Aksi</h2>
+        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 h-fit sticky top-4">
+          <h2 className="font-bold text-gray-900 mb-4">Aksi</h2>
           <div className="space-y-3">
             <StatusBadge status={order.status} label={`Status: ${order.status}`} />
             {order.status === "pending" && (
@@ -248,7 +290,7 @@ export default function OrderDetail() {
             )}
             <button
               onClick={() => router.push("/user/home")}
-              className="w-full rounded-xl bg-[#025246] py-3 text-sm font-bold text-white hover:bg-[#024036] transition-colors"
+              className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
             >
               Belanja Lagi
             </button>
