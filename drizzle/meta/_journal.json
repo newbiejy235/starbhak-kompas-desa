@@ -71,6 +71,13 @@
       "when": 1787858130139,
       "tag": "0010_left_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787942445204,
+      "tag": "0010_gray_korath",
+      "breakpoints": true
     }
   ]
 }
