@@ -190,7 +190,7 @@ export default function OrderDetailDrawer({
   const paymentMethod =
     detail?.paymentMethod ?? summary.paymentMethod ?? null;
   const qtyLabel = unit ? `${formatNumber(qty)} ${unit}` : formatNumber(qty);
-  const img = formatImage(detail?.commodityImage ?? summary.commodityImage);
+  const img = formatImage(detail?.commodityImage ?? summary.commodityImage) ?? formatImage(detail?.commodityImages?.[0] ?? summary.commodityImages?.[0] ?? null);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">

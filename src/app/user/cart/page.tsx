@@ -190,7 +190,7 @@ export default function CartPage() {
               </div>
               <ul className="divide-y divide-gray-100">
                 {items.map((item) => {
-                  const img = formatImage(item.product.image);
+                  const img = formatImage(item.product.image) ?? formatImage(item.product.images?.[0] ?? null);
                   const unitPrice = item.negotiatedPrice ?? Number(item.product.price);
                   const lineTotal = unitPrice * item.quantity;
                   const isNegotiated = item.negotiatedPrice !== undefined;

@@ -100,6 +100,7 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
         commodityName: commoditiesTable.name,
         commodityPrice: commoditiesTable.price,
         commodityImage: ImageUpload.secureUrl,
+        commodityImages: commoditiesTable.images,
         commodityUnit: commoditiesTable.unit,
         hasDeal: sql<boolean>`exists(select 1 from chat_messages_table m where m."roomId" = chat_rooms_table.id and m.type = 'accept')`,
         unreadCount: sql<number>`(
@@ -142,6 +143,7 @@ export async function getChatRoomDetail(roomId: number) {
         commodityStock: commoditiesTable.stock,
         commodityUnit: commoditiesTable.unit,
         commodityImage: ImageUpload.secureUrl,
+        commodityImages: commoditiesTable.images,
         commodityDescription: commoditiesTable.description,
         commodityStatus: commoditiesTable.status,
       })

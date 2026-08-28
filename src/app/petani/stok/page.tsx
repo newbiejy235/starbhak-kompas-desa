@@ -209,7 +209,7 @@ export default function StokPage() {
         <div className="space-y-2.5">
           {filtered.map((item, i) => {
             const state = stockState(item);
-            const img = formatImage(item.image);
+            const img = formatImage(item.image) ?? formatImage(item.images?.[0] ?? null);
             return (
               <article
                 key={item.id}

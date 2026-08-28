@@ -39,6 +39,7 @@ interface ChatRoomData {
   commodityStock: string;
   commodityUnit: string;
   commodityImage: string | null;
+  commodityImages: string[] | null;
   commodityDescription: string | null;
   commodityStatus: string;
   buyerName: string;
@@ -132,7 +133,7 @@ export default function ChatRoomView({
   const [deleteConfirm, setDeleteConfirm] = useState<ChatMessageData | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMessageData | null>(null);
 
-  const img = formatImage(room.commodityImage);
+  const img = formatImage(room.commodityImage) ?? formatImage(room.commodityImages?.[0] ?? null);
   const minPrice = room.commodityMinPrice ? Number(room.commodityMinPrice) : null;
   const maxPrice = room.commodityMaxPrice ? Number(room.commodityMaxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;

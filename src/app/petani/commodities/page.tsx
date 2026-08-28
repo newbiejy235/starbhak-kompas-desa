@@ -178,9 +178,9 @@ function CommodityCard({
       }}
     >
       <div className="relative w-full h-40 bg-gray-100 overflow-hidden">
-        {item.image ? (
+        {(item.image ?? item.images?.[0]) ? (
           <Image
-            src={item.image}
+            src={item.image ?? item.images?.[0] ?? ""}
             alt={item.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

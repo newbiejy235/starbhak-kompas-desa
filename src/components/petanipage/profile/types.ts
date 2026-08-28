@@ -20,6 +20,7 @@ export type CommodityData = {
   stock: string;
   unit: string;
   image: string | null;
+  images: string[] | null;
   status: string;
   categoryName: string;
 };
