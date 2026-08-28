@@ -251,18 +251,7 @@ export function HeaderActions() {
                     {item.label}
                   </Link>
                 ))}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setModalOpen(true);
-                  }}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-success transition-colors duration-150 hover:bg-success/5 ${focusRing}`}
-                >
-                  <Sprout size={18} aria-hidden />
-                  Daftar Jadi Petani
-                </button>
+
               </nav>
               <div className="border-t border-gray-100 p-2">
                 <button

@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
 import { useAuth } from "@/lib/hooks";
 import { useChatSSE } from "@/lib/hooks/useChatSSE";
 import { addToCart } from "@/lib/cart";

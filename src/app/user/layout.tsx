@@ -3,12 +3,21 @@
 import UserSidebar from "@/components/userpage/Sidebar";
 import { HeaderSearch, HeaderActions } from "@/components/userpage/Header";
 import DashboardShell from "@/components/shared/DashboardShell";
+import { useAuth } from "@/lib/hooks";
+import { useNegotiationNotification } from "@/lib/hooks/useNegotiationNotification";
+import NegotiationNotificationPopup from "@/components/shared/chat/NegotiationNotificationPopup";
 
 export default function UserLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useAuth();
+  const userId = user?.id ?? 0;
+
+  const { notification, dismiss, goToNegotiation } =
+    useNegotiationNotification(userId, "/user");
+
   return (
     <DashboardShell
       role="pembeli"
@@ -17,8 +26,14 @@ export default function UserLayout({
       headerLeft={<HeaderSearch />}
       headerRight={<HeaderActions />}
     >
-      {/* Padding mobile dari layout; sm+ memakai padding bawaan shell */}
       <div className="p-4 sm:p-0">{children}</div>
+      {notification && (
+        <NegotiationNotificationPopup
+          notification={notification}
+          onDismiss={dismiss}
+          onAction={goToNegotiation}
+        />
+      )}
     </DashboardShell>
   );
 }
