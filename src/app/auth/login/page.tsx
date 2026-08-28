@@ -173,18 +173,6 @@ export default function Login() {
             <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
           </div>
         </div>
-
-        <div className="header-item flex items-center gap-4">
-          <span className="hidden md:block text-sm font-medium text-neutral-500">
-            Belum mendaftarkan akun?
-          </span>
-          <Link
-            href="/auth/register"
-            className="inline-flex items-center justify-center bg-white border border-neutral-200 text-neutral-800 text-sm font-bold px-6 py-2.5 rounded-full shadow-sm hover:border-emerald-600 hover:text-emerald-700 transition-all duration-200"
-          >
-            Daftar Sekarang
-          </Link>
-        </div>
       </header>
 
       {/* MAIN CONTENT */}
@@ -199,11 +187,7 @@ export default function Login() {
             </h1>
 
             <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-<<<<<<< HEAD
-              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas&apos;Desa.
-=======
               Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas&rsquo;Desa.
->>>>>>> 56d08fccaf481a3e657252f6f2b4600a3e29bbc5
             </p>
           </div>
         </div>
@@ -296,6 +280,18 @@ export default function Login() {
                   Lupa kata sandi?
                 </Link>
               </div>
+                
+          <div className="header-item flex items-center gap-4">
+            <span className="hidden md:block text-sm font-medium text-neutral-500">
+              Belum mempunyai akun?
+            </span>
+            <Link
+              href="/auth/register"
+              className="ml-28 border-emerald-600 text-emerald-600 shadow-sm hover:border-emerald-600 hover:text-emerald-700 transition-all duration-100"
+            >
+              Daftar Sekarang
+            </Link>
+          </div>
 
               <div className="right-anim-item mt-2">
                 <button

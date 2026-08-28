@@ -26,11 +26,36 @@ export async function getCategories() {
   return db.select().from(categoriesTable).orderBy(asc(categoriesTable.name));
 }
 
+export async function getCategoriesWithCount() {
+  return db
+    .select({
+      id: categoriesTable.id,
+      name: categoriesTable.name,
+      icon: categoriesTable.icon,
+      count: sql<number>`count(${commoditiesTable.id})::int`,
+    })
+    .from(categoriesTable)
+    .leftJoin(
+      commoditiesTable,
+      and(
+        eq(commoditiesTable.categoryId, categoriesTable.id),
+        or(
+          eq(commoditiesTable.status, "available"),
+          eq(commoditiesTable.status, "verified"),
+        ),
+      ),
+    )
+    .groupBy(categoriesTable.id, categoriesTable.name, categoriesTable.icon)
+    .orderBy(asc(categoriesTable.name));
+}
+
 export async function getPublicCommodities(params?: {
   search?: string;
   categoryId?: number;
   farmerId?: number;
   status?: string;
+  limit?: number;
+  offset?: number;
 }) {
   const conditions = [
     or(
@@ -50,6 +75,9 @@ export async function getPublicCommodities(params?: {
   if (params?.farmerId) {
     conditions.push(eq(commoditiesTable.farmerId, params.farmerId));
   }
+
+  const limit = params?.limit ?? 20;
+  const offset = params?.offset ?? 0;
 
   return db
     .select({
@@ -79,7 +107,9 @@ export async function getPublicCommodities(params?: {
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(and(...conditions))
-    .orderBy(desc(commoditiesTable.createdAt));
+    .orderBy(desc(commoditiesTable.createdAt))
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function getCommoditiesByIds(ids: number[]) {

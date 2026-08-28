@@ -229,7 +229,6 @@ export default function AnalitikPage() {
         <TopCommoditiesCard products={topProducts} />
       )}
 
-
       {(topInsight || trendInsight) && (
         <section
           aria-label="Ringkasan insight"

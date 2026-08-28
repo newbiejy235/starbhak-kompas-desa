@@ -16,10 +16,10 @@ import {
   X,
   LifeBuoy,
 } from "lucide-react";
-import { getClientUser, clearSession, updateSessionRole } from "@/lib/auth/client";
+import { clearSession, updateSessionRole } from "@/lib/auth/client";
 import { becomePetaniAction } from "@/actions/auth";
 import { getUnreadNotificationCount } from "@/actions/notification";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import Avatar from "@/components/ui/Avatar";
 import type { ActionState } from "@/lib/types/auth";
 
@@ -76,13 +76,13 @@ export function HeaderSearch() {
    Aksi kanan: keranjang, notifikasi, menu akun
    ============================================================ */
 export function HeaderActions() {
+  const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [closingModal, setClosingModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const user = getClientUser();
 
   const [state, formAction, isPending] = useActionState(
     async (prev: ActionState | null, data: FormData) => {

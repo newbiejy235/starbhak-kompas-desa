@@ -52,9 +52,8 @@ export default function ProductCard({ data }: ProductCardProps) {
             src={img}
             alt={data.name}
             fill
-            sizes="(max-width: 768px) 100vw, 25vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
-            unoptimized
           />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>

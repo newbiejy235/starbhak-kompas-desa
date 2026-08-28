@@ -5,9 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import {
-  Compass,
   ArrowLeft,
-  ArrowRight,
   Sprout,
   MapPin,
   Package,
@@ -17,19 +15,23 @@ import {
 import { saveRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
+const slideshowImages = [
+  "/images/Joni.svg",
+  "/",
+  "/assets/bg-login-3.jpg",
+];
+
 export default function ProfilPetani() {
   const router = useRouter();
   
-  // Ubah state komoditas menjadi array of string (default 1 input kosong)
   const [komoditasList, setKomoditasList] = useState<string[]>([""]);
-  
   const [lokasi, setLokasi] = useState("");
   const [estimasi, setEstimasi] = useState("");
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const compassRef = useRef<SVGSVGElement>(null);
+  const floatingElementsRef = useRef<HTMLDivElement>(null);
 
-  // Fungsi untuk menggabungkan array komoditas menjadi string dengan koma
   const getKomoditasString = () => {
     return komoditasList.filter((k) => k.trim() !== "").join(", ");
   };
@@ -45,7 +47,6 @@ export default function ProfilPetani() {
     router.back();
   };
 
-  // Handler untuk form dinamis komoditas
   const handleAddKomoditas = () => {
     setKomoditasList([...komoditasList, ""]);
   };
@@ -62,238 +63,183 @@ export default function ProfilPetani() {
   };
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = setInterval(() => {
+      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
+  useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      tl.from(".bg-curve", {
-        scaleX: 0,
-        transformOrigin: "left center",
-        duration: 1.2,
-      })
-        .from(
-          ".header-item",
-          {
-            opacity: 0,
-            y: -20,
-            stagger: 0.1,
-            duration: 0.6,
-          },
-          "-=0.8"
-        )
-        .from(
-          ".left-anim-item",
-          {
-            opacity: 0,
-            x: -30,
-            stagger: 0.1,
-            duration: 0.8,
-          },
-          "-=0.6"
-        )
-        .from(
-          ".right-anim-item",
-          {
-            opacity: 0,
-            y: 20,
-            stagger: 0.06,
-            duration: 0.7,
-          },
-          "-=0.7"
-        )
-        .from(
-          ".footer-anim",
-          {
-            opacity: 0,
-            y: 10,
-            duration: 0.5,
-          },
-          "-=0.4"
-        );
+      tl.fromTo(".bg-curve-container",
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+      )
+      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+        { opacity: 0, y: 30, rotateX: -10 },
+        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+        "-=0.9"
+      )
+      .fromTo(".footer-anim",
+        { opacity: 0, y: 10 },
+        { opacity: 1, duration: 0.8 },
+        "-=0.5"
+      );
 
-      // Animasi Kompas 3D berputar
-      if (!reduceMotion && compassRef.current) {
-        gsap.to(compassRef.current, {
-          rotation: 360,
-          duration: 70,
+      const orbs = document.querySelectorAll(".ambient-orb");
+      orbs.forEach((orb, i) => {
+        gsap.to(orb, {
+          scale: "random(1.1, 1.4)",
+          opacity: "random(0.4, 0.8)",
+          duration: "random(3, 5)",
           repeat: -1,
-          ease: "none",
-          transformOrigin: "center center",
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.3,
         });
-      }
+      });
     }, containerRef);
 
-    return () => ctx.revert();
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 40;
+      const y = (e.clientY / window.innerHeight - 0.5) * 40;
+      gsap.to(".ambient-orb", {
+        x: (i: number) => x * (i + 1.5),
+        y: (i: number) => y * (i + 1.5),
+        duration: 1.5,
+        ease: "power2.out"
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      ctx.revert();
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="h-screen w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col justify-between selection:bg-emerald-600/20 selection:text-emerald-900"
-    >
-      {/* Background Left Curve */}
-      <svg
-        className="bg-curve absolute top-0 left-0 w-full lg:w-[55%] xl:w-[58%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 100"
-      >
+    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
+
+      {/* SVG ClipPath Definition (Hidden) */}
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
         <defs>
-          <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#022c22" />
-            <stop offset="100%" stopColor="#064e3b" />
-          </linearGradient>
+          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
+          </clipPath>
         </defs>
-        <path
-          d="M0,0 L72,0 C90,35 88,75 58,100 L0,100 Z"
-          fill="url(#emeraldGrad)"
-        />
       </svg>
 
-      {/* HEADER */}
-      <header className="relative z-20 w-full flex items-center justify-between px-6 py-3 lg:px-10 xl:px-16 shrink-0 min-h-[60px]">
-        <div className="header-item flex items-center gap-3 xl:gap-4">
-          <Link
-            href="/auth/register"
-            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-[11px] lg:text-xs xl:text-sm font-semibold px-3 py-1.5 xl:px-3.5 xl:py-2 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
-          >
-            <ArrowLeft size={14} />
-            Kembali
-          </Link>
-          <div className="hidden sm:flex items-center gap-2 lg:gap-2.5 ml-1 lg:ml-2 lg:text-white text-emerald-950">
-            <div className="relative flex items-center justify-center bg-white/10 lg:bg-white/20 p-1 lg:p-1.5 rounded-lg shadow-sm backdrop-blur-sm w-7 h-7 xl:w-8 xl:h-8 border border-white/10">
-              <Image 
-                src="/logo-kompas-desa/kompas_logo_icon.png" 
-                alt="Logo Kompas Desa" 
+      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER */}
+      <div
+        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
+        style={{ clipPath: "url(#emeraldCurveClip)" }}
+      >
+        {slideshowImages.map((src, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <div
+              key={src + index}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                isActive
+                  ? "opacity-30 scale-100 blur-0"
+                  : "opacity-0 scale-105 blur-md"
+              }`}
+            >
+              <Image
+                src={src}
+                alt="Background Slide"
                 fill
-                sizes="32px"
-                className="object-contain p-0.5 xl:p-1 brightness-0 invert lg:brightness-100 lg:invert-0"
-                priority
+                className="object-cover"
+                priority={index === 0}
               />
             </div>
-            <span className="text-base lg:text-lg xl:text-xl font-bold tracking-tight">
-              Kompas&apos;Desa
-            </span>
-          </div>
-        </div>
+          );
+        })}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
+      </div>
 
-        <div className="header-item flex items-center gap-3 xl:gap-4">
-          <span className="hidden md:block text-xs xl:text-sm font-medium text-neutral-500 lg:text-emerald-50 lg:mix-blend-overlay">
-            Sudah punya akun?
-          </span>
+      {/* AMBIENT FLOATING ORBS */}
+      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
+        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
+        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+      </div>
+
+      {/* HEADER NAV */}
+      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
+        <div className="header-item flex items-center gap-4">
           <Link
-            href="/auth/login"
-            className="inline-flex items-center justify-center bg-white border border-neutral-200 text-neutral-800 text-[11px] lg:text-xs xl:text-sm font-bold px-4 py-1.5 xl:px-5 xl:py-2 rounded-full shadow-sm hover:border-emerald-600 hover:text-emerald-700 transition-all duration-200"
+            href="/"
+            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
           >
-            Masuk
+            <ArrowLeft size={16} />
+            Beranda
           </Link>
+          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
+            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
+          </div>
         </div>
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-between w-full max-w-[1400px] mx-auto px-6 lg:px-10 xl:px-16 overflow-hidden my-auto h-full min-h-[500px]">
-        
-        {/* LEFT COLUMN */}
-        <div className="w-full lg:w-[45%] flex flex-col justify-center py-2 lg:py-0 text-emerald-950 lg:text-white relative h-full">
-          
-          {/* 3D Compass Decoration */}
-          <div className="absolute top-1/2 left-[30%] lg:left-[40%] xl:left-[36%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 hidden lg:block w-[400px] h-[400px] xl:w-[600px] xl:h-[600px] opacity-15 text-white">
-             <svg ref={compassRef} viewBox="0 0 100 100" fill="none" stroke="currentColor">
-              <circle cx="50" cy="50" r="48" strokeWidth="0.4" strokeDasharray="1 3" />
-              <circle cx="50" cy="50" r="45" strokeWidth="0.1" />
-              <circle cx="50" cy="50" r="33" strokeWidth="0.15" strokeDasharray="2 2" />
-              <circle cx="50" cy="50" r="28" strokeWidth="0.1" />
-              
-              <path d="M22 22 L45 45 M78 22 L55 45 M78 78 L55 55 M22 78 L45 55" strokeWidth="0.15" />
-              <polygon points="18,18 24,21 22,22 21,24" fill="currentColor" fillOpacity="0.4" stroke="none" />
-              <polygon points="82,18 79,24 78,22 76,21" fill="currentColor" fillOpacity="0.4" stroke="none" />
-              <polygon points="82,82 76,79 78,78 79,76" fill="currentColor" fillOpacity="0.4" stroke="none" />
-              <polygon points="18,82 21,76 22,78 24,79" fill="currentColor" fillOpacity="0.4" stroke="none" />
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
 
-              <g stroke="none">
-                <polygon points="50,4 50,47 47,43" fill="currentColor" fillOpacity="0.85" />
-                <polygon points="50,4 53,43 50,47" fill="currentColor" fillOpacity="0.25" />
-                <polygon points="96,50 57,47 53,50" fill="currentColor" fillOpacity="0.85" />
-                <polygon points="96,50 53,50 57,53" fill="currentColor" fillOpacity="0.25" />
-                <polygon points="50,96 50,53 47,57" fill="currentColor" fillOpacity="0.85" />
-                <polygon points="50,96 53,57 50,53" fill="currentColor" fillOpacity="0.25" />
-                <polygon points="4,50 47,50 43,47" fill="currentColor" fillOpacity="0.85" />
-                <polygon points="4,50 43,53 47,50" fill="currentColor" fillOpacity="0.25" />
-              </g>
-              
-              <circle cx="50" cy="50" r="1.5" fill="currentColor" stroke="none" />
-              <circle cx="50" cy="50" r="7" strokeWidth="0.15" />
-              <path d="M50 40 L50 43 M50 57 L50 60 M40 50 L43 50 M57 50 L60 50" strokeWidth="0.3" />
-            </svg>
-          </div>
-
-          <div className="relative z-10 w-full max-w-[420px] xl:max-w-[460px]">
-
-            <h1 className="left-anim-item text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.1] mb-2 xl:mb-4 drop-shadow-sm">
+        {/* LEFT PANEL */}
+        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
+          <div className="relative z-10 w-full max-w-[380px]">
+            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
               Kenalkan Hasil <br />
-              <span className="text-emerald-600 lg:text-emerald-400">
-                Pertanianmu
-              </span>
+              <span className="text-emerald-400">Pertanianmu</span>
             </h1>
-
-            <p className="left-anim-item text-xs sm:text-sm xl:text-base text-emerald-800/80 lg:text-emerald-100/90 leading-relaxed font-medium">
+            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
               Bergabunglah bersama ribuan petani lainnya untuk menjangkau pembeli langsung tanpa perantara secara transparan.
             </p>
           </div>
         </div>
 
-        {/* RIGHT COLUMN (FORM) */}
-        <div className="w-full lg:w-[45%] flex flex-col justify-center items-center lg:items-start py-2 lg:py-0 relative h-full">
-          <div className="w-full max-w-[400px] xl:max-w-[420px] bg-white lg:bg-transparent rounded-3xl lg:rounded-none p-6 lg:p-0 shadow-xl shadow-black/5 lg:shadow-none border border-neutral-100 lg:border-none">
-            
-            {/* Step Progress Bar (Step 2 Active) */}
-            <div className="right-anim-item flex items-center gap-2 xl:gap-3 mb-3 xl:mb-4">
-              <div className="flex gap-1.5 xl:gap-2">
-                <div className="h-1 w-6 xl:h-1.5 xl:w-7 rounded-full bg-neutral-200 transition-all duration-300"></div>
-                <div className="h-1 w-6 xl:h-1.5 xl:w-7 rounded-full bg-emerald-600 transition-all duration-300"></div>
-                <div className="h-1 w-6 xl:h-1.5 xl:w-7 rounded-full bg-neutral-200 transition-all duration-300"></div>
-              </div>
-              <span className="text-[10px] xl:text-[12px] font-bold text-neutral-400 uppercase tracking-wider">
-                Langkah 2 dari 3
-              </span>
-            </div>
+        {/* RIGHT PANEL - Form Profile */}
+        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
+          <div className="w-full max-w-[380px] xl:max-w-[420px]">
 
-            <div className="right-anim-item mb-4 xl:mb-5">
-              <h2 className="text-xl xl:text-2xl font-extrabold text-neutral-900 tracking-tight mb-0.5 xl:mb-1">
+            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Profil Petani
               </h2>
-              <p className="text-[11px] xl:text-xs text-neutral-500 font-medium">
+              <p className="text-xs lg:text-sm text-neutral-500 font-medium">
                 Bantu pembeli mengenal hasil panen dan lokasi lahannya.
               </p>
             </div>
 
-            <form onSubmit={handleNext} className="flex flex-col gap-2.5 xl:gap-3.5">
-              
+            <form onSubmit={handleNext} className="flex flex-col gap-4">
+
               {/* Komoditas Utama - Dynamic Inputs */}
-              <div className="right-anim-item flex flex-col gap-1">
-                <label className="text-[11px] xl:text-[12px] font-bold text-neutral-700 ml-1 flex justify-between items-end">
+              <div className="right-anim-item flex flex-col gap-1.5">
+                <label className="text-[13px] font-bold text-neutral-700 ml-1 flex justify-between items-end">
                   <span>Komoditas Utama yang Ditanam</span>
                 </label>
                 
-                {/* Scrollable Container (Maksimal terlihat ~2 input) */}
-                <div className="flex flex-col gap-2 max-h-[95px] xl:max-h-[105px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-200 hover:[&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors">
+                <div className="flex flex-col gap-2 max-h-[120px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-200 hover:[&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors">
                   {komoditasList.map((komoditas, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <div className="relative group flex-1">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                          <Sprout size={15} strokeWidth={2.5} />
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                          <Sprout size={18} strokeWidth={2.5} />
                         </div>
                         <input
                           type="text"
                           value={komoditas}
                           onChange={(e) => handleChangeKomoditas(idx, e.target.value)}
                           placeholder="Contoh: Padi, Jagung, Cabai..."
-                          className="w-full rounded-xl border-2 border-neutral-200 bg-neutral-50/50 lg:bg-white py-2 xl:py-2.5 pl-9 pr-3 text-xs xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-600/10"
-                          required={idx === 0} // Wajib diisi minimal 1 (index 0)
+                          className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                          required={idx === 0}
                         />
                       </div>
                       
-                      {/* Tombol Hapus: Hanya muncul jika input lebih dari 1 */}
                       {komoditasList.length > 1 && (
                         <button
                           type="button"
@@ -308,11 +254,10 @@ export default function ProfilPetani() {
                   ))}
                 </div>
 
-                {/* Tombol Tambah */}
                 <button
                   type="button"
                   onClick={handleAddKomoditas}
-                  className="self-start mt-1 ml-1 flex items-center gap-1.5 text-[11px] xl:text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+                  className="self-start mt-1 ml-1 flex items-center gap-1.5 text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
                 >
                   <Plus size={14} strokeWidth={3} />
                   Tambah Komoditas Lainnya
@@ -320,16 +265,16 @@ export default function ProfilPetani() {
               </div>
 
               {/* Lokasi Lahan */}
-              <div className="right-anim-item flex flex-col gap-1 mt-1">
+              <div className="right-anim-item flex flex-col gap-1.5">
                 <label
                   htmlFor="lokasi"
-                  className="text-[11px] xl:text-[12px] font-bold text-neutral-700 ml-1"
+                  className="text-[13px] font-bold text-neutral-700 ml-1"
                 >
                   Lokasi Lahan (Desa/Kabupaten)
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <MapPin size={15} strokeWidth={2.5} />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <MapPin size={18} strokeWidth={2.5} />
                   </div>
                   <input
                     id="lokasi"
@@ -337,29 +282,29 @@ export default function ProfilPetani() {
                     value={lokasi}
                     onChange={(e) => setLokasi(e.target.value)}
                     placeholder="Ketik nama desa/kota/kabupaten..."
-                    className="w-full rounded-xl border-2 border-neutral-200 bg-neutral-50/50 lg:bg-white py-2 xl:py-2.5 pl-9 pr-3 text-xs xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-600/10"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                 </div>
               </div>
 
               {/* Estimasi Hasil Panen */}
-              <div className="right-anim-item flex flex-col gap-1">
+              <div className="right-anim-item flex flex-col gap-1.5">
                 <label
                   htmlFor="estimasi"
-                  className="text-[11px] xl:text-[12px] font-bold text-neutral-700 ml-1"
+                  className="text-[13px] font-bold text-neutral-700 ml-1"
                 >
                   Estimasi Hasil Panen
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Package size={15} strokeWidth={2.5} />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Package size={18} strokeWidth={2.5} />
                   </div>
                   <select
                     id="estimasi"
                     value={estimasi}
                     onChange={(e) => setEstimasi(e.target.value)}
-                    className="w-full rounded-xl border-2 border-neutral-200 bg-neutral-50/50 lg:bg-white py-2 xl:py-2.5 pl-9 pr-3 text-xs xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-neutral-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-600/10 cursor-pointer invalid:text-neutral-400"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm cursor-pointer appearance-none"
                     required
                   >
                     <option value="" disabled>Pilih estimasi hasil panen</option>
@@ -371,24 +316,19 @@ export default function ProfilPetani() {
               </div>
 
               {/* Navigation Buttons */}
-              <div className="right-anim-item flex gap-2.5 pt-1 xl:pt-2 mt-1 xl:mt-0">
+              <div className="right-anim-item flex gap-3 mt-2">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-extrabold text-xs xl:text-sm rounded-xl py-2.5 xl:py-3 transition-all duration-200 ease-out active:scale-[0.98]"
+                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97]"
                 >
                   Kembali
                 </button>
                 <button
                   type="submit"
-                  className="group flex w-1/2 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 xl:py-3 text-xs xl:text-sm font-extrabold text-white shadow-md shadow-emerald-500/25 transition-all duration-200 ease-out hover:bg-emerald-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]"
+                  className="group flex w-1/2 items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                 >
                   <span>Berikutnya</span>
-                  <ArrowRight
-                    size={15}
-                    strokeWidth={2.5}
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  />
                 </button>
               </div>
             </form>
@@ -396,8 +336,7 @@ export default function ProfilPetani() {
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="footer-anim relative z-20 w-full text-center py-3 xl:py-4 text-[10px] xl:text-[11px] font-medium text-neutral-400 shrink-0 min-h-[40px]">
+      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
         &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
     </div>

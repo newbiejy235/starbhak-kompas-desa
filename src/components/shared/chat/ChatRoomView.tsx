@@ -46,6 +46,14 @@ interface ChatRoomData {
   farmerName: string;
   farmerFoto: string | null;
   farmerAddress: string | null;
+  pendingOffer: {
+    id: number;
+    price: string;
+    quantity: string;
+    unit: string;
+    status: string;
+    createdAt: Date;
+  } | null;
 }
 
 interface ChatMessageData {
@@ -114,7 +122,6 @@ export default function ChatRoomView({
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [offerPrice, setOfferPrice] = useState("");
   const [offerQty, setOfferQty] = useState("1");
-  const [confirmDeal, setConfirmDeal] = useState<{ price: string; quantity: string } | null>(null);
   const [submittingDeal, setSubmittingDeal] = useState(false);
   const [showProductInfo, setShowProductInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -132,17 +139,10 @@ export default function ChatRoomView({
   const stock = Number(room.commodityStock);
   const isFarmer = currentRole === "petani";
 
-  const latestPendingOffer = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i];
-      if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId !== currentUserId) {
-        const next = messages[i + 1];
-        if (next && (next.type === "accept" || next.type === "reject")) continue;
-        return msg;
-      }
-    }
-    return null;
-  }, [messages, currentUserId]);
+  const pendingOffer = room.pendingOffer;
+  const hasPendingOffer = pendingOffer !== null;
+  const isPendingBuyer = hasPendingOffer && pendingOffer.status === "pending" && currentUserId === room.buyerId;
+  const isPendingFarmer = hasPendingOffer && pendingOffer.status === "pending" && currentUserId === room.farmerId;
 
   const latestAcceptedOffer = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -150,19 +150,11 @@ export default function ChatRoomView({
       if (msg.type === "accept") {
         if (msg.offerPrice && msg.offerQuantity) return msg;
         const prev = messages[i - 1];
-        if (prev && (prev.type === "offer" || prev.type === "counter_offer")) return prev;
+        if (prev && prev.type === "offer") return prev;
       }
     }
     return null;
   }, [messages]);
-
-  const myLatestOffer = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i];
-      if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId === currentUserId) return msg;
-    }
-    return null;
-  }, [messages, currentUserId]);
 
   const hasAcceptedDeal = useMemo(() => messages.some((m) => m.type === "accept"), [messages]);
 
@@ -241,33 +233,37 @@ export default function ChatRoomView({
     await onSendMessage(text, "text", undefined, undefined, replyId);
   };
 
-  const handleSendOffer = async (type: "offer" | "counter_offer" = "offer") => {
+  const handleSendOffer = async () => {
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-    const label = type === "counter_offer" ? "Counter" : "Penawaran";
-    const offerText = `${label}: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
+    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
-    await onSendMessage(offerText, type, price, qty, replyId);
+    await onSendMessage(offerText, "offer", price, qty, replyId);
     setShowOfferForm(false);
     setOfferPrice("");
     setOfferQty("1");
   };
 
-  const handleConfirmDeal = async () => {
-    if (!confirmDeal || submittingDeal) return;
-    const price = parseFloat(confirmDeal.price);
-    const qty = parseFloat(confirmDeal.quantity);
-    if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
+  const handleAcceptOffer = async () => {
+    if (!pendingOffer || submittingDeal) return;
     setSubmittingDeal(true);
     try {
+      const price = Number(pendingOffer.price);
+      const qty = Number(pendingOffer.quantity);
       const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
-      const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
-      setReplyTo(null);
-      await onSendMessage(acceptText, "accept", price, qty, replyId);
-      if (!isFarmer) onAddToCart(price, qty);
-      setConfirmDeal(null);
+      await onSendMessage(acceptText, "accept", price, qty);
+    } finally {
+      setSubmittingDeal(false);
+    }
+  };
+
+  const handleRejectOffer = async () => {
+    if (!pendingOffer || submittingDeal) return;
+    setSubmittingDeal(true);
+    try {
+      await onSendMessage("Penawaran ditolak", "reject");
     } finally {
       setSubmittingDeal(false);
     }
@@ -481,7 +477,7 @@ export default function ChatRoomView({
           <div className="flex gap-3">
             <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative border border-gray-200">
               {img ? (
-                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" unoptimized />
+                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
                   <Package size={20} className="text-white" />
@@ -499,7 +495,7 @@ export default function ChatRoomView({
       )}
 
       {/* Pending Offer Banner */}
-      {latestPendingOffer && (
+      {hasPendingOffer && (
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-4 py-3 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -507,37 +503,46 @@ export default function ChatRoomView({
                 <Handshake size={16} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-[11px] text-amber-600 font-medium">Penawaran dari {latestPendingOffer.senderName}</p>
+                <p className="text-[11px] text-amber-600 font-medium">
+                  {isPendingFarmer ? "Penawaran dari pembeli" : "Penawaran Anda"}
+                </p>
                 <p className="text-sm font-extrabold text-[#025246]">
-                  {formatRupiah(latestPendingOffer.offerPrice)}
-                  {latestPendingOffer.offerQuantity && (
+                  {formatRupiah(pendingOffer.price)}
+                  {pendingOffer.quantity && (
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(latestPendingOffer.offerQuantity)} {room.commodityUnit}
+                      {" "}x {formatNumber(pendingOffer.quantity)} {pendingOffer.unit}
                     </span>
                   )}
                 </p>
+                {isPendingBuyer && (
+                  <p className="text-[11px] text-gray-500 mt-0.5">Menunggu respon petani...</p>
+                )}
               </div>
             </div>
-            <div className="flex gap-1.5 shrink-0">
-              <button
-                onClick={() => setConfirmDeal({ price: latestPendingOffer.offerPrice ?? "", quantity: latestPendingOffer.offerQuantity ?? "1" })}
-                className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm"
-              >
-                Setuju
-              </button>
-              <button
-                onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
-                className="px-3 py-1.5 bg-white border border-[#025246]/20 text-[#025246] text-xs font-bold rounded-lg hover:bg-gray-50"
-              >
-                Counter
-              </button>
-            </div>
+            {isPendingFarmer && (
+              <div className="flex gap-1.5 shrink-0">
+                <button
+                  onClick={handleAcceptOffer}
+                  disabled={submittingDeal}
+                  className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm disabled:opacity-40"
+                >
+                  {submittingDeal ? "Proses..." : "Terima"}
+                </button>
+                <button
+                  onClick={handleRejectOffer}
+                  disabled={submittingDeal}
+                  className="px-3 py-1.5 bg-white border border-red-200 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 disabled:opacity-40"
+                >
+                  Tolak
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Deal Banner */}
-      {hasAcceptedDeal && !latestPendingOffer && (
+      {hasAcceptedDeal && !hasPendingOffer && (
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-4 py-3 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -615,9 +620,7 @@ export default function ChatRoomView({
         {showOfferForm && (
           <div className="bg-gray-50 rounded-xl p-3 mb-2.5 border border-gray-200">
             <div className="flex items-center justify-between mb-2.5">
-              <h4 className="text-xs font-bold text-gray-800">
-                {myLatestOffer ? "Counter Penawaran" : "Ajukan Penawaran"}
-              </h4>
+              <h4 className="text-xs font-bold text-gray-800">Ajukan Penawaran</h4>
               <button onClick={() => setShowOfferForm(false)} className="p-1 hover:bg-gray-200 rounded-lg transition-colors">
                 <X size={14} className="text-gray-400" />
               </button>
@@ -651,17 +654,17 @@ export default function ChatRoomView({
               </p>
             )}
             <button
-              onClick={() => handleSendOffer(myLatestOffer ? "counter_offer" : "offer")}
-              disabled={!offerPrice || parseFloat(offerPrice) <= 0}
+              onClick={handleSendOffer}
+              disabled={!offerPrice || parseFloat(offerPrice) <= 0 || hasPendingOffer}
               className="w-full bg-[#025246] text-white text-xs font-bold py-2 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
             >
-              {myLatestOffer ? "Kirim Counter" : "Kirim Penawaran"}
+              Kirim Penawaran
             </button>
           </div>
         )}
 
         <div className="flex items-center gap-2">
-          {!showOfferForm && hasPriceRange && (
+          {!showOfferForm && hasPriceRange && !hasPendingOffer && (
             <button
               onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
               className="px-3 py-2.5 bg-[#00AA5B] text-white text-xs font-bold rounded-xl hover:bg-[#009A4F] flex items-center gap-1.5 shrink-0 shadow-sm"
@@ -760,61 +763,6 @@ export default function ChatRoomView({
         </div>
       )}
 
-      {/* Deal Confirm Modal */}
-      {confirmDeal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDeal(null)} />
-          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
-            <div className="bg-[#025246] px-5 py-4 text-white">
-              <h3 className="font-bold text-sm">Konfirmasi Deal</h3>
-              <p className="text-[11px] text-white/60 mt-0.5">Pastikan harga dan jumlah sudah sesuai</p>
-            </div>
-            <div className="p-5 space-y-3">
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1 font-medium">Harga per {room.commodityUnit}</label>
-                <input
-                  type="number"
-                  value={confirmDeal.price}
-                  onChange={(e) => setConfirmDeal((d) => (d ? { ...d, price: e.target.value } : d))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] text-gray-500 mb-1 font-medium">Jumlah ({room.commodityUnit})</label>
-                <input
-                  type="number"
-                  value={confirmDeal.quantity}
-                  min="1"
-                  max={stock}
-                  onChange={(e) => setConfirmDeal((d) => (d ? { ...d, quantity: e.target.value } : d))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
-                />
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3 flex justify-between items-center border border-gray-100">
-                <span className="text-[11px] text-gray-500 font-medium">Total</span>
-                <span className="text-sm font-extrabold text-[#025246]">
-                  {formatRupiah((parseFloat(confirmDeal.price) || 0) * (parseFloat(confirmDeal.quantity) || 0))}
-                </span>
-              </div>
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={handleConfirmDeal}
-                  disabled={submittingDeal || parseFloat(confirmDeal.price) <= 0 || parseFloat(confirmDeal.quantity) <= 0}
-                  className="flex-1 bg-[#025246] text-white text-xs font-bold py-2.5 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
-                >
-                  {submittingDeal ? "Proses..." : "Setujui Deal"}
-                </button>
-                <button
-                  onClick={() => setConfirmDeal(null)}
-                  className="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -14,10 +14,8 @@ export function useAuth(expectedRole?: string) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // Hydration detection: mark as hydrated after first client-side effect run
-    // This prevents premature redirects during SSR/hydration mismatch
-    if (!hydrated) setHydrated(true); // eslint-disable-line react-hooks/set-state-in-effect
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!hydrated) setHydrated(true); 
+  }, []); 
 
   useEffect(() => {
     if (!hydrated) return;

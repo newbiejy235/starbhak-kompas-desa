@@ -6,10 +6,9 @@ import { useActionState } from "react";
 import { Star, Send, ArrowLeft } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
 import { createReview } from "@/actions/review";
-import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { BuyerOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -29,7 +28,7 @@ function ReviewsSkeleton() {
 function ReviewsContent() {
   const searchParams = useSearchParams();
   const orderParam = searchParams.get("order");
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const [selectedOrder, setSelectedOrder] = useState<number | null>(
     orderParam ? Number(orderParam) : null,

@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
-import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime, PAYMENT_METHOD_LABEL } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type { BuyerOrder } from "@/lib/types/market";
 import CountUp from "@/components/ui/CountUp";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -43,7 +42,7 @@ function TransactionsSkeleton() {
 }
 
 export default function UserTransactions() {
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const { data: orders, loading } = useFetch(
     () =>

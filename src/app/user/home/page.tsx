@@ -8,24 +8,20 @@ import Link from "next/link";
 
 import ProductCard from "@/components/userpage/ProductCard";
 import { EmptyState } from "@/components/shared/States";
-import { getPublicCommodities, getCategories } from "@/actions/commodity";
+import { getPublicCommodities, getCategoriesWithCount } from "@/actions/commodity";
 import { useFetch } from "@/lib/hooks";
-import type {
-  PublicCommodity,
-  CategoryRow,
-} from "@/lib/types/market";
+import type { PublicCommodity } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-/* Fokus keyboard konsisten dengan halaman petani */
 const focusRing =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246]";
+
+type CategoryWithCount = { id: number; name: string; icon: string | null; count: number };
 
 function CatalogSkeleton() {
   return (
     <div className="animate-fade-up">
-      {/* Hero */}
       <Skeleton className="mb-7 h-44 rounded-card sm:h-40" />
-      {/* Filter kategori */}
       <div className="mb-6">
         <Skeleton className="mb-3 h-4 w-20" />
         <div className="flex gap-2">
@@ -34,7 +30,6 @@ function CatalogSkeleton() {
           ))}
         </div>
       </div>
-      {/* Judul katalog */}
       <div className="mb-5 space-y-2">
         <Skeleton className="h-6 w-52" />
         <Skeleton className="h-3.5 w-72" />
@@ -62,25 +57,22 @@ function HomeContent() {
   const search = searchParams.get("search") ?? "";
   const catParam = searchParams.get("category");
 
-  const { data, loading } = useFetch(
-    async () => {
-      const [products, categories] = await Promise.all([
-        getPublicCommodities({
-          search: search || undefined,
-          categoryId: catParam ? Number(catParam) : undefined,
-        }),
-        getCategories(),
-      ]);
-      return {
-        products: products as PublicCommodity[],
-        categories: categories as CategoryRow[],
-      };
-    },
+  const { data: products, loading } = useFetch(
+    () =>
+      getPublicCommodities({
+        search: search || undefined,
+        categoryId: catParam ? Number(catParam) : undefined,
+      }) as Promise<PublicCommodity[]>,
     [search, catParam],
   );
 
-  const products = data?.products ?? [];
-  const categories = data?.categories ?? [];
+  const { data: categories } = useFetch(
+    () => getCategoriesWithCount() as Promise<CategoryWithCount[]>,
+    [],
+  );
+
+  const productList = products ?? [];
+  const categoryList = categories ?? [];
 
   const chipClass = (active: boolean) =>
     `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${active
@@ -90,7 +82,6 @@ function HomeContent() {
 
   return (
     <div className="animate-fade-up">
-      {/* Hero banner — tenang, tanpa dekorasi berlebih */}
       <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
         <div className="relative z-10 max-w-xl">
           <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl lg:text-3xl">
@@ -116,7 +107,6 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* Filter kategori */}
       <section id="katalog" className="mb-7 scroll-mt-24">
         <h2 className="mb-1 text-lg font-bold tracking-tight text-neutral-900">Kategori</h2>
         <p className="mb-3 text-xs text-gray-500">Saring komoditas sesuai kebutuhan Anda.</p>
@@ -134,7 +124,7 @@ function HomeContent() {
             >
               Semua
             </button>
-            {categories.map((c) => (
+            {categoryList.map((c) => (
               <button
                 key={c.id}
                 type="button"
@@ -144,13 +134,15 @@ function HomeContent() {
               >
                 {c.icon && <span className="mr-1">{c.icon}</span>}
                 {c.name}
+                {c.count > 0 && (
+                  <span className="ml-1.5 text-xs opacity-60">({c.count})</span>
+                )}
               </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Katalog */}
       <section aria-label="Katalog komoditas">
         <div className="mb-5">
           <h2 className="text-lg font-bold tracking-tight text-neutral-900">
@@ -176,9 +168,9 @@ function HomeContent() {
               </div>
             ))}
           </div>
-        ) : products.length > 0 ? (
+        ) : productList.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((item, i) => (
+            {productList.map((item, i) => (
               <div
                 key={item.id}
                 className="animate-fade-up"
