@@ -281,17 +281,7 @@ export default function Login() {
                 </Link>
               </div>
                 
-          <div className="header-item flex items-center gap-4">
-            <span className="hidden md:block text-sm font-medium text-neutral-500">
-              Belum mempunyai akun?
-            </span>
-            <Link
-              href="/auth/register"
-              className="ml-28 border-emerald-600 text-emerald-600 shadow-sm hover:border-emerald-600 hover:text-emerald-700 transition-all duration-100"
-            >
-              Daftar Sekarang
-            </Link>
-          </div>
+
 
               <div className="right-anim-item mt-2">
                 <button
@@ -311,6 +301,19 @@ export default function Login() {
                   )}
                 </button>
               </div>
+
+          <div className="header-item flex items-center gap-1 justify-center">
+            <span className="hidden md:block text-sm font-medium text-neutral-500">
+              Belum mempunyai akun?
+            </span>
+            <Link
+              href="/auth/register"
+              className="text-sm text-emerald-700 font-semibold hover:underline"
+            >
+              Daftar Sekarang
+            </Link>
+          </div>
+
             </form>
           </div>
         </div>
