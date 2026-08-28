@@ -15,12 +15,6 @@ import {
 import { saveRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
-const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
-];
-
 export default function RegisterPetani() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -28,58 +22,88 @@ export default function RegisterPetani() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      tl.fromTo(".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+      // Animasi Cinematic Video
+      tl.fromTo(
+        ".bg-video",
+        { scale: 1.15, opacity: 0, filter: "blur(10px)" },
+        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 2.5, ease: "power2.out" }
       )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-        "-=0.9"
+      // Animasi Header
+      .fromTo(
+        ".header-item",
+        { opacity: 0, y: -20 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.1 },
+        "-=2"
       )
-      .fromTo(".footer-anim",
+      // Animasi Masuk Teks Kiri
+      .fromTo(
+        ".left-anim-item",
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, stagger: 0.15, duration: 1.2, ease: "back.out(1.2)" },
+        "-=1.5"
+      )
+      // Animasi Form (Glass)
+      .fromTo(
+        ".glass-panel",
+        { opacity: 0, y: 50, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "expo.out" },
+        "-=1.2"
+      )
+      // Animasi Input Form
+      .fromTo(
+        ".form-item",
+        { opacity: 0, x: 20 },
+        { opacity: 1, x: 0, stagger: 0.08, duration: 0.8 },
+        "-=0.6"
+      )
+      .fromTo(
+        ".footer-anim",
         { opacity: 0, y: 10 },
         { opacity: 1, duration: 0.8 },
         "-=0.5"
       );
 
+      // --- EFEK MENGHILANGKAN TEKS KIRI SETELAH 3.5 DETIK ---
+      gsap.to(".left-panel-wrapper", {
+        opacity: 0,
+        filter: "blur(10px)", // Ngilang sambil ngeblur biar sinematik
+        x: -30,
+        autoAlpha: 0, // Bikin display: none otomatis pas opacity 0 biar ga ngeblok klik
+        duration: 1.5,
+        delay: 3.5, 
+        ease: "power2.inOut"
+      });
+
+      // Animasi Orbs
       const orbs = document.querySelectorAll(".ambient-orb");
       orbs.forEach((orb, i) => {
         gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
+          scale: "random(1.1, 1.5)",
+          opacity: "random(0.2, 0.5)",
+          duration: "random(4, 7)",
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
-          delay: i * 0.3,
+          delay: i * 0.5,
         });
       });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
+      const x = (e.clientX / window.innerWidth - 0.5) * 60;
+      const y = (e.clientY / window.innerHeight - 0.5) * 60;
       gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
+        x: (i: number) => x * (i + 1.2),
+        y: (i: number) => y * (i + 1.2),
+        duration: 2,
         ease: "power2.out"
       });
     };
@@ -100,51 +124,30 @@ export default function RegisterPetani() {
   };
 
   return (
-    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
+    <div ref={containerRef} className="h-[100dvh] w-full relative font-sans overflow-hidden flex flex-col bg-neutral-900">
 
-      {/* SVG ClipPath Definition (Hidden) */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <defs>
-          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER */}
-      <div
-        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
-        style={{ clipPath: "url(#emeraldCurveClip)" }}
-      >
-        {slideshowImages.map((src, index) => {
-          const isActive = index === currentSlide;
-          return (
-            <div
-              key={src + index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isActive
-                  ? "opacity-30 scale-100 blur-0"
-                  : "opacity-0 scale-105 blur-md"
-              }`}
-            >
-              <Image
-                src={src}
-                alt="Background Slide"
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-            </div>
-          );
-        })}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
+      {/* BACKGROUND VIDEO & OVERLAYS */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <video 
+          className="bg-video absolute inset-0 w-full h-full object-cover object-center"
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+        >
+          <source src="/petaniauth/Tracktor.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Overlay dibikin lebih gelap dikit biar form transparan tetep kebaca */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#011a14]/90 via-[#022c22]/50 to-black/80 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-emerald-950/20" />
       </div>
 
-      {/* AMBIENT FLOATING ORBS */}
-      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
-        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
-        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
-        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+      {/* AMBIENT ORBS */}
+      <div ref={floatingElementsRef} className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="ambient-orb absolute top-[15%] left-[10%] w-[400px] h-[400px] rounded-full bg-emerald-500/20 blur-[100px]" />
+        <div className="ambient-orb absolute top-[60%] left-[40%] w-[500px] h-[500px] rounded-full bg-teal-400/15 blur-[120px]" />
+        <div className="ambient-orb absolute top-[30%] left-[80%] w-[300px] h-[300px] rounded-full bg-[#D9A441]/15 blur-[80px]" />
       </div>
 
       {/* HEADER NAV */}
@@ -152,55 +155,58 @@ export default function RegisterPetani() {
         <div className="header-item flex items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
+            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-white/20 transition-all duration-300"
           >
             <ArrowLeft size={16} />
             Beranda
           </Link>
-          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
-            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
-            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
+          <div className="hidden sm:flex items-center gap-2.5 ml-2 text-white">
+            <Image src="/logo-kompas-desa/kompas_desa_icon_color.png" alt="logo" width={25} height={25} />
+            <span className="text-xl font-bold tracking-tight drop-shadow-md">Kompas&apos;Desa</span>
           </div>
         </div>
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
+      <main className="relative z-20 flex-1 flex flex-col lg:flex-row items-center justify-between w-full max-w-[1500px] mx-auto px-6 lg:px-12 xl:px-16 pb-10 overflow-y-auto lg:overflow-visible">
 
-        {/* LEFT PANEL */}
-        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
-          <div className="relative z-10 w-full max-w-[380px]">
-            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
+        {/* LEFT PANEL - Dibungkus pakai class 'left-panel-wrapper' biar bisa di-fade out */}
+        <div className="left-panel-wrapper w-full lg:w-[45%] flex flex-col justify-center text-white mb-10 lg:mb-0 mt-8 lg:mt-0 pointer-events-none">
+          <div className="w-full max-w-[500px]">
+            <h1 className="left-anim-item text-4xl lg:text-[3.25rem] font-extrabold tracking-tight leading-[1.15] mb-6 drop-shadow-xl">
               Bergabung Bersama <br />
-              <span className="text-emerald-400">KompasDesa</span>
+              <span className="text-emerald-400 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
+                KompasDesa
+              </span>
             </h1>
-            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Perluas pasar, jangkau pembeli langsung tanpa perantara, dan kembangkan hasil pertanianmu bersama kami.
+            <p className="left-anim-item text-[15px] lg:text-[17px] text-emerald-50/90 leading-relaxed font-medium drop-shadow-lg max-w-[400px]">
+              Perluas pasar, jangkau pembeli langsung tanpa perantara, dan kembangkan hasil pertanianmu ke tingkat yang lebih tinggi.
             </p>
           </div>
         </div>
 
-        {/* RIGHT PANEL - Form Register */}
-        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+        {/* RIGHT PANEL - Ultra Dark Glassmorphism Form */}
+        <div className="w-full lg:w-[50%] flex justify-center lg:justify-end items-center">
+          
+          <div className="glass-panel w-full max-w-[440px] bg-black/25 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-[2rem] p-8 lg:p-10">
 
-            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
+            <div className="form-item mb-8 text-center lg:text-left flex flex-col items-center lg:items-start">
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight mb-2">
                 Informasi Dasar
               </h2>
-              <p className="text-xs lg:text-sm text-neutral-500 font-medium">
+              <p className="text-sm text-neutral-300 font-medium">
                 Lengkapi data diri Anda untuk memulai.
               </p>
             </div>
 
-            <form onSubmit={handleNext} className="flex flex-col gap-4">
+            <form onSubmit={handleNext} className="flex flex-col gap-4.5">
 
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="fullName" className="text-[13px] font-bold text-neutral-700 ml-1">
+              <div className="form-item flex flex-col gap-1.5">
+                <label htmlFor="fullName" className="text-[13px] font-bold text-neutral-200 ml-1">
                   Nama Lengkap
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-emerald-400 transition-colors">
                     <User size={18} strokeWidth={2.5} />
                   </div>
                   <input
@@ -209,18 +215,18 @@ export default function RegisterPetani() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Masukkan nama lengkap"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border border-white/10 bg-white/10 py-3.5 pl-12 pr-4 text-sm font-semibold text-white outline-none transition-all duration-300 ease-out placeholder:text-white/40 hover:bg-white/15 focus:bg-white/20 focus:border-emerald-400/50 focus:ring-4 focus:ring-emerald-400/10 shadow-sm backdrop-blur-sm"
                     required
                   />
                 </div>
               </div>
 
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="username" className="text-[13px] font-bold text-neutral-700 ml-1">
+              <div className="form-item flex flex-col gap-1.5">
+                <label htmlFor="username" className="text-[13px] font-bold text-neutral-200 ml-1">
                   Nama Pengguna
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-emerald-400 transition-colors">
                     <UserCircle size={18} strokeWidth={2.5} />
                   </div>
                   <input
@@ -229,18 +235,18 @@ export default function RegisterPetani() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Pilih nama pengguna"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border border-white/10 bg-white/10 py-3.5 pl-12 pr-4 text-sm font-semibold text-white outline-none transition-all duration-300 ease-out placeholder:text-white/40 hover:bg-white/15 focus:bg-white/20 focus:border-emerald-400/50 focus:ring-4 focus:ring-emerald-400/10 shadow-sm backdrop-blur-sm"
                     required
                   />
                 </div>
               </div>
 
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="phone" className="text-[13px] font-bold text-neutral-700 ml-1">
+              <div className="form-item flex flex-col gap-1.5">
+                <label htmlFor="phone" className="text-[13px] font-bold text-neutral-200 ml-1">
                   Nomor Telepon
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-emerald-400 transition-colors">
                     <Phone size={18} strokeWidth={2.5} />
                   </div>
                   <input
@@ -249,18 +255,18 @@ export default function RegisterPetani() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Contoh: 08123456789"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border border-white/10 bg-white/10 py-3.5 pl-12 pr-4 text-sm font-semibold text-white outline-none transition-all duration-300 ease-out placeholder:text-white/40 hover:bg-white/15 focus:bg-white/20 focus:border-emerald-400/50 focus:ring-4 focus:ring-emerald-400/10 shadow-sm backdrop-blur-sm"
                     required
                   />
                 </div>
               </div>
 
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
+              <div className="form-item flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-[13px] font-bold text-neutral-200 ml-1">
                   Email
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-emerald-400 transition-colors">
                     <Mail size={18} strokeWidth={2.5} />
                   </div>
                   <input
@@ -269,17 +275,17 @@ export default function RegisterPetani() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border border-white/10 bg-white/10 py-3.5 pl-12 pr-4 text-sm font-semibold text-white outline-none transition-all duration-300 ease-out placeholder:text-white/40 hover:bg-white/15 focus:bg-white/20 focus:border-emerald-400/50 focus:ring-4 focus:ring-emerald-400/10 shadow-sm backdrop-blur-sm"
                     required
                   />
                 </div>
               </div>
 
-              <div className="right-anim-item mt-2">
+              <div className="form-item mt-4">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-4 text-[15px] font-extrabold text-white shadow-lg transition-all duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70 opacity-40 hover:opacity-100"
                 >
                   {loading ? (
                     <>
@@ -287,16 +293,17 @@ export default function RegisterPetani() {
                       <span>Memproses...</span>
                     </>
                   ) : (
-                    <span>Lanjutkan ke Tahap 2</span>
+                    <span>Selanjutnya</span>
                   )}
                 </button>
               </div>
             </form>
+
           </div>
         </div>
       </main>
 
-      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
+      <footer className="footer-anim relative z-20 shrink-0 w-full text-center py-5 text-[12px] font-medium text-white/50 drop-shadow-md">
         &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
     </div>

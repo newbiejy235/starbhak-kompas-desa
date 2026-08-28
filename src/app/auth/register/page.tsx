@@ -7,9 +7,9 @@ import gsap from "gsap";
 import Image from "next/image";
 
 const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
+  "/images/login/ImageLogin.png",
+  "/images/login/ImagePetani.png",
+  "/images/login/ImagePembeli.png",
 ];
 
 const roles = [
@@ -120,7 +120,7 @@ export default function Register() {
               key={src + index}
               className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                 isActive
-                  ? "opacity-30 scale-100 blur-0"
+                  ? "opacity-120 scale-100 blur-0"
                   : "opacity-0 scale-105 blur-md"
               }`}
             >
