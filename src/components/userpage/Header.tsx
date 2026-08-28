@@ -21,6 +21,7 @@ import { becomePetaniAction } from "@/actions/auth";
 import { getUnreadNotificationCount } from "@/actions/notification";
 import { useAuth, useFetch } from "@/lib/hooks";
 import Avatar from "@/components/ui/Avatar";
+import SearchRecommendationDropdown from "@/components/userpage/SearchRecommendationDropdown";
 import type { ActionState } from "@/lib/types/auth";
 
 /* ============================================================
@@ -38,10 +39,13 @@ const iconBtn =
 export function HeaderSearch() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setDropdownOpen(false);
     const q = search.trim();
     if (q) {
       router.push(`/user/search?q=${encodeURIComponent(q)}`);
@@ -54,18 +58,31 @@ export function HeaderSearch() {
     setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const q = value.trim();
-    if (q) {
+    if (q && q.length >= 2) {
       debounceRef.current = setTimeout(() => {
         router.push(`/user/search?q=${encodeURIComponent(q)}`);
-      }, 600);
+      }, 800);
     }
+  };
+
+  const handleFocus = () => {
+    setDropdownOpen(true);
+  };
+
+  const handleSelect = (value: string) => {
+    setSearch(value);
+    setDropdownOpen(false);
+  };
+
+  const handleDropdownClose = () => {
+    setDropdownOpen(false);
   };
 
   return (
     <form
       onSubmit={submitSearch}
       role="search"
-      className="hidden sm:relative sm:block w-full max-w-xs lg:max-w-sm"
+      className="hidden sm:relative sm:block flex-1 mx-4 lg:mx-8"
     >
       <Search
         size={16}
@@ -73,12 +90,21 @@ export function HeaderSearch() {
         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
       />
       <input
+        ref={inputRef}
         type="text"
         value={search}
         onChange={(e) => handleChange(e.target.value)}
+        onFocus={handleFocus}
         placeholder="Cari komoditas atau petani..."
         aria-label="Cari komoditas atau petani"
         className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary ${focusRing}`}
+      />
+      <SearchRecommendationDropdown
+        query={search}
+        isOpen={dropdownOpen}
+        onClose={handleDropdownClose}
+        onSelect={handleSelect}
+        inputRef={inputRef}
       />
     </form>
   );
