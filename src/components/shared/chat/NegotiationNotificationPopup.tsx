@@ -112,7 +112,7 @@ export default function NegotiationNotificationPopup({
       {/* Progress bar */}
       <div className="absolute left-0 top-0 h-0.5 w-full bg-gray-100">
         <div
-          className="h-full bg-[#025246] transition-all duration-100 ease-linear"
+          className="h-full bg-primary transition-all duration-100 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -162,7 +162,7 @@ export default function NegotiationNotificationPopup({
         <button
           type="button"
           onClick={handleAction}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#025246] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#013D34] active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark active:scale-[0.98]"
         >
           Lihat Negosiasi
           <ArrowRight size={14} />

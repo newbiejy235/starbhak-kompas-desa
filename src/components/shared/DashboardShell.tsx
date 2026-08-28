@@ -1,27 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useActionState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ChevronDown,
-  LogOut,
-  UserRound,
-  ShoppingBag,
-  Star,
-  LifeBuoy,
-  Sprout,
-  X,
-} from "lucide-react";
+import { ChevronDown, LogOut, UserRound, LifeBuoy } from "lucide-react";
 import { useAuth } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Avatar from "@/components/ui/Avatar";
-import {
-  clearSession,
-  updateSessionRole,
-} from "@/lib/auth/client";
-import { becomePetaniAction } from "@/actions/auth";
-import type { ActionState } from "@/lib/types/auth";
+import { clearSession } from "@/lib/auth/client";
 
 /* ── Token desain ─────────────────────────────────────────── */
 const focusRing =
@@ -56,22 +42,6 @@ export default function DashboardShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  /* ── "Daftar Jadi Petani" modal state (pembeli only) ── */
-  const [modalOpen, setModalOpen] = useState(false);
-  const [closingModal, setClosingModal] = useState(false);
-
-  const [becomeState, becomeFormAction, becomePending] = useActionState(
-    async (prev: ActionState | null, data: FormData) => {
-      const res = await becomePetaniAction(prev, data);
-      if (res.success) {
-        updateSessionRole("petani");
-        router.push("/petani/dashboard");
-      }
-      return res;
-    },
-    null,
-  );
-
   /* ── Scroll listener ── */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -98,24 +68,10 @@ export default function DashboardShell({
     router.replace("/auth/login");
   };
 
-  const closeModal = () => {
-    setClosingModal(true);
-    setTimeout(() => {
-      setModalOpen(false);
-      setClosingModal(false);
-    }, 180);
-  };
-
   const profileHref = `/${role}/profile`;
 
   const menuItems = [
     { href: profileHref, label: "Lihat Profil", icon: UserRound },
-    ...(role === "pembeli"
-      ? [{ href: "/user/orders", label: "Pesanan Saya", icon: ShoppingBag }]
-      : []),
-    ...(role === "pembeli"
-      ? [{ href: "/user/reviews", label: "Ulasan Saya", icon: Star }]
-      : []),
     { href: `/${role}/bantuan`, label: "Pusat Bantuan", icon: LifeBuoy },
   ];
 
@@ -233,20 +189,6 @@ export default function DashboardShell({
                         {item.label}
                       </Link>
                     ))}
-                    {role === "pembeli" && (
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          setModalOpen(true);
-                        }}
-                        className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-success transition-colors duration-150 hover:bg-success/5 ${focusRing}`}
-                      >
-                        <Sprout size={18} aria-hidden />
-                        Daftar Jadi Petani
-                      </button>
-                    )}
                   </nav>
                   <div className="border-t border-gray-100 p-2">
                     <button
@@ -269,94 +211,6 @@ export default function DashboardShell({
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <main className="flex-1 sm:p-6 lg:p-8">{children}</main>
       </div>
-
-      {/* ── Modal "Daftar Jadi Petani" (pembeli only) ── */}
-      {role === "pembeli" && modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className={`absolute inset-0 bg-black/50 backdrop-blur-sm ${closingModal ? "animate-fade-out" : "animate-fade-in-fast"
-              }`}
-            onClick={closeModal}
-            aria-hidden
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="become-petani-title"
-            className={`relative w-full max-w-md overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-lift ${closingModal ? "animate-scale-out" : "animate-scale-in"
-              }`}
-          >
-            <div className="flex items-start justify-between gap-4 px-6 pt-6">
-              <div className="flex items-start gap-3">
-                <span
-                  aria-hidden
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0F7F5] text-primary"
-                >
-                  <Sprout size={20} strokeWidth={2} />
-                </span>
-                <div>
-                  <h2
-                    id="become-petani-title"
-                    className="text-lg font-bold tracking-tight text-gray-900"
-                  >
-                    Daftar Jadi Petani
-                  </h2>
-                  <p className="mt-0.5 text-xs text-gray-500">
-                    Jual hasil pertanian Anda langsung di Kompas&apos;Desa.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={closeModal}
-                aria-label="Tutup"
-                className={`rounded-lg p-1.5 text-gray-400 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-700 ${focusRing}`}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <form action={becomeFormAction} className="space-y-4 p-6">
-              <input type="hidden" name="userId" value={user.id} />
-              <div>
-                <label
-                  htmlFor="petani-address"
-                  className="mb-1.5 block text-xs font-medium text-gray-700"
-                >
-                  Alamat Lahan / Lokasi
-                </label>
-                <textarea
-                  id="petani-address"
-                  name="address"
-                  rows={2}
-                  placeholder="Contoh: Desa Sukamaju, Kec. Cianjur, Jawa Barat"
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
-                />
-              </div>
-              {becomeState && !becomeState.success && (
-                <p className="animate-fade-in text-sm text-danger">
-                  {becomeState.message}
-                </p>
-              )}
-              {becomeState && becomeState.success && (
-                <p className="animate-fade-in text-sm text-success">
-                  {becomeState.message}
-                </p>
-              )}
-              <button
-                type="submit"
-                disabled={becomePending}
-                className={`w-full rounded-xl bg-primary py-3 text-sm font-bold text-white transition-all duration-150 hover:bg-primary-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`}
-              >
-                {becomePending ? "Memproses..." : "Daftar sebagai Petani"}
-              </button>
-              <p className="text-center text-[11px] text-gray-400">
-                Akun Anda akan otomatis beralih menjadi Petani dan dapat
-                mengelola komoditas.
-              </p>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

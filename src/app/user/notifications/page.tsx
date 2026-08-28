@@ -6,6 +6,7 @@ import {
 } from "@/actions/notification";
 import { formatDateTime } from "@/lib/format";
 import { LoadingState, EmptyState } from "@/components/shared/States";
+import PageHeader from "@/components/shared/PageHeader";
 import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
 import { useAuth, useFetch } from "@/lib/hooks";
 import Link from "next/link";
@@ -25,7 +26,7 @@ const typeColor: Record<string, string> = {
   payment: "bg-success/10 text-success",
   review: "bg-amber-50 text-amber-600",
   system: "bg-purple-50 text-purple-600",
-  chat: "bg-[#025246]/10 text-[#025246]",
+  chat: "bg-primary/10 text-primary",
 };
 
 function NotificationsSkeleton() {
@@ -63,22 +64,25 @@ export default function UserNotifications() {
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-up">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Notifikasi</h1>
-          <p className="text-sm text-gray-500">
-            {unread > 0 ? `${unread} notifikasi belum dibaca` : "Semua sudah dibaca"}
-          </p>
-        </div>
-        {unread > 0 && (
-          <button
-            onClick={markAll}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark active:scale-95 transition-all"
-          >
-            <CheckCheck size={18} /> Tandai semua dibaca
-          </button>
-        )}
-      </div>
+      <PageHeader
+        icon={Bell}
+        title="Notifikasi"
+        subtitle={
+          unread > 0
+            ? `${unread} notifikasi belum dibaca`
+            : "Semua sudah dibaca"
+        }
+        action={
+          unread > 0 ? (
+            <button
+              onClick={markAll}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark active:scale-95 transition-all"
+            >
+              <CheckCheck size={18} /> Tandai semua dibaca
+            </button>
+          ) : undefined
+        }
+      />
 
       {list.length === 0 ? (
         <EmptyState title="Tidak Ada Notifikasi" message="Notifikasi Anda akan muncul di sini." />

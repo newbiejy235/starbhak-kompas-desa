@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, History } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
 import { formatRupiah, formatDateTime, PAYMENT_METHOD_LABEL } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
+import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { useAuth, useFetch } from "@/lib/hooks";
 import type { BuyerOrder } from "@/lib/types/market";
@@ -59,10 +60,11 @@ export default function UserTransactions() {
 
   return (
     <div className="mx-auto max-w-4xl animate-fade-up">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Riwayat Transaksi</h1>
-        <p className="mt-1 text-sm text-gray-500">Riwayat pembelian yang telah dibayar.</p>
-      </header>
+      <PageHeader
+        icon={History}
+        title="Riwayat Transaksi"
+        subtitle="Riwayat pembelian yang telah dibayar."
+      />
 
       {/* Ringkasan — pola MiniCard dashboard petani */}
       <div className="mb-6 rounded-card border border-gray-200/80 bg-white p-5 shadow-soft">

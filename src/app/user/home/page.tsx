@@ -33,7 +33,7 @@ import type { PublicCommodity } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 const focusRing =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 type CategoryWithCount = {
   id: number;
@@ -510,7 +510,7 @@ function HomeContent() {
   return (
     <div className="animate-fade-up">
       {/* Hero */}
-      <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
+      {/* <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
         <div className="relative z-10 max-w-xl">
           <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl lg:text-3xl">
             Panen Segar Langsung dari Petani Lokal
@@ -528,7 +528,7 @@ function HomeContent() {
         <div className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 opacity-15 md:block">
           <Image src="/images/user/HeaderImageUser.svg" alt="" width={160} height={160} />
         </div>
-      </section>
+      </section> */}
 
       {/* Tab switcher */}
       <div className="mb-6 flex gap-2">
