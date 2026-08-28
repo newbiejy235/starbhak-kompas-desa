@@ -12,7 +12,6 @@ import {
   ChevronDown,
   UserRound,
   ShoppingBag,
-  Star,
   Sprout,
   X,
   LifeBuoy,
@@ -149,11 +148,6 @@ const menuItems = [
     href: "/user/orders",
     label: "Pesanan Saya",
     icon: ShoppingBag,
-  },
-  {
-    href: "/user/favorites",
-    label: "Favorit",
-    icon: Star,
   },
 ];
 

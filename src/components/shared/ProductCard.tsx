@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Package, MoreHorizontal, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
-import { formatRupiah, formatNumber } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { LOW_STOCK_THRESHOLD } from "@/constants/commodities";
@@ -206,7 +206,7 @@ export default function ProductCard({
             <Package size={12} className="shrink-0" />
             {outOfStock
               ? "Stok habis"
-              : `Stok ${formatNumber(stock)} ${data.unit}`}
+              : `Stok ${formatWeight(data.stock, data.unit)}`}
             {lowStock && !outOfStock && (
               <span className="text-amber-500">&middot; Menipis</span>
             )}

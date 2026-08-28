@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from "react";
 import { CheckCircle, X, ArrowRight } from "lucide-react";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import type { NegotiationNotification } from "@/lib/hooks/useNegotiationNotification";
 
 interface Props {
@@ -153,8 +153,7 @@ export default function NegotiationNotificationPopup({
           </p>
           {(Number(notification.quantity) || 0) > 0 && (
             <p className="mt-0.5 text-xs text-gray-500">
-              Kuantitas: {Number(notification.quantity).toLocaleString("id-ID")}{" "}
-              {notification.unit}
+              Kuantitas: {formatWeight(notification.quantity, notification.unit)}
             </p>
           )}
         </div>

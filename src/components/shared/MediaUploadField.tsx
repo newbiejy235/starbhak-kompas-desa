@@ -32,7 +32,12 @@ interface MediaItem {
   error?: string;
 }
 
-interface MediaUploadFieldProps {}
+interface MediaUploadFieldProps {
+  /** URL gambar yang sudah ada (mis. saat edit komoditas). */
+  defaultImages?: (string | null)[];
+  /** URL video yang sudah ada (mis. saat edit komoditas). */
+  defaultVideoUrl?: string;
+}
 
 async function uploadItem(
   item: MediaItem,
@@ -72,13 +77,13 @@ async function uploadItem(
 }
 
 export default function MediaUploadField(
-  _props: MediaUploadFieldProps,
+  props: MediaUploadFieldProps,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaItem[]>(() => {
     const initial: MediaItem[] = [];
-    if (_props.defaultImages?.length) {
-      _props.defaultImages.forEach((url, i) => {
+    if (props.defaultImages?.length) {
+      props.defaultImages.forEach((url, i) => {
         if (url) {
           initial.push({
             id: `default-img-${i}-${Date.now()}`,
@@ -89,12 +94,12 @@ export default function MediaUploadField(
         }
       });
     }
-    if (_props.defaultVideoUrl) {
+    if (props.defaultVideoUrl) {
       initial.push({
         id: `default-vid-${Date.now()}`,
-        preview: _props.defaultVideoUrl,
+        preview: props.defaultVideoUrl,
         type: "video",
-        uploadedUrl: _props.defaultVideoUrl,
+        uploadedUrl: props.defaultVideoUrl,
       });
     }
     return initial;

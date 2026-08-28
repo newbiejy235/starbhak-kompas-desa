@@ -13,7 +13,7 @@ import {
   clearCheckoutSnapshot,
   type CheckoutSnapshotItem,
 } from "@/lib/cart";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { ActionState } from "@/lib/types/auth";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -174,9 +174,9 @@ function CheckoutContent() {
                     className="flex gap-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0"
                   >
                     <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                      {formatImage(ci.product.image) ?? formatImage(ci.product.images?.[0] ?? null) ? (
+                      {formatImage(ci.product.image) ? (
                         <Image
-                          src={formatImage(ci.product.image) ?? formatImage(ci.product.images?.[0] ?? null)!}
+                          src={formatImage(ci.product.image)!}
                           alt={ci.product.name}
                           width={80}
                           height={80}
@@ -216,7 +216,7 @@ function CheckoutContent() {
                           {formatRupiah(unitPrice)} / {ci.product.unit}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {ci.quantity} {ci.product.unit} ={" "}
+                          {formatWeight(ci.quantity, ci.product.unit)} ={" "}
                           <span className="font-semibold text-gray-800">
                             {formatRupiah(itemSubtotal)}
                           </span>

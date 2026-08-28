@@ -22,7 +22,7 @@ import {
   AlertTriangle,
   Reply,
 } from "lucide-react";
-import { formatRupiah, formatNumber } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 import Avatar from "@/components/ui/Avatar";
 
@@ -238,7 +238,7 @@ export default function ChatRoomView({
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
+    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
     await onSendMessage(offerText, "offer", price, qty, replyId);
@@ -253,7 +253,7 @@ export default function ChatRoomView({
     try {
       const price = Number(pendingOffer.price);
       const qty = Number(pendingOffer.quantity);
-      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
+      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)} = ${formatRupiah(price * qty)}`;
       await onSendMessage(acceptText, "accept", price, qty);
     } finally {
       setSubmittingDeal(false);
@@ -350,7 +350,7 @@ export default function ChatRoomView({
                     </span>
                     {msg.offerQuantity && (
                       <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                        {" "}&bull; {formatNumber(msg.offerQuantity)} {room.commodityUnit}
+                        {" "}&bull; {formatWeight(msg.offerQuantity, room.commodityUnit)}
                       </span>
                     )}
                   </p>
@@ -486,7 +486,7 @@ export default function ChatRoomView({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatNumber(room.commodityStock)}</span> {room.commodityUnit}</p>
+              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatWeight(room.commodityStock, room.commodityUnit)}</span></p>
               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                 <MapPin size={10} className="text-[#025246]" /> {room.farmerAddress || "Lokasi tidak diketahui"}
               </p>
@@ -511,7 +511,7 @@ export default function ChatRoomView({
                   {formatRupiah(pendingOffer.price)}
                   {pendingOffer.quantity && (
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(pendingOffer.quantity)} {pendingOffer.unit}
+                      {" "}x {formatWeight(pendingOffer.quantity, pendingOffer.unit)}
                     </span>
                   )}
                 </p>
@@ -556,7 +556,7 @@ export default function ChatRoomView({
                   <p className="text-sm font-extrabold text-[#025246]">
                     {formatRupiah(latestAcceptedOffer.offerPrice)}
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(latestAcceptedOffer.offerQuantity)} {room.commodityUnit} = {" "}
+                      {" "}x {formatWeight(latestAcceptedOffer.offerQuantity, room.commodityUnit)} = {" "}
                       {formatRupiah(Number(latestAcceptedOffer.offerPrice) * Number(latestAcceptedOffer.offerQuantity))}
                     </span>
                   </p>

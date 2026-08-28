@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Ellipsis, Star } from "lucide-react";
-import { formatRupiah, formatNumber } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 
 export interface ProductCardData {
@@ -16,7 +16,7 @@ export interface ProductCardData {
   unit: string;
   location: string;
   image: string | null;
-  images: string[] | null;
+  images?: string[] | null;
   rating: string;
   categoryName: string;
 }
@@ -91,7 +91,7 @@ export default function ProductCard({ data }: ProductCardProps) {
                 : formatRupiah(data.price)}
             </div>
             <div className="text-[10px] text-gray-500">
-              {hasRange ? "bisa nego · " : ""}per {data.unit} · stok {formatNumber(data.stock)} {data.unit}
+              {hasRange ? "bisa nego · " : ""}per {data.unit} · stok {formatWeight(data.stock, data.unit)}
             </div>
           </div>
           <span className="w-10 h-10 text-white bg-primary group-hover:bg-primary-dark rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-md cursor-pointer">
