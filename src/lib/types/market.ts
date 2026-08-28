@@ -1,6 +1,7 @@
 import type {
   getCategories,
   getPublicCommodities,
+  countPublicCommodities,
   getCommodityById,
   getFarmerCommodities,
   getRelatedCommodities,
@@ -42,6 +43,15 @@ import type { getSalesTargetOverview } from "@/actions/target";
 import type { getFarmerBuyers } from "@/actions/buyer";
 import type { getFarmerAchievements } from "@/actions/achievement";
 import type { getHelpFaqs } from "@/actions/help";
+import type {
+  getPublicFarmers,
+  countPublicFarmers,
+  getPublicFarmerById,
+  searchPublicFarmers,
+  countSearchPublicFarmers,
+  searchFarmersForBuyer,
+  getFarmerStorePage,
+} from "@/actions/farmer";
 
 export type AuthUser = NonNullable<
   Awaited<ReturnType<typeof getAuthUser>>
@@ -108,3 +118,14 @@ export type FarmerBuyerRow =
 export type AchievementRow =
   Awaited<ReturnType<typeof getFarmerAchievements>>[number];
 export type FaqItem = Awaited<ReturnType<typeof getHelpFaqs>>[number];
+
+export type PublicCommodityCount = Awaited<ReturnType<typeof countPublicCommodities>>;
+export type PublicFarmer = Awaited<ReturnType<typeof getPublicFarmers>>[number];
+export type PublicFarmerCount = Awaited<ReturnType<typeof countPublicFarmers>>;
+export type PublicFarmerProfile = NonNullable<
+  Awaited<ReturnType<typeof getPublicFarmerById>>
+>;
+export type SearchPublicFarmer = Awaited<ReturnType<typeof searchPublicFarmers>>[number];
+export type SearchPublicFarmerCount = Awaited<ReturnType<typeof countSearchPublicFarmers>>;
+export type FarmerSearchResult = Awaited<ReturnType<typeof searchFarmersForBuyer>>["farmers"][number];
+export type FarmerStorePage = NonNullable<Awaited<ReturnType<typeof getFarmerStorePage>>>;

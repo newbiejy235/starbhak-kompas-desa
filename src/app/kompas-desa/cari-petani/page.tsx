@@ -2,12 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
 import {
   Search,
-  MapPin,
-  Package,
   SlidersHorizontal,
   X,
   ChevronDown,
@@ -15,16 +11,18 @@ import {
   Star,
 } from "lucide-react";
 import {
-  getPublicCommodities,
-  countPublicCommodities,
+  searchPublicFarmers,
+  countSearchPublicFarmers,
+} from "@/actions/farmer";
+import {
   getCategoriesWithCount,
 } from "@/actions/commodity";
-import { getPublicFarmers } from "@/actions/farmer";
 import { useFetch } from "@/lib/hooks";
-import { formatRupiah, formatNumber } from "@/lib/format";
+import { formatRupiah } from "@/lib/format";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState, ErrorState } from "@/components/shared/States";
-import type { PublicCommodity, PublicFarmer } from "@/lib/types/market";
+import FarmerCard from "@/components/kompasdesa/FarmerCard";
+import type { SearchPublicFarmer } from "@/lib/types/market";
 
 type CategoryWithCount = {
   id: number;
@@ -43,10 +41,17 @@ const PRICE_PRESETS = [
   { label: "> Rp50.000", min: 50000, max: undefined },
 ];
 
-const QUALITY_OPTIONS = ["A", "B", "C"];
+const RATING_OPTIONS = [
+  { label: "Semua Rating", value: undefined },
+  { label: "4+ Bintang", value: 4 },
+  { label: "3+ Bintang", value: 3 },
+  { label: "2+ Bintang", value: 2 },
+];
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "Terbaru" },
+  { value: "relevance", label: "Relevansi" },
+  { value: "newest", label: "Terbaru Bergabung" },
+  { value: "rating", label: "Rating Tertinggi" },
   { value: "price_asc", label: "Harga Terendah" },
   { value: "price_desc", label: "Harga Tertinggi" },
 ];
@@ -60,7 +65,15 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-function CommoditySkeleton() {
+type FilterState = {
+  categoryId?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  location?: string;
+};
+
+function FarmerSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
@@ -68,31 +81,19 @@ function CommoditySkeleton() {
           key={i}
           className="overflow-hidden rounded-2xl border border-[#E2E8E5] bg-white"
         >
-          <Skeleton className="h-44 rounded-none" />
-          <div className="space-y-3 p-4">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-5 w-1/2" />
+          <Skeleton className="h-28 rounded-none" />
+          <div className="space-y-3 p-5">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
             <Skeleton className="h-3 w-full" />
             <Skeleton className="h-3 w-2/3" />
+            <Skeleton className="h-8 w-full rounded-xl" />
           </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function FarmerSkeleton() {
-  return (
-    <div className="flex gap-4 overflow-hidden">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="shrink-0 w-56 overflow-hidden rounded-2xl border border-[#E2E8E5] bg-white p-4"
-        >
-          <Skeleton className="mx-auto h-16 w-16 rounded-full" />
-          <Skeleton className="mt-3 h-4 w-3/4 mx-auto" />
-          <Skeleton className="mt-2 h-3 w-1/2 mx-auto" />
-          <Skeleton className="mt-3 h-8 w-full" />
         </div>
       ))}
     </div>
@@ -116,9 +117,25 @@ function FilterPanel({
 }) {
   const content = (
     <div className="space-y-6">
-      {/* Kategori */}
+      {/* Lokasi */}
       <div>
-        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">Kategori</h3>
+        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">Lokasi</h3>
+        <input
+          type="text"
+          placeholder="Contoh: Bogor, Jawa Barat"
+          value={filters.location ?? ""}
+          onChange={(e) =>
+            onFilterChange({ location: e.target.value || undefined })
+          }
+          className="w-full rounded-lg border border-[#DDE5E1] bg-white px-3 py-2 text-sm outline-none transition focus:border-[#025246]"
+        />
+      </div>
+
+      {/* Kategori Komoditas */}
+      <div>
+        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">
+          Kategori Komoditas
+        </h3>
         <div className="space-y-2">
           <button
             type="button"
@@ -154,7 +171,9 @@ function FilterPanel({
 
       {/* Harga */}
       <div>
-        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">Harga</h3>
+        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">
+          Rentang Harga
+        </h3>
         <div className="space-y-2">
           {PRICE_PRESETS.map((preset) => {
             const isActive =
@@ -206,26 +225,35 @@ function FilterPanel({
         </div>
       </div>
 
-      {/* Kualitas */}
+      {/* Rating */}
       <div>
-        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">Kualitas</h3>
-        <div className="flex gap-2">
-          {QUALITY_OPTIONS.map((q) => (
+        <h3 className="mb-3 text-sm font-bold text-[#1F302B]">
+          Rating Petani
+        </h3>
+        <div className="space-y-2">
+          {RATING_OPTIONS.map((opt) => (
             <button
-              key={q}
+              key={opt.label}
               type="button"
-              onClick={() =>
-                onFilterChange({
-                  quality: filters.quality === q ? undefined : q,
-                })
-              }
-              className={`flex-1 rounded-lg py-2 text-center text-sm font-semibold transition ${
-                filters.quality === q
+              onClick={() => onFilterChange({ minRating: opt.value })}
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
+                filters.minRating === opt.value
                   ? "bg-[#025246] text-white"
-                  : "border border-[#DDE5E1] text-[#344640] hover:border-[#025246]/30"
+                  : "text-[#344640] hover:bg-[#F3F8F5]"
               }`}
             >
-              Grade {q}
+              {opt.value !== undefined && (
+                <Star
+                  size={14}
+                  className={
+                    filters.minRating === opt.value
+                      ? "text-white"
+                      : "text-amber-400"
+                  }
+                  fill="currentColor"
+                />
+              )}
+              <span>{opt.label}</span>
             </button>
           ))}
         </div>
@@ -278,20 +306,12 @@ function FilterPanel({
   );
 }
 
-type FilterState = {
-  categoryId?: number;
-  minPrice?: number;
-  maxPrice?: number;
-  quality?: string;
-  location?: string;
-};
-
-function CariKomoditasContent() {
+function CariPetaniContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const initialQ = searchParams.get("q") ?? "";
-  const initialSort = searchParams.get("sort") ?? "newest";
+  const initialSort = searchParams.get("sort") ?? "relevance";
   const initialCat = searchParams.get("cat")
     ? Number(searchParams.get("cat"))
     : undefined;
@@ -301,7 +321,9 @@ function CariKomoditasContent() {
   const initialMaxP = searchParams.get("maxP")
     ? Number(searchParams.get("maxP"))
     : undefined;
-  const initialQl = searchParams.get("ql") ?? undefined;
+  const initialRating = searchParams.get("rating")
+    ? Number(searchParams.get("rating"))
+    : undefined;
   const initialLoc = searchParams.get("loc") ?? undefined;
 
   const [query, setQuery] = useState(initialQ);
@@ -310,7 +332,7 @@ function CariKomoditasContent() {
     categoryId: initialCat,
     minPrice: initialMinP,
     maxPrice: initialMaxP,
-    quality: initialQl,
+    minRating: initialRating,
     location: initialLoc,
   });
   const [page, setPage] = useState(1);
@@ -324,14 +346,14 @@ function CariKomoditasContent() {
     (q: string, s: string, f: FilterState) => {
       const params = new URLSearchParams();
       if (q) params.set("q", q);
-      if (s && s !== "newest") params.set("sort", s);
+      if (s && s !== "relevance") params.set("sort", s);
       if (f.categoryId) params.set("cat", String(f.categoryId));
       if (f.minPrice !== undefined) params.set("minP", String(f.minPrice));
       if (f.maxPrice !== undefined) params.set("maxP", String(f.maxPrice));
-      if (f.quality) params.set("ql", f.quality);
+      if (f.minRating) params.set("rating", String(f.minRating));
       if (f.location) params.set("loc", f.location);
       const qs = params.toString();
-      router.replace(`/kompas-desa/cari-komoditas${qs ? `?${qs}` : ""}`, {
+      router.replace(`/kompas-desa/cari-petani${qs ? `?${qs}` : ""}`, {
         scroll: false,
       });
     },
@@ -355,38 +377,38 @@ function CariKomoditasContent() {
     updateURL(debouncedQuery, sort, filters);
   }, [debouncedQuery, sort, filters, updateURL]);
 
-  const fetchCommodities = useCallback(() => {
+  const fetchFarmers = useCallback(() => {
     setError(null);
-    return getPublicCommodities({
+    return searchPublicFarmers({
       search: debouncedQuery || undefined,
       categoryId: filters.categoryId,
       location: filters.location,
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
-      quality: filters.quality,
+      minRating: filters.minRating,
       sort,
       limit: LIMIT,
       offset: (page - 1) * LIMIT,
-    }).then((r) => r as PublicCommodity[]);
+    }).then((r) => r as SearchPublicFarmer[]);
   }, [debouncedQuery, filters, sort, page]);
 
   const fetchCount = useCallback(() => {
-    return countPublicCommodities({
+    return countSearchPublicFarmers({
       search: debouncedQuery || undefined,
       categoryId: filters.categoryId,
       location: filters.location,
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
-      quality: filters.quality,
+      minRating: filters.minRating,
     });
   }, [debouncedQuery, filters]);
 
-  const { data: commodities, loading } = useFetch(fetchCommodities, [
+  const { data: farmers, loading } = useFetch(fetchFarmers, [
     debouncedQuery,
     filters.categoryId,
     filters.minPrice,
     filters.maxPrice,
-    filters.quality,
+    filters.minRating,
     filters.location,
     sort,
     page,
@@ -397,20 +419,7 @@ function CariKomoditasContent() {
     filters.categoryId,
     filters.minPrice,
     filters.maxPrice,
-    filters.quality,
-    filters.location,
-  ]);
-
-  const fetchFarmers = useCallback(() => {
-    return getPublicFarmers({
-      search: debouncedQuery || undefined,
-      location: filters.location,
-      limit: 6,
-    }).then((r) => r as PublicFarmer[]);
-  }, [debouncedQuery, filters.location]);
-
-  const { data: farmers, loading: farmersLoading } = useFetch(fetchFarmers, [
-    debouncedQuery,
+    filters.minRating,
     filters.location,
   ]);
 
@@ -419,7 +428,6 @@ function CariKomoditasContent() {
     [],
   );
 
-  const commodityList = commodities ?? [];
   const farmerList = farmers ?? [];
   const categoryList = categories ?? [];
   const count = totalCount ?? 0;
@@ -450,11 +458,11 @@ function CariKomoditasContent() {
         setFilters((f) => ({ ...f, minPrice: undefined, maxPrice: undefined })),
     });
   }
-  if (filters.quality) {
+  if (filters.minRating) {
     activeFilters.push({
-      key: "quality",
-      label: `Grade ${filters.quality}`,
-      onRemove: () => setFilters((f) => ({ ...f, quality: undefined })),
+      key: "rating",
+      label: `${filters.minRating}+ Bintang`,
+      onRemove: () => setFilters((f) => ({ ...f, minRating: undefined })),
     });
   }
   if (filters.location) {
@@ -467,14 +475,11 @@ function CariKomoditasContent() {
 
   const resetFilters = () => {
     setFilters({});
-    setSort("newest");
+    setSort("relevance");
     setQuery("");
   };
 
-  const commodityImage = (c: PublicCommodity) => {
-    if (c.image) return c.image;
-    return null;
-  };
+  const activeFilterCount = activeFilters.length;
 
   if (error) {
     return (
@@ -499,10 +504,10 @@ function CariKomoditasContent() {
         <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 lg:py-10">
           <div className="max-w-2xl">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Cari Komoditas
+              Cari Petani
             </h1>
             <p className="mt-1 font-body text-sm text-[#6B807C]">
-              Temukan hasil pertanian dari petani lokal
+              Temukan petani terpercaya untuk kebutuhan Anda
             </p>
           </div>
 
@@ -516,8 +521,8 @@ function CariKomoditasContent() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cari hasil pertanian, komoditas, atau nama petani..."
-                aria-label="Cari komoditas"
+                placeholder="Cari nama petani, lokasi, atau komoditas..."
+                aria-label="Cari petani"
                 className="
                   h-12 w-full rounded-xl
                   border border-[#DDE5E1]
@@ -571,6 +576,11 @@ function CariKomoditasContent() {
                 >
                   <SlidersHorizontal size={15} />
                   Filter
+                  {activeFilterCount > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#025246] text-[10px] font-bold text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </button>
 
                 <div className="relative">
@@ -590,7 +600,7 @@ function CariKomoditasContent() {
                         className="fixed inset-0 z-40"
                         onClick={() => setSortOpen(false)}
                       />
-                      <div className="absolute left-0 top-full z-50 mt-1 w-48 rounded-xl border border-[#E2E8E5] bg-white py-1 shadow-lg animate-fade-in">
+                      <div className="absolute left-0 top-full z-50 mt-1 w-52 rounded-xl border border-[#E2E8E5] bg-white py-1 shadow-lg animate-fade-in">
                         {SORT_OPTIONS.map((opt) => (
                           <button
                             key={opt.value}
@@ -650,104 +660,15 @@ function CariKomoditasContent() {
               </div>
             )}
 
-            {/* COMMODITY RESULTS */}
+            {/* FARMER RESULTS */}
             {loading ? (
-              <CommoditySkeleton />
-            ) : commodityList.length > 0 ? (
+              <FarmerSkeleton />
+            ) : farmerList.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {commodityList.map((item) => {
-                    const img = commodityImage(item);
-                    return (
-                      <article
-                        key={item.id}
-                        className="group overflow-hidden rounded-2xl border border-[#E2E8E5] bg-white transition-all duration-300 hover:-translate-y-1 hover:border-[#025246]/30 hover:shadow-[0_16px_40px_rgba(2,82,70,0.08)]"
-                      >
-                        <div className="relative h-44 overflow-hidden bg-[#EEF3F0]">
-                          {img ? (
-                            <Image
-                              src={img}
-                              alt={item.name}
-                              fill
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-xs text-[#8A9C98]">
-                              Tidak ada gambar
-                            </div>
-                          )}
-                          {item.categoryName && (
-                            <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 font-body text-[10px] font-semibold text-[#025246] shadow-sm">
-                              {item.categoryName}
-                            </span>
-                          )}
-                          {item.status === "sold_out" && (
-                            <span className="absolute right-3 top-3 rounded-full bg-red-500/90 px-2.5 py-1 font-body text-[10px] font-semibold text-white">
-                              Habis
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="p-4">
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="line-clamp-1 font-body text-[15px] font-bold text-[#1F302B]">
-                              {item.name}
-                            </h3>
-                            <span className="shrink-0 rounded-full bg-[#EAF3EF] px-2 py-0.5 font-body text-[9px] font-semibold text-[#025246]">
-                              {item.quality ? `Grade ${item.quality}` : ""}
-                            </span>
-                          </div>
-
-                          <p className="mt-1.5 font-body text-lg font-bold text-[#025246]">
-                            {formatRupiah(Number(item.price))}
-                            <span className="ml-1 text-xs font-medium text-[#81908C]">
-                              / {item.unit}
-                            </span>
-                          </p>
-
-                          <div className="mt-3 space-y-1.5 border-t border-[#EEF1F0] pt-3">
-                            <div className="flex items-center gap-1.5 text-xs text-[#71817D]">
-                              <MapPin size={12} className="shrink-0" />
-                              <span className="truncate">
-                                {item.location || "Lokasi tidak tersedia"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs text-[#71817D]">
-                              <Package size={12} className="shrink-0" />
-                              <span>
-                                Stok {formatNumber(Number(item.stock))}{" "}
-                                {item.unit}
-                              </span>
-                            </div>
-                            {Number(item.rating) > 0 && (
-                              <div className="flex items-center gap-1.5 text-xs text-amber-500">
-                                <Star size={12} fill="currentColor" />
-                                <span>
-                                  {Number(item.rating).toFixed(1)}
-                                  <span className="text-[#8A9C98] ml-1">
-                                    ({item.reviewCount})
-                                  </span>
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          <p className="mt-2 truncate font-body text-xs text-[#8A9C98]">
-                            {item.farmerName || "Petani"}
-                          </p>
-
-                          <Link
-                            href={`/kompas-desa/cari-komoditas/${item.id}`}
-                            className="mt-3 block w-full rounded-lg bg-[#025246] py-2 text-center font-body text-xs font-semibold text-white transition hover:bg-[#013E35]"
-                          >
-                            Lihat Detail
-                          </Link>
-                        </div>
-                      </article>
-                    );
-                  })}
+                  {farmerList.map((farmer) => (
+                    <FarmerCard key={farmer.id} farmer={farmer} />
+                  ))}
                 </div>
 
                 {hasMore && (
@@ -764,7 +685,7 @@ function CariKomoditasContent() {
               </>
             ) : (
               <EmptyState
-                title="Tidak menemukan hasil"
+                title="Petani tidak ditemukan"
                 message="Coba gunakan kata kunci lain atau kurangi filter yang digunakan."
               >
                 {activeFilters.length > 0 && (
@@ -777,59 +698,6 @@ function CariKomoditasContent() {
                   </button>
                 )}
               </EmptyState>
-            )}
-
-            {/* FARMER DISCOVERY */}
-            {!loading && farmerList.length > 0 && (
-              <div className="mt-12">
-                <h2 className="mb-4 text-lg font-bold text-[#1F302B]">
-                  Petani yang relevan
-                </h2>
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
-                  {farmersLoading ? (
-                    <FarmerSkeleton />
-                  ) : (
-                    farmerList.map((farmer) => (
-                      <Link
-                        key={farmer.id}
-                        href={`/kompas-desa/petani/${farmer.id}`}
-                        className="group flex w-56 shrink-0 flex-col items-center rounded-2xl border border-[#E2E8E5] bg-white p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#025246]/30 hover:shadow-[0_12px_32px_rgba(2,82,70,0.08)]"
-                      >
-                        <div className="relative h-16 w-16 overflow-hidden rounded-full bg-[#EEF3F0]">
-                          {farmer.fotoProfile ? (
-                            <Image
-                              src={farmer.fotoProfile}
-                              alt={farmer.fullName}
-                              fill
-                              sizes="64px"
-                              className="object-cover"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#025246]">
-                              {farmer.fullName.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-
-                        <h3 className="mt-3 line-clamp-1 text-sm font-bold text-[#1F302B]">
-                          {farmer.fullName}
-                        </h3>
-                        <p className="mt-0.5 text-xs text-[#71817D]">
-                          Petani{farmer.village ? ` · ${farmer.village}` : ""}
-                        </p>
-                        <p className="mt-1 text-xs text-[#8A9C98]">
-                          {farmer.commodityCount} Komoditas
-                        </p>
-
-                        <span className="mt-3 w-full rounded-lg border border-[#DDE5E1] py-2 text-center text-xs font-semibold text-[#344640] transition group-hover:border-[#025246] group-hover:text-[#025246]">
-                          Lihat Profil
-                        </span>
-                      </Link>
-                    ))
-                  )}
-                </div>
-              </div>
             )}
           </div>
         </div>
@@ -854,10 +722,10 @@ function SearchFallback() {
   );
 }
 
-export default function CariKomoditasPage() {
+export default function CariPetaniPage() {
   return (
     <Suspense fallback={<SearchFallback />}>
-      <CariKomoditasContent />
+      <CariPetaniContent />
     </Suspense>
   );
 }

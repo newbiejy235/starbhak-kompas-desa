@@ -9,8 +9,11 @@ import {
   EyeOff,
   Loader2,
   ArrowLeft,
-  User,
-  Lock
+  Mail,
+  Lock,
+  Sprout,
+  Truck,
+  ShieldCheck,
 } from "lucide-react";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
@@ -18,18 +21,12 @@ import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
 import Image from "next/image";
 
-const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
-];
-
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [remember, setRemember] = useState(false);
 
   const [state, formAction, pending] = useActionState<LoginResult, FormData>(
     loginAction,
@@ -37,15 +34,6 @@ export default function Login() {
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const floatingElementsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
-    }, 4000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (state.success && state.token && state.user && state.redirect) {
@@ -56,148 +44,157 @@ export default function Login() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      tl.fromTo(".bg-curve-container", 
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+      tl.fromTo(
+        ".terrace-band",
+        { yPercent: 12, opacity: 0 },
+        { yPercent: 0, opacity: 1, duration: 1.1, stagger: 0.08 },
       )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"], 
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 }, 
-        "-=0.9"
-      )
-      .fromTo(".footer-anim", 
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 }, 
-        "-=0.5"
-      );
+        .fromTo(
+          ".header-item",
+          { opacity: 0, y: -12 },
+          { opacity: 1, y: 0, duration: 0.7 },
+          "-=0.7",
+        )
+        .fromTo(
+          ".left-anim-item",
+          { opacity: 0, y: 24 },
+          { opacity: 1, y: 0, stagger: 0.08, duration: 0.9 },
+          "-=0.6",
+        )
+        .fromTo(
+          ".feature-badge",
+          { opacity: 0, x: -16 },
+          { opacity: 1, x: 0, stagger: 0.1, duration: 0.7 },
+          "-=0.5",
+        )
+        .fromTo(
+          ".right-anim-item",
+          { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, stagger: 0.05, duration: 0.8 },
+          "-=0.8",
+        );
 
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.3,
-        });
+      gsap.to(".drift-slow", {
+        y: 14,
+        duration: 6,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+      gsap.to(".drift-fast", {
+        y: -10,
+        x: 6,
+        duration: 4.5,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: 0.4,
       });
     }, containerRef);
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      
-      gsap.to(".ambient-orb", {
-        x: (i) => x * (i + 1.5),
-        y: (i) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out"
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
+    return () => ctx.revert();
   }, []);
 
   return (
-    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
-      
-      {/* SVG ClipPath Definition (Hidden) */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <defs>
-          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
-          </clipPath>
-        </defs>
-      </svg>
+    <div
+      ref={containerRef}
+      className="h-[100dvh] w-full relative bg-[#F4F7F5] font-sans overflow-hidden flex flex-col"
+    >
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap");
+        .font-display {
+          font-family: "Fraunces", serif;
+        }
+        .font-sans {
+          font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+        }
+      `}</style>
 
-      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER (Presisi Mengikuti Lengkungan) */}
-      <div 
-        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
-        style={{ clipPath: "url(#emeraldCurveClip)" }}
-      >
-        {/* Slideshow Images */}
-        {slideshowImages.map((src, index) => {
-          const isActive = index === currentSlide;
-          return (
-            <div
-              key={src + index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isActive
-                  ? "opacity-30 scale-100 blur-0"
-                  : "opacity-0 scale-105 blur-md"
-              }`}
-            >
-              <Image
-                src={src}
-                alt="Background Slide"
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-            </div>
-          );
-        })}
+      {/* LEFT — BRAND PANEL (full-bleed, sits behind header + footer too) */}
+      <div className="hidden lg:block absolute inset-y-0 left-0 lg:w-[46%] xl:w-[52%] h-full overflow-hidden bg-gradient-to-b from-[#022c22] to-[#04382f] z-0">
+        {/* Terasering contour bands (signature element) */}
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 800 900"
+          preserveAspectRatio="xMidYMax slice"
+          aria-hidden="true"
+        >
+          <path
+            className="terrace-band"
+            d="M-50,900 L-50,620 C160,560 260,650 420,600 C580,550 660,600 850,540 L850,900 Z"
+            fill="#0b3d31"
+          />
+          <path
+            className="terrace-band"
+            d="M-50,900 L-50,700 C140,660 300,720 460,680 C620,640 700,690 850,650 L850,900 Z"
+            fill="#0f4a3b"
+          />
+          <path
+            className="terrace-band"
+            d="M-50,900 L-50,780 C180,750 320,800 480,770 C640,740 720,780 850,760 L850,900 Z"
+            fill="#14584a"
+          />
+        </svg>
 
-        {/* Overlay Dark Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
+        {/* Ambient light drift */}
+        <div className="drift-slow absolute top-[14%] left-[18%] w-40 h-40 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
+        <div className="drift-fast absolute top-[38%] left-[62%] w-24 h-24 rounded-full bg-[#D9A441]/10 blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col justify-center h-full px-10 xl:px-16 2xl:px-20 py-16">
+          <div className="max-w-[420px]"> 
+
+            <h1 className="left-anim-item font-display text-[2.35rem] xl:text-[2.85rem] 2xl:text-[3.1rem] leading-[1.08] text-emerald-300 font-semibold mb-6">
+              Masuk{" "}
+              <span className="italic font-normal text-white ">
+                untuk
+              {" "}
+              Menggunakan  Sistem
+              </span>
+            </h1>
+
+            <p className="left-anim-item text-[14.5px] xl:text-[15px] text-emerald-100/75 leading-relaxed mb-10 max-w-[360px]">
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan,
+              dan memperluas relasi bersama petani di seluruh Indonesia.
+            </p>
+
+          </div>
+        </div>
       </div>
 
-      {/* AMBIENT FLOATING ORBS */}
-      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
-        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
-        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
-        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
-      </div>
-
-      {/* HEADER NAV */}
-      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
-        <div className="header-item flex items-center gap-4">
+      {/* HEADER NAV — floats above the green panel, transparent */}
+      <header className="absolute top-0 left-0 z-30 w-full flex items-center justify-between px-6 py-5 lg:px-10">
+        <div className="header-item flex items-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
+            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full border border-neutral-200 shadow-sm hover:border-neutral-300 hover:bg-neutral-50 transition-colors duration-200"
           >
             <ArrowLeft size={16} />
             Beranda
           </Link>
-          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
-            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
-            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
+        </div>
+        <div className="header-item flex items-center gap-2 text-neutral-800">
+          <div className="w-7 h-7 flex items-center justify-center">
+            <Image src="/logo-kompas-desa/kompas_desa_icon_color.png" alt="Logo Kompas Desa" width={20} height={20}></Image>
           </div>
+          <span className="font-display text-lg font-semibold tracking-tight">
+            Kompas&apos;Desa
+          </span>
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
-        
-        {/* LEFT PANEL */}
-        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
-          <div className="relative z-10 w-full max-w-[380px]">
-            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Login untuk <br />
-              <span className="text-emerald-400">Mengakses Sistem</span>
-            </h1>
+      {/* MAIN */}
+      <main className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden">
+        {/* LEFT spacer — keeps the form column offset on desktop; visual comes from the absolute panel behind */}
+        <div className="hidden lg:block lg:w-[46%] xl:w-[52%] h-full shrink-0" aria-hidden="true" />
 
-            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama Kompas&rsquo;Desa.
-            </p>
-          </div>
-        </div>
-
-        {/* RIGHT PANEL - Form Login */}
-        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
-            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
-                Masuk ke Akun
+        {/* RIGHT — FORM PANEL */}
+        <div className="w-full lg:w-[54%] xl:w-[48%] h-full flex flex-col justify-center items-center px-6 lg:px-10 xl:px-12 pt-24 pb-8 lg:py-0 overflow-y-auto">
+          <div className="w-full max-w-[380px]">
+            <div className="right-anim-item mb-8">
+              <h2 className="font-display text-[2rem] font-semibold text-neutral-900 tracking-tight leading-tight">
+                Selamat Datang Kembali
               </h2>
             </div>
 
@@ -205,7 +202,7 @@ export default function Login() {
               {state.message && (
                 <div
                   role="alert"
-                  className={`right-anim-item text-center text-[13px] font-semibold rounded-xl px-4 py-3 border ${
+                  className={`right-anim-item text-[13px] font-medium rounded-xl px-4 py-3 border ${
                     state.success
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                       : "bg-red-50 text-red-600 border-red-200"
@@ -216,13 +213,15 @@ export default function Login() {
               )}
 
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
+                <label htmlFor="email" className="text-[13px] font-semibold text-neutral-700">
                   Email
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <User size={18} strokeWidth={2.5} />
-                  </div>
+                  <Mail
+                    size={17}
+                    strokeWidth={2}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-[#025246] transition-colors"
+                  />
                   <input
                     id="email"
                     type="email"
@@ -230,20 +229,30 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@kompasdesa.id"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm text-neutral-900 outline-none transition-colors duration-150 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#025246] focus:ring-4 focus:ring-[#025246]/10"
                     required
                   />
                 </div>
               </div>
 
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="password" className="text-[13px] font-bold text-neutral-700 ml-1">
-                  Kata Sandi
-                </label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-[13px] font-semibold text-neutral-700">
+                    Kata Sandi
+                  </label>
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-[12.5px] font-semibold text-[#025246] hover:underline"
+                  >
+                    Lupa kata sandi?
+                  </Link>
+                </div>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Lock size={18} strokeWidth={2.5} />
-                  </div>
+                  <Lock
+                    size={17}
+                    strokeWidth={2}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-[#025246] transition-colors"
+                  />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -251,76 +260,64 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Masukkan kata sandi akun"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-12 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-11 pr-11 text-sm text-neutral-900 outline-none transition-colors duration-150 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#025246] focus:ring-4 focus:ring-[#025246]/10"
                     required
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors focus:outline-none"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors"
                   >
-                    {showPassword ? <Eye size={18} strokeWidth={2.5} /> : <EyeOff size={18} strokeWidth={2.5} />}
+                    {showPassword ? <EyeOff size={17} strokeWidth={2} /> : <Eye size={17} strokeWidth={2} />}
                   </button>
                 </div>
               </div>
 
-              <div className="right-anim-item flex items-center justify-between pt-1">
-                <label className="flex cursor-pointer items-center gap-2.5 group">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-600 transition-colors cursor-pointer"
-                  />
-                  <span className="text-[13px] font-semibold text-neutral-500 group-hover:text-neutral-700 transition-colors">Ingat Saya</span>
-                </label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-[13px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition-all"
-                >
-                  Lupa kata sandi?
+              <label className="right-anim-item flex items-center gap-2.5 cursor-pointer w-fit select-none">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="h-4 w-4 rounded border-neutral-300 text-[#025246] focus:ring-[#025246]/30 cursor-pointer"
+                />
+                <span className="text-[13px] font-medium text-neutral-500">Ingat saya di perangkat ini</span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={pending}
+                className="right-anim-item mt-1 group flex w-full items-center justify-center gap-2 rounded-xl bg-[#025246] px-4 py-3.5 text-[14.5px] font-bold text-white transition-all duration-200 hover:bg-[#013d34] hover:shadow-lg hover:shadow-[#025246]/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+              >
+                {pending ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <span>Masuk</span>
+                )}
+              </button>
+
+              <div className="right-anim-item flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-neutral-200" />
+                <span className="text-[12px] text-neutral-400">atau</span>
+                <div className="h-px flex-1 bg-neutral-200" />
+              </div>
+
+              <div className="right-anim-item flex items-center justify-center gap-1.5">
+                <span className="text-[13.5px] text-neutral-500">Belum mempunyai akun?</span>
+                <Link href="/auth/register" className="text-[13.5px] font-bold text-[#025246] hover:underline">
+                  Daftar sekarang
                 </Link>
               </div>
-                
-
-
-              <div className="right-anim-item mt-2">
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {pending ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      <span>Memproses...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Masuk</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-          <div className="header-item flex items-center gap-1 justify-center">
-            <span className="hidden md:block text-sm font-medium text-neutral-500">
-              Belum mempunyai akun?
-            </span>
-            <Link
-              href="/auth/register"
-              className="text-sm text-emerald-700 font-semibold hover:underline"
-            >
-              Daftar Sekarang
-            </Link>
-          </div>
-
             </form>
           </div>
         </div>
       </main>
 
-      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
-        &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
+      <footer className="relative z-10 shrink-0 w-full text-center py-4 text-[12px] text-neutral-400 lg:pl-[46%] xl:pl-[52%]">
+        &copy; 2026 Kompas&apos;Desa. Hak cipta dilindungi.
       </footer>
     </div>
   );

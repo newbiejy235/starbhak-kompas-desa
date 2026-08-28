@@ -38,14 +38,26 @@ const iconBtn =
 export function HeaderSearch() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = search.trim();
     if (q) {
-      router.push(`/user/home?search=${encodeURIComponent(q)}`);
+      router.push(`/user/search?q=${encodeURIComponent(q)}`);
     } else {
       router.push("/user/home");
+    }
+  };
+
+  const handleChange = (value: string) => {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const q = value.trim();
+    if (q) {
+      debounceRef.current = setTimeout(() => {
+        router.push(`/user/search?q=${encodeURIComponent(q)}`);
+      }, 600);
     }
   };
 
@@ -63,9 +75,9 @@ export function HeaderSearch() {
       <input
         type="text"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cari komoditas..."
-        aria-label="Cari komoditas"
+        onChange={(e) => handleChange(e.target.value)}
+        placeholder="Cari komoditas atau petani..."
+        aria-label="Cari komoditas atau petani"
         className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary ${focusRing}`}
       />
     </form>

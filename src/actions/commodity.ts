@@ -11,9 +11,11 @@ import {
   eq,
   and,
   desc,
-  like,
+  ilike,
   or,
   gt,
+  gte,
+  lte,
   asc,
   sql,
   inArray,
@@ -54,6 +56,11 @@ export async function getPublicCommodities(params?: {
   categoryId?: number;
   farmerId?: number;
   status?: string;
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  quality?: string;
+  sort?: string;
   limit?: number;
   offset?: number;
 }) {
@@ -66,7 +73,10 @@ export async function getPublicCommodities(params?: {
 
   if (params?.search) {
     conditions.push(
-      like(commoditiesTable.name, `%${params.search}%`),
+      or(
+        ilike(commoditiesTable.name, `%${params.search}%`),
+        ilike(usersTable.fullName, `%${params.search}%`),
+      )!,
     );
   }
   if (params?.categoryId) {
@@ -75,9 +85,36 @@ export async function getPublicCommodities(params?: {
   if (params?.farmerId) {
     conditions.push(eq(commoditiesTable.farmerId, params.farmerId));
   }
+  if (params?.location) {
+    conditions.push(ilike(commoditiesTable.location, `%${params.location}%`));
+  }
+  if (params?.minPrice !== undefined) {
+    conditions.push(gte(commoditiesTable.price, String(params.minPrice)));
+  }
+  if (params?.maxPrice !== undefined) {
+    conditions.push(lte(commoditiesTable.price, String(params.maxPrice)));
+  }
+  if (params?.quality) {
+    conditions.push(eq(commoditiesTable.quality, params.quality));
+  }
 
   const limit = params?.limit ?? 20;
   const offset = params?.offset ?? 0;
+
+  let orderBy;
+  switch (params?.sort) {
+    case "price_asc":
+      orderBy = asc(commoditiesTable.price);
+      break;
+    case "price_desc":
+      orderBy = desc(commoditiesTable.price);
+      break;
+    case "newest":
+      orderBy = desc(commoditiesTable.createdAt);
+      break;
+    default:
+      orderBy = desc(commoditiesTable.createdAt);
+  }
 
   return db
     .select({
@@ -107,9 +144,57 @@ export async function getPublicCommodities(params?: {
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .where(and(...conditions))
-    .orderBy(desc(commoditiesTable.createdAt))
+    .orderBy(orderBy)
     .limit(limit)
     .offset(offset);
+}
+
+export async function countPublicCommodities(params?: {
+  search?: string;
+  categoryId?: number;
+  location?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  quality?: string;
+}) {
+  const conditions = [
+    or(
+      eq(commoditiesTable.status, "available"),
+      eq(commoditiesTable.status, "verified"),
+    ),
+  ];
+
+  if (params?.search) {
+    conditions.push(
+      or(
+        ilike(commoditiesTable.name, `%${params.search}%`),
+        ilike(usersTable.fullName, `%${params.search}%`),
+      )!,
+    );
+  }
+  if (params?.categoryId) {
+    conditions.push(eq(commoditiesTable.categoryId, params.categoryId));
+  }
+  if (params?.location) {
+    conditions.push(ilike(commoditiesTable.location, `%${params.location}%`));
+  }
+  if (params?.minPrice !== undefined) {
+    conditions.push(gte(commoditiesTable.price, String(params.minPrice)));
+  }
+  if (params?.maxPrice !== undefined) {
+    conditions.push(lte(commoditiesTable.price, String(params.maxPrice)));
+  }
+  if (params?.quality) {
+    conditions.push(eq(commoditiesTable.quality, params.quality));
+  }
+
+  const [result] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(commoditiesTable)
+    .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
+    .where(and(...conditions));
+
+  return result?.count ?? 0;
 }
 
 export async function getCommoditiesByIds(ids: number[]) {
