@@ -17,8 +17,7 @@ export default function UserLayout({
       headerLeft={<HeaderSearch />}
       headerRight={<HeaderActions />}
     >
-      {/* Padding mobile dari layout; sm+ memakai padding bawaan shell */}
-      <div className="p-4 sm:p-0">{children}</div>
+      {children}
     </DashboardShell>
   );
 }

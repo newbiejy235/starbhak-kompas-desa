@@ -109,7 +109,7 @@ export default function PetaniChatPage() {
       {/* Header */}
       <header className="shrink-0 border-b border-gray-100 bg-white px-4 py-4 sm:px-6 rounded-2xl">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#025246]/10 text-[#025246]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <MessageCircle size={20} strokeWidth={2.25} />
           </div>
           <div className="min-w-0">
@@ -134,7 +134,7 @@ export default function PetaniChatPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Cari percakapan..."
             aria-label="Cari percakapan"
-            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-[#025246] focus:outline-none focus:ring-1 focus:ring-[#025246]"
+            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
         </div>
 
@@ -154,14 +154,14 @@ export default function PetaniChatPage() {
                 aria-selected={isActive}
                 onClick={() => setActiveFilter(filter.key)}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${isActive
-                  ? "bg-[#025246]/10 font-semibold text-[#025246]"
+                  ? "bg-primary/10 font-semibold text-primary"
                   : "font-medium text-gray-500 hover:text-gray-900"
                   }`}
               >
                 {filter.label}
                 {typeof filter.count === "number" && filter.count > 0 && (
                   <span
-                    className={`text-xs ${isActive ? "text-[#025246]" : "text-gray-400"
+                    className={`text-xs ${isActive ? "text-primary" : "text-gray-400"
                       }`}
                   >
                     {filter.count}

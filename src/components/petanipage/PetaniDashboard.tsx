@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const summary = [
-  { label: "Produk Aktif", value: "24", icon: Package, color: "bg-[#025246]" },
+  { label: "Produk Aktif", value: "24", icon: Package, color: "bg-primary" },
   { label: "Pesanan Baru", value: "7", icon: ShoppingCart, color: "bg-amber-500" },
   { label: "Pendapatan Bulan Ini", value: "Rp 8.450.000", icon: Wallet, color: "bg-green-600" },
 ];
@@ -70,7 +70,7 @@ export default function PetaniDashboard() {
         {/* Snappy press feedback */}
         <button
           onClick={() => notify("Form tambah komoditas dibuka.")}
-          className="flex items-center gap-2 bg-[#025246] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md hover:bg-[#036350] active:scale-95 transition-transform duration-100"
+          className="flex items-center gap-2 bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md hover:bg-primary-dark active:scale-95 transition-all duration-150"
         >
           <Plus size={16} /> Tambah Komoditas
         </button>
@@ -142,7 +142,7 @@ export default function PetaniDashboard() {
               // Fast row highlight
               className="flex items-center gap-3 px-2 py-3.5 cursor-pointer rounded-lg transition-colors duration-150 hover:bg-gray-50"
             >
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#025246] flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-primary flex items-center justify-center shrink-0">
                 <Package size={17} />
               </div>
               <div className="flex-1 min-w-0">

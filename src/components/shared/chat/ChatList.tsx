@@ -108,8 +108,8 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
   if (rooms.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-[#025246]/10 to-[#00AA5B]/10 rounded-3xl flex items-center justify-center mb-5">
-          <MessageCircle size={36} className="text-[#025246]" />
+        <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-success/10 rounded-3xl flex items-center justify-center mb-5">
+          <MessageCircle size={36} className="text-primary" />
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">Belum Ada Percakapan</h3>
         <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
@@ -123,9 +123,9 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
     <div className="flex flex-col h-full">
       <div className="shrink-0 px-5 py-4 border-b border-gray-100 bg-white rounded-t-3xl">
         <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center gap-1.5 bg-[#025246]/5 rounded-full px-3 py-1.5">
-            <div className="w-2 h-2 bg-[#00AA5B] rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-[#025246]">{activeCount} Aktif</span>
+          <div className="flex items-center gap-1.5 bg-primary/5 rounded-full px-3 py-1.5">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+            <span className="text-xs font-medium text-primary">{activeCount} Aktif</span>
           </div>
           {dealCount > 0 && (
             <div className="flex items-center gap-1.5 bg-green-50 rounded-full px-3 py-1.5">
@@ -143,15 +143,15 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama atau produk..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:bg-white transition-colors"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
             />
           </div>
           <button
             onClick={() => setShowFilter(!showFilter)}
             className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
               hasFilter
-                ? "bg-[#025246] text-white border-[#025246]"
-                : "bg-white text-gray-600 border-gray-200 hover:border-[#025246] hover:text-[#025246]"
+                ? "bg-primary text-white border-primary"
+                : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
             }`}
           >
             <Filter size={15} />
@@ -165,7 +165,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
             <select
               value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#025246]"
+              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
             >
               <option value="">Semua Bulan</option>
               {MONTHS.map((m, i) => (
@@ -175,7 +175,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#025246]"
+              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
             >
               <option value="">Semua Tahun</option>
               {availableYears.map((y) => (
@@ -218,14 +218,14 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
                 <div className="relative flex-shrink-0">
                   <Avatar src={otherFoto} name={otherName} size="md" />
                   {isActive && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#00AA5B] rounded-full border-2 border-white" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success rounded-full border-2 border-white" />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
                     <div className="flex items-center gap-2 min-w-0">
-                      <h4 className="text-sm font-bold text-gray-800 truncate group-hover:text-[#025246] transition-colors">
+                      <h4 className="text-sm font-bold text-gray-800 truncate group-hover:text-primary transition-colors">
                         {otherName}
                       </h4>
                       {isDeal && (
@@ -239,7 +239,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
                       <span className="text-[11px] text-gray-400">{timeLabel}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-[#025246] font-semibold mb-0.5 truncate">{room.commodityName}</p>
+                  <p className="text-xs text-primary font-semibold mb-0.5 truncate">{room.commodityName}</p>
                   <p className="text-[11px] text-gray-500 truncate">
                     {room.lastMessage || "Mulai percakapan..."}
                   </p>

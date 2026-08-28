@@ -15,7 +15,7 @@ function FarmInfoTile({
 }) {
   return (
     <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50/80 border border-gray-100">
-      <div className="w-10 h-10 rounded-full bg-[#025246]/10 flex items-center justify-center text-[#025246] mb-2">
+      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
         {icon}
       </div>
       <p className="text-[11px] text-gray-400 mb-0.5">{label}</p>
@@ -29,7 +29,7 @@ export default function InformasiLahanCard({ profile }: { profile: ProfileData }
     <div className={cardCls}>
       <div className="p-5 sm:p-6">
         <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Sprout size={16} className="text-[#025246]" />
+          <Sprout size={16} className="text-primary" />
           Informasi Lahan
         </h2>
         <div className="grid grid-cols-3 gap-3">

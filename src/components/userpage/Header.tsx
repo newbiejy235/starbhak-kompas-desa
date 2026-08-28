@@ -51,7 +51,7 @@ export function HeaderSearch() {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Cari komoditas..."
         aria-label="Cari komoditas"
-        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary ${focusRing}`}
+        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 ${focusRing}`}
       />
     </form>
   );

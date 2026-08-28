@@ -32,7 +32,7 @@ interface MediaItem {
   error?: string;
 }
 
-interface MediaUploadFieldProps {}
+interface MediaUploadFieldProps { }
 
 async function uploadItem(
   item: MediaItem,
@@ -231,16 +231,14 @@ export default function MediaUploadField(
         </label>
         <div className="flex items-center gap-3 text-[11px]">
           <span
-            className={`font-medium ${
-              photoCount >= MAX_PHOTOS ? "text-amber-600" : "text-gray-500"
-            }`}
+            className={`font-medium ${photoCount >= MAX_PHOTOS ? "text-amber-600" : "text-gray-500"
+              }`}
           >
             Foto: {photoCount}/{MAX_PHOTOS}
           </span>
           <span
-            className={`font-medium ${
-              videoCount >= MAX_VIDEOS ? "text-amber-600" : "text-gray-500"
-            }`}
+            className={`font-medium ${videoCount >= MAX_VIDEOS ? "text-amber-600" : "text-gray-500"
+              }`}
           >
             Video: {videoCount}/{MAX_VIDEOS}
           </span>
@@ -260,10 +258,9 @@ export default function MediaUploadField(
           relative w-full min-h-[120px] rounded-xl border-2 border-dashed
           flex flex-col items-center justify-center gap-2 cursor-pointer
           transition-all duration-200
-          ${
-            isDragging
-              ? "border-primary bg-primary/5 scale-[1.01]"
-              : "border-gray-200 hover:border-primary/50 hover:bg-primary/[0.02]"
+          ${isDragging
+            ? "border-primary bg-primary/5 scale-[1.01]"
+            : "border-gray-200 hover:border-primary/50 hover:bg-primary/[0.02]"
           }
           ${isUploading ? "opacity-60 cursor-not-allowed" : ""}
         `}

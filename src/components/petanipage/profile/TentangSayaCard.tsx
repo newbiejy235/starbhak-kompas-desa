@@ -9,7 +9,7 @@ export default function TentangSayaCard({ profile }: { profile: ProfileData }) {
     <div className={cardCls}>
       <div className="p-5 sm:p-6">
         <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <UserRound size={16} className="text-[#025246]" />
+          <UserRound size={16} className="text-primary" />
           Tentang Saya
         </h2>
         {profile.bio ? (

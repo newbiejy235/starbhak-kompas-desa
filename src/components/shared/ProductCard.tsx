@@ -186,7 +186,7 @@ export default function ProductCard({
 
         {/* Price */}
         <div className="mb-2.5 flex items-baseline gap-1.5">
-          <span className="text-lg font-bold text-[#025246]">
+          <span className="text-lg font-bold text-primary">
             {formatRupiah(data.price)}
           </span>
           <span className="text-xs text-gray-400">/ {data.unit}</span>

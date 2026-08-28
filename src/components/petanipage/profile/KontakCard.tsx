@@ -15,7 +15,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-center gap-3 text-sm">
-      <div className="w-8 h-8 rounded-lg bg-[#025246]/10 flex items-center justify-center shrink-0 text-[#025246]">
+      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary">
         {icon}
       </div>
       <div className="min-w-0">
@@ -31,7 +31,7 @@ export default function KontakCard({ profile }: { profile: ProfileData }) {
     <div className={cardCls}>
       <div className="p-5 sm:p-6">
         <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Mail size={16} className="text-[#025246]" />
+          <Mail size={16} className="text-primary" />
           Kontak
         </h2>
         <div className="space-y-3.5">
