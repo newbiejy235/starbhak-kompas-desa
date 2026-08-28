@@ -51,7 +51,7 @@ export function HeaderSearch() {
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Cari komoditas..."
         aria-label="Cari komoditas"
-        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary ${focusRing}`}
+        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 ${focusRing}`}
       />
     </form>
   );
@@ -83,29 +83,6 @@ export function HeaderActions() {
           }`}
       >
         <ShoppingCart size={19} />
-      </Link>
-      <Link
-        href="/user/notifications"
-        aria-label={
-          unread > 0 ? `Notifikasi (${unread} belum dibaca)` : "Notifikasi"
-        }
-        aria-current={
-          pathname.startsWith("/user/notifications") ? "page" : undefined
-        }
-        className={`${iconBtn} ${pathname.startsWith("/user/notifications")
-          ? "bg-primary/10 text-primary"
-          : ""
-          }`}
-      >
-        <Bell size={19} />
-        {unread > 0 && (
-          <span
-            aria-hidden
-            className="absolute -top-0.5 -right-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white"
-          >
-            {unread > 99 ? "99+" : unread}
-          </span>
-        )}
       </Link>
     </div>
   );

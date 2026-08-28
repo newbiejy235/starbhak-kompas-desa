@@ -8,7 +8,7 @@ export default function ProfileSkeleton() {
     <main className="min-h-screen bg-[#FAFAFA]">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className={cardCls}>
-          <div className="h-36 sm:h-44 bg-gradient-to-br from-[#025246] to-[#047857]" />
+          <div className="h-36 sm:h-44 bg-gradient-to-br from-primary to-primary-dark" />
           <div className="px-6 pb-6 -mt-14 text-center">
             <Skeleton className="mx-auto h-28 w-28 rounded-full ring-4 ring-white" />
             <div className="mt-4 space-y-2 flex flex-col items-center">

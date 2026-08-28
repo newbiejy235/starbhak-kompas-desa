@@ -121,7 +121,7 @@ export default function EditProfileForm({
         {/* Foto Profil */}
         <div className="p-5 sm:p-6 border-b border-gray-100">
           <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Camera size={16} className="text-[#025246]" />
+            <Camera size={16} className="text-primary" />
             Foto Profil
           </h3>
           <div className="flex items-center gap-4">
@@ -142,7 +142,7 @@ export default function EditProfileForm({
               />
               <label
                 htmlFor="foto-upload"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#025246] text-white text-xs font-bold rounded-xl hover:bg-[#024036] cursor-pointer transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark cursor-pointer transition-colors duration-150"
               >
                 <Camera size={14} />
                 {profile.fotoProfile || selectedFile ? "Ganti Foto" : "Pilih Foto"}
@@ -310,7 +310,7 @@ export default function EditProfileForm({
           <button
             type="submit"
             disabled={isPending}
-            className="px-8 py-3 bg-[#025246] text-white text-sm font-bold rounded-xl hover:bg-[#024036] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0"
+            className="px-8 py-3 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0"
           >
             {isPending ? (
               <>
