@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Eye, Star } from "lucide-react";
+import { MapPin, Ellipsis, Star } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 
@@ -95,7 +95,7 @@ export default function ProductCard({ data }: ProductCardProps) {
             </div>
           </div>
           <span className="w-10 h-10 text-white bg-primary group-hover:bg-primary-dark rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-md cursor-pointer">
-            <Eye size={18} />
+            <Ellipsis size={18} />
           </span>
         </div>
       </div>
