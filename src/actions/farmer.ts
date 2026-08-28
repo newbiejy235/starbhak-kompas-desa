@@ -611,6 +611,7 @@ export async function getFarmerStorePage(farmerId: number) {
       unit: commoditiesTable.unit,
       location: commoditiesTable.location,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
       status: commoditiesTable.status,

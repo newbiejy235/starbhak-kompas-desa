@@ -4,14 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  X,
-  SlidersHorizontal,
-  ArrowUpDown,
-  ChevronDown,
-  Star,
-  Users,
-  Package,
+import { X, SlidersHorizontal, ArrowUpDown, ChevronDown, Star, Users, Package,
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
 import FarmerCard from "@/components/kompasdesa/FarmerCard";

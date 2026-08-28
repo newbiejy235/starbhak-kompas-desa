@@ -272,6 +272,7 @@ export default function BuyerFarmerStorePage() {
                         unit: item.unit,
                         location: item.location ?? "",
                         image: item.image,
+                        images: item.images ?? [],
                         rating: item.rating ?? "0",
                         categoryName: item.categoryName ?? "",
                       }}

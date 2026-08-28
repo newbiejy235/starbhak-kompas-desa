@@ -16,6 +16,7 @@ export interface ProductCardData {
   unit: string;
   location: string;
   image: string | null;
+  images: string[] | null;
   rating: string;
   categoryName: string;
 }
@@ -34,7 +35,7 @@ const categoryGradient: Record<string, string> = {
 
 export default function ProductCard({ data }: ProductCardProps) {
   if (!data) return null;
-  const img = formatImage(data.image);
+  const img = formatImage(data.image) ?? formatImage(data.images?.[0] ?? null);
   const gradient =
     categoryGradient[data.categoryName ?? ""] || "from-[#025246] to-[#047857]";
   const initial = data.name?.charAt(0)?.toUpperCase() || "P";
