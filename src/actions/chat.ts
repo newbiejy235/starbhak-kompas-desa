@@ -77,6 +77,11 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
         ? eq(chatRoomsTable.buyerId, userId)
         : eq(chatRoomsTable.farmerId, userId);
 
+    const pinnedColumn =
+      role === "pembeli"
+        ? chatRoomsTable.buyerPinned
+        : chatRoomsTable.farmerPinned;
+
     const rooms = await db
       .select({
         id: chatRoomsTable.id,
@@ -87,6 +92,7 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
         lastMessage: chatRoomsTable.lastMessage,
         lastMessageAt: chatRoomsTable.lastMessageAt,
         createdAt: chatRoomsTable.createdAt,
+        pinned: pinnedColumn,
         buyerName: usersTable.fullName,
         farmerName: usersTable.fullName,
         buyerFotoProfile: sql<string | null>`coalesce((select u2."fotoProfile" from users_table u2 where u2."id" = chat_rooms_table."buyerId"), null)`,
@@ -96,13 +102,19 @@ export async function getChatRoomsForUser(userId: number, role: "pembeli" | "pet
         commodityImage: ImageUpload.secureUrl,
         commodityUnit: commoditiesTable.unit,
         hasDeal: sql<boolean>`exists(select 1 from chat_messages_table m where m."roomId" = chat_rooms_table.id and m.type = 'accept')`,
+        unreadCount: sql<number>`(
+          select count(*)::int from chat_messages_table msg
+          where msg."roomId" = chat_rooms_table.id
+            and msg."senderId" != ${userId}
+            and msg."isRead" = false
+        )`,
       })
       .from(chatRoomsTable)
       .innerJoin(usersTable, eq(usersTable.id, role === "pembeli" ? chatRoomsTable.farmerId : chatRoomsTable.buyerId))
       .innerJoin(commoditiesTable, eq(commoditiesTable.id, chatRoomsTable.commodityId))
       .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
       .where(condition)
-      .orderBy(desc(chatRoomsTable.lastMessageAt));
+      .orderBy(desc(pinnedColumn), desc(chatRoomsTable.lastMessageAt));
 
     return rooms;
   } catch (error) {
@@ -156,6 +168,18 @@ export async function getChatRoomDetail(roomId: number) {
       .where(eq(usersTable.id, room.farmerId))
       .limit(1);
 
+    const [pendingOffer] = await db
+      .select()
+      .from(negotiationOffersTable)
+      .where(
+        and(
+          eq(negotiationOffersTable.roomId, roomId),
+          eq(negotiationOffersTable.status, "pending"),
+        ),
+      )
+      .orderBy(desc(negotiationOffersTable.createdAt))
+      .limit(1);
+
     return {
       ...room,
       buyerName: buyer[0]?.fullName || "",
@@ -163,6 +187,16 @@ export async function getChatRoomDetail(roomId: number) {
       farmerName: farmer[0]?.fullName || "",
       farmerFoto: farmer[0]?.fotoProfile || null,
       farmerAddress: farmer[0]?.address || null,
+      pendingOffer: pendingOffer
+        ? {
+            id: pendingOffer.id,
+            price: pendingOffer.price,
+            quantity: pendingOffer.quantity,
+            unit: pendingOffer.unit,
+            status: pendingOffer.status,
+            createdAt: pendingOffer.createdAt,
+          }
+        : null,
     };
   } catch (error) {
     console.error(error);
@@ -220,6 +254,48 @@ export async function sendChatMessage(
   const auth = await verifyAuth();
   if (!auth || auth.userId !== senderId) return null;
   try {
+    const [room] = await db
+      .select({
+        buyerId: chatRoomsTable.buyerId,
+        farmerId: chatRoomsTable.farmerId,
+        commodityId: chatRoomsTable.commodityId,
+      })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+
+    if (!room) return null;
+
+    if (type === "offer") {
+      if (senderId !== room.buyerId) return null;
+      const [existingPending] = await db
+        .select({ id: negotiationOffersTable.id })
+        .from(negotiationOffersTable)
+        .where(
+          and(
+            eq(negotiationOffersTable.roomId, roomId),
+            eq(negotiationOffersTable.status, "pending"),
+          ),
+        )
+        .limit(1);
+      if (existingPending) return null;
+    }
+
+    if (type === "accept" || type === "reject") {
+      if (senderId !== room.farmerId) return null;
+      const [pendingOffer] = await db
+        .select({ id: negotiationOffersTable.id })
+        .from(negotiationOffersTable)
+        .where(
+          and(
+            eq(negotiationOffersTable.roomId, roomId),
+            eq(negotiationOffersTable.status, "pending"),
+          ),
+        )
+        .limit(1);
+      if (!pendingOffer) return null;
+    }
+
     const [msg] = await db
       .insert(chatMessagesTable)
       .values({
@@ -242,9 +318,53 @@ export async function sendChatMessage(
       })
       .where(eq(chatRoomsTable.id, roomId));
 
+    if (type === "offer" && offerPrice !== undefined && offerQuantity !== undefined) {
+      const commodity = await db
+        .select({ unit: commoditiesTable.unit })
+        .from(commoditiesTable)
+        .where(eq(commoditiesTable.id, room.commodityId))
+        .limit(1);
+      await db.insert(negotiationOffersTable).values({
+        roomId,
+        commodityId: room.commodityId,
+        buyerId: room.buyerId,
+        farmerId: room.farmerId,
+        price: offerPrice.toString(),
+        quantity: offerQuantity.toString(),
+        unit: commodity[0]?.unit || "kg",
+      });
+    }
+
+    if (type === "accept" || type === "reject") {
+      const [pendingOffer] = await db
+        .select({ id: negotiationOffersTable.id })
+        .from(negotiationOffersTable)
+        .where(
+          and(
+            eq(negotiationOffersTable.roomId, roomId),
+            eq(negotiationOffersTable.status, "pending"),
+          ),
+        )
+        .limit(1);
+      if (pendingOffer) {
+        await db
+          .update(negotiationOffersTable)
+          .set({
+            status: type === "accept" ? "accepted" : "rejected",
+            acceptedAt: type === "accept" ? new Date() : undefined,
+          })
+          .where(eq(negotiationOffersTable.id, pendingOffer.id));
+        if (type === "accept") {
+          await db
+            .update(chatRoomsTable)
+            .set({ status: "closed" })
+            .where(eq(chatRoomsTable.id, roomId));
+        }
+      }
+    }
+
     const result = { id: msg.id };
 
-    // Notify recipient (best-effort, non-blocking)
     notifyChatMessage(roomId, senderId, content).catch(() => { });
 
     return result;
@@ -387,7 +507,28 @@ export async function createNegotiationOffer(
   quantity: number,
   unit: string,
 ) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== buyerId) return null;
   try {
+    const [room] = await db
+      .select({ buyerId: chatRoomsTable.buyerId, farmerId: chatRoomsTable.farmerId })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+    if (!room || room.buyerId !== buyerId || room.farmerId !== farmerId) return null;
+
+    const [existingPending] = await db
+      .select({ id: negotiationOffersTable.id })
+      .from(negotiationOffersTable)
+      .where(
+        and(
+          eq(negotiationOffersTable.roomId, roomId),
+          eq(negotiationOffersTable.status, "pending"),
+        ),
+      )
+      .limit(1);
+    if (existingPending) return null;
+
     const [offer] = await db
       .insert(negotiationOffersTable)
       .values({
@@ -412,7 +553,19 @@ export async function respondToOffer(
   offerId: number,
   response: "accepted" | "rejected",
 ) {
+  const auth = await verifyAuth();
+  if (!auth) return { success: false };
   try {
+    const [offer] = await db
+      .select()
+      .from(negotiationOffersTable)
+      .where(eq(negotiationOffersTable.id, offerId))
+      .limit(1);
+
+    if (!offer) return { success: false };
+    if (offer.farmerId !== auth.userId) return { success: false };
+    if (offer.status !== "pending") return { success: false };
+
     await db
       .update(negotiationOffersTable)
       .set({
@@ -421,12 +574,7 @@ export async function respondToOffer(
       })
       .where(eq(negotiationOffersTable.id, offerId));
 
-    const [offer] = await db
-      .select()
-      .from(negotiationOffersTable)
-      .where(eq(negotiationOffersTable.id, offerId));
-
-    if (response === "accepted" && offer) {
+    if (response === "accepted") {
       await db
         .update(chatRoomsTable)
         .set({ status: "closed" })
@@ -471,6 +619,44 @@ export async function getUnreadCount(userId: number) {
   } catch (error) {
     console.error(error);
     return 0;
+  }
+}
+
+export async function toggleChatRoomPin(roomId: number, userId: number) {
+  const auth = await verifyAuth();
+  if (!auth || auth.userId !== userId) return { success: false };
+  try {
+    const [room] = await db
+      .select({ buyerId: chatRoomsTable.buyerId, farmerId: chatRoomsTable.farmerId })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+
+    if (!room) return { success: false };
+    if (room.buyerId !== userId && room.farmerId !== userId) return { success: false };
+
+    const pinColumn =
+      room.buyerId === userId
+        ? chatRoomsTable.buyerPinned
+        : chatRoomsTable.farmerPinned;
+
+    const [current] = await db
+      .select({ pinned: pinColumn })
+      .from(chatRoomsTable)
+      .where(eq(chatRoomsTable.id, roomId))
+      .limit(1);
+
+    const newValue = !current?.pinned;
+
+    await db
+      .update(chatRoomsTable)
+      .set({ [room.buyerId === userId ? "buyerPinned" : "farmerPinned"]: newValue })
+      .where(eq(chatRoomsTable.id, roomId));
+
+    return { success: true, pinned: newValue };
+  } catch (error) {
+    console.error(error);
+    return { success: false };
   }
 }
 

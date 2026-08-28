@@ -1,19 +1,20 @@
 "use client";
 
-import { MessageCircle, Pin } from "lucide-react";
+import { MessageCircle, Pin, MailOpen } from "lucide-react";
 
 interface ChatEmptyStateProps {
   /**
    * "default"  -> tidak ada percakapan sama sekali
+   * "unread"   -> filter "Belum Dibaca" aktif tapi kosong
    * "pinned"   -> filter "Disematkan" aktif tapi kosong
    * "search"   -> hasil pencarian kosong
    */
-  variant?: "default" | "pinned" | "search";
+  variant?: "default" | "unread" | "pinned" | "search";
   searchTerm?: string;
 }
 
 const COPY: Record<
-  "default" | "pinned" | "search",
+  "default" | "unread" | "pinned" | "search",
   { icon: React.ReactNode; title: string; description: string }
 > = {
   default: {
@@ -21,6 +22,12 @@ const COPY: Record<
     title: "Belum Ada Percakapan",
     description:
       "Percakapan dengan pembeli akan muncul di sini saat mereka mulai menghubungi Anda.",
+  },
+  unread: {
+    icon: <MailOpen size={40} strokeWidth={1.5} />,
+    title: "Tidak Ada Pesan Baru",
+    description:
+      "Semua pesan dari pembeli sudah Anda baca. Pesan baru akan muncul di sini.",
   },
   pinned: {
     icon: <Pin size={40} strokeWidth={1.5} />,
