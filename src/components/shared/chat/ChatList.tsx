@@ -29,6 +29,7 @@ interface ChatRoomItem {
   commodityName: string;
   commodityPrice: string;
   commodityImage: string | null;
+  commodityImages: string[] | null;
   commodityUnit: string;
   hasDeal?: boolean;
 }

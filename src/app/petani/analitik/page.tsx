@@ -222,7 +222,7 @@ export default function AnalitikPage() {
         loading={chartLoading}
         range={chartRange}
         onRangeChange={setChartRange}
-      />
+      />  
 
 
       {topProducts.length > 0 && (

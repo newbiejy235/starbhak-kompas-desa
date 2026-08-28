@@ -4,7 +4,14 @@ export type CartEntry = {
   negotiatedPrice?: number;
 };
 
+export type CheckoutSnapshotItem = {
+  commodityId: number;
+  quantity: number;
+  negotiatedPrice?: number;
+};
+
 const CART_KEY = "kd_cart";
+const CHECKOUT_SNAPSHOT_KEY = "kd_checkout_snapshot";
 
 export function getCart(): CartEntry[] {
   if (typeof window === "undefined") return [];
@@ -55,4 +62,26 @@ export function clearCart() {
 
 export function cartCount(): number {
   return getCart().reduce((sum, i) => sum + i.quantity, 0);
+}
+
+export function saveCheckoutSnapshot(items: CheckoutSnapshotItem[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(CHECKOUT_SNAPSHOT_KEY, JSON.stringify(items));
+}
+
+export function getCheckoutSnapshot(): CheckoutSnapshotItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CHECKOUT_SNAPSHOT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as CheckoutSnapshotItem[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function clearCheckoutSnapshot() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(CHECKOUT_SNAPSHOT_KEY);
 }

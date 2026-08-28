@@ -14,17 +14,17 @@ import {
   MapPin,
 } from "lucide-react";
 import { getOrderById, markOrderPaid } from "@/actions/order";
-import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDate, formatDateTime, PAYMENT_METHOD_LABEL } from "@/lib/format";
 import { LoadingState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type { OrderDetail } from "@/lib/types/market";
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
 
   const { data: order, loading, reload } = useFetch(
     () => getOrderById(Number(id)),
@@ -51,7 +51,6 @@ export default function OrderDetail() {
   };
 
   const confirmPaid = async () => {
-    const user = getClientUser();
     if (!user) return;
     await markOrderPaid(order.id, user.id);
     reload();
@@ -241,7 +240,7 @@ export default function OrderDetail() {
             <StatusBadge status={order.status} label={`Status: ${order.status}`} />
             {order.status === "pending" && (
               <button
-                onClick={() => getClientUser() && router.push(`/user/orders`)}
+                onClick={() => user && router.push(`/user/orders`)}
                 className="w-full rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50"
               >
                 Lihat Pesanan Saya

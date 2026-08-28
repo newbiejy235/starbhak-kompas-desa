@@ -14,8 +14,7 @@ import {
 } from "lucide-react";
 import { getHelpFaqs } from "@/actions/help";
 import type { FaqItem } from "@/lib/types/market";
-import { getClientUser } from "@/lib/auth/client";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import PageHeader from "@/components/shared/PageHeader";
 import { ErrorState } from "@/components/shared/States";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -60,7 +59,7 @@ function HelpSkeleton() {
 
 /* ---------------------- PAGE ---------------------- */
 export default function BantuanPage() {
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const { data: faqs, loading, error, reload } = useFetch(
     () => (user ? getHelpFaqs() : Promise.resolve([] as FaqItem[])),

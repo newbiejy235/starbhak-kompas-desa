@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Eye, Star } from "lucide-react";
+import { MapPin, Ellipsis, Star } from "lucide-react";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 
@@ -16,6 +16,7 @@ export interface ProductCardData {
   unit: string;
   location: string;
   image: string | null;
+  images: string[] | null;
   rating: string;
   categoryName: string;
 }
@@ -34,7 +35,7 @@ const categoryGradient: Record<string, string> = {
 
 export default function ProductCard({ data }: ProductCardProps) {
   if (!data) return null;
-  const img = formatImage(data.image);
+  const img = formatImage(data.image) ?? formatImage(data.images?.[0] ?? null);
   const gradient =
     categoryGradient[data.categoryName ?? ""] || "from-[#025246] to-[#047857]";
   const initial = data.name?.charAt(0)?.toUpperCase() || "P";
@@ -52,9 +53,8 @@ export default function ProductCard({ data }: ProductCardProps) {
             src={img}
             alt={data.name}
             fill
-            sizes="(max-width: 768px) 100vw, 25vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
-            unoptimized
           />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
@@ -95,7 +95,7 @@ export default function ProductCard({ data }: ProductCardProps) {
             </div>
           </div>
           <span className="w-10 h-10 text-white bg-primary group-hover:bg-primary-dark rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-md cursor-pointer">
-            <Eye size={18} />
+            <Ellipsis size={18} />
           </span>
         </div>
       </div>

@@ -24,6 +24,7 @@ export type HarvestScheduleRow = {
   id: number;
   name: string;
   image: string | null;
+  images: string[] | null;
   stock: string;
   unit: string;
   harvestEstimate: Date | null;
@@ -41,6 +42,7 @@ export async function getHarvestCalendar(
       id: commoditiesTable.id,
       name: commoditiesTable.name,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
       stock: commoditiesTable.stock,
       unit: commoditiesTable.unit,
       harvestEstimate: commoditiesTable.harvestEstimate,

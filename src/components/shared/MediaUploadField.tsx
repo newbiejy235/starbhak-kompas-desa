@@ -23,7 +23,7 @@ const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 
 interface MediaItem {
   id: string;
-  file: File;
+  file?: File;
   preview: string;
   type: "image" | "video";
   uploadedUrl?: string;
@@ -38,6 +38,8 @@ async function uploadItem(
   item: MediaItem,
   setItems: React.Dispatch<React.SetStateAction<MediaItem[]>>,
 ) {
+  if (!item.file) return;
+
   setItems((prev) =>
     prev.map((i) => (i.id === item.id ? { ...i, uploading: true, progress: 0 } : i)),
   );
@@ -73,7 +75,30 @@ export default function MediaUploadField(
   _props: MediaUploadFieldProps,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [items, setItems] = useState<MediaItem[]>([]);
+  const [items, setItems] = useState<MediaItem[]>(() => {
+    const initial: MediaItem[] = [];
+    if (_props.defaultImages?.length) {
+      _props.defaultImages.forEach((url, i) => {
+        if (url) {
+          initial.push({
+            id: `default-img-${i}-${Date.now()}`,
+            preview: url,
+            type: "image",
+            uploadedUrl: url,
+          });
+        }
+      });
+    }
+    if (_props.defaultVideoUrl) {
+      initial.push({
+        id: `default-vid-${Date.now()}`,
+        preview: _props.defaultVideoUrl,
+        type: "video",
+        uploadedUrl: _props.defaultVideoUrl,
+      });
+    }
+    return initial;
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 

@@ -23,6 +23,7 @@ interface ChatRoomData {
   commodityStock: string;
   commodityUnit: string;
   commodityImage: string | null;
+  commodityImages: string[] | null;
   commodityDescription: string | null;
   commodityStatus: string;
   buyerName: string;

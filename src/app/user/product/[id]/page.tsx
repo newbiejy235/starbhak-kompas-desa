@@ -13,9 +13,8 @@ import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatNumber } from "@/lib/format";
-import { getClientUser } from "@/lib/auth/client";
 import { addToCart } from "@/lib/cart";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type {
   CommodityDetail,
   ReviewForCommodity,
@@ -40,6 +39,7 @@ export default function ProductDetail() {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [negoError, setNegoError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const { data, loading } = useFetch(
     async () => {
@@ -88,7 +88,6 @@ export default function ProductDetail() {
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
   const handleAddToCart = () => {
-    const user = getClientUser();
     if (!user) {
       router.push("/auth/login");
       return;
@@ -98,7 +97,6 @@ export default function ProductDetail() {
   };
 
   const handleNego = async () => {
-    const user = getClientUser();
     if (!user) {
       router.push("/auth/login");
       return;

@@ -11,6 +11,9 @@
 !.yarn/versions
 ./github/workflows/codeql.yml
 
+./drizzle
+drizzle
+/drizzle
 PRD.MD
 # testing
 /coverage
