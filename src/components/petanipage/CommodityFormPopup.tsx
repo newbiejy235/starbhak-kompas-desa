@@ -15,7 +15,6 @@ import {
 } from "@/actions/commodity";
 import { uploadImageAction } from "@/actions/upload.action";
 import { getClientUser } from "@/lib/auth/client";
-import { formatNumber } from "@/lib/format";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity, CategoryRow } from "@/lib/types/market";
 import Image from "next/image";
@@ -222,7 +221,7 @@ export default function CommodityFormPopup({
                   required
                   min="1"
                   placeholder="12500"
-                  defaultValue={commodity ? formatNumber(commodity.price) : ""}
+                  defaultValue={commodity ? Number(commodity.price) : ""}
                   className={inputCls}
                 />
               </div>
@@ -236,7 +235,7 @@ export default function CommodityFormPopup({
                   required
                   min="1"
                   placeholder="500"
-                  defaultValue={commodity ? formatNumber(commodity.stock) : ""}
+                  defaultValue={commodity ? Number(commodity.stock) : ""}
                   className={inputCls}
                 />
               </div>
@@ -252,7 +251,7 @@ export default function CommodityFormPopup({
                   name="minPrice"
                   min="0"
                   placeholder="10000"
-                  defaultValue={commodity?.minPrice ? formatNumber(commodity.minPrice) : ""}
+                  defaultValue={commodity?.minPrice ? Number(commodity.minPrice) : ""}
                   className={inputCls}
                 />
               </div>
@@ -265,7 +264,7 @@ export default function CommodityFormPopup({
                   name="maxPrice"
                   min="0"
                   placeholder="15000"
-                  defaultValue={commodity?.maxPrice ? formatNumber(commodity.maxPrice) : ""}
+                  defaultValue={commodity?.maxPrice ? Number(commodity.maxPrice) : ""}
                   className={inputCls}
                 />
               </div>
@@ -354,10 +353,7 @@ export default function CommodityFormPopup({
                   </div>
                 </div>
               ) : (
-                <MediaUploadField
-                  defaultImages={commodity?.images ?? []}
-                  defaultVideoUrl={commodity?.videoUrl}
-                />
+                <MediaUploadField />
               )}
               <input
                 ref={fileInputRef}

@@ -1,35 +1,33 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import Image from "next/image";
 import { toast } from "sonner";
 import {
-  Pencil,
-  Trash2,
-  MapPin,
   Plus,
   Package,
   Search,
-  MoreHorizontal,
   Sprout,
   TrendingUp,
   AlertTriangle,
   X,
   Filter,
   ArrowUpDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   getFarmerCommodities,
   deleteCommodity,
+  toggleCommodityPublication,
 } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
-import { formatRupiah, formatNumber } from "@/lib/format";
-import { LOW_STOCK_THRESHOLD } from "@/constants/commodities";
+import { formatNumber } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import CommodityFormPopup from "@/components/petanipage/CommodityFormPopup";
 import DeleteConfirmDialog from "@/components/petanipage/DeleteConfirmDialog";
-import StatusBadge from "@/components/shared/StatusBadge";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import ProductCard from "@/components/shared/ProductCard";
 import type { FarmerCommodity } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -48,6 +46,12 @@ const SORT_OPTIONS = [
   { value: "price_desc", label: "Harga Tertinggi" },
   { value: "price_asc", label: "Harga Terendah" },
   { value: "stock_asc", label: "Stok Tersedikit" },
+] as const;
+
+const PUBLICATION_FILTERS = [
+  { value: "all", label: "Semua", icon: null },
+  { value: "published", label: "Publik", icon: Eye },
+  { value: "private", label: "Privat", icon: EyeOff },
 ] as const;
 
 const controlCls =
@@ -86,19 +90,20 @@ function CommoditiesSkeleton() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="bg-white rounded-card border border-gray-200/80 overflow-hidden shadow-soft">
-            <Skeleton className="h-40 rounded-none" />
-            <div className="p-4 space-y-2.5">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-5 w-1/2" />
-              <div className="flex gap-2">
-                <Skeleton className="h-5 w-16 rounded-full" />
-                <Skeleton className="h-5 w-12 rounded-full" />
+            <Skeleton className="aspect-[4/3] rounded-none" />
+            <div className="space-y-2.5 p-4">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-3 w-20" />
+              <div className="border-t border-gray-100 pt-2.5">
+                <Skeleton className="h-3 w-32" />
               </div>
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-2/3" />
             </div>
           </div>
         ))}
@@ -124,182 +129,27 @@ function StatCard({
     <div className="rounded-card border border-gray-200/80 bg-white p-4 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift">
       <div className="flex items-center gap-3">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-            danger
-              ? "bg-danger/10 text-danger"
-              : accent
-                ? "bg-primary/10 text-primary"
-                : "bg-gray-100 text-gray-600"
-          }`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${danger
+            ? "bg-danger/10 text-danger"
+            : accent
+              ? "bg-primary/10 text-primary"
+              : "bg-gray-100 text-gray-600"
+            }`}
         >
           <Icon size={18} />
         </div>
         <div className="min-w-0">
           <p className="text-xs text-gray-500 truncate">{label}</p>
           <p
-            className={`text-xl font-black tracking-tight ${
-              danger
-                ? "text-danger"
-                : accent
-                  ? "text-primary"
-                  : "text-gray-900"
-            }`}
+            className={`text-xl font-black tracking-tight ${danger
+              ? "text-danger"
+              : accent
+                ? "text-primary"
+                : "text-gray-900"
+              }`}
           >
             {value}
           </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CommodityCard({
-  item,
-  index,
-  onEdit,
-  onDelete,
-}: {
-  item: FarmerCommodity;
-  index: number;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const stock = Number(item.stock);
-  const lowStock = stock > 0 && stock <= LOW_STOCK_THRESHOLD;
-  const outOfStock = stock <= 0;
-
-  return (
-    <div
-      className="group bg-white rounded-card shadow-soft border border-gray-200/80 flex flex-col overflow-hidden hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth animate-fade-up"
-      style={{
-        animationDelay: `${Math.min(index * 50, 300)}ms`,
-        animationFillMode: "backwards",
-      }}
-    >
-      <div className="relative w-full h-40 bg-gray-100 overflow-hidden">
-        {item.image ? (
-          <Image
-            src={item.image}
-            alt={item.name}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-smooth"
-            unoptimized
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-1.5">
-            <Package size={28} strokeWidth={1.5} />
-            <span className="text-[11px] font-medium">Tidak ada gambar</span>
-          </div>
-        )}
-
-        <div className="absolute top-2.5 right-2.5">
-          <StatusBadge status={item.status} />
-        </div>
-
-        <div className="absolute top-2.5 left-2.5">
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen(!menuOpen);
-              }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 backdrop-blur-sm text-gray-600 shadow-sm hover:bg-white hover:text-gray-900 active:scale-90 transition-all duration-200"
-              aria-label="Aksi komoditas"
-            >
-              <MoreHorizontal size={16} />
-            </button>
-            {menuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setMenuOpen(false)}
-                />
-                <div className="absolute left-0 top-full mt-1 z-20 w-36 bg-white rounded-xl border border-gray-200 shadow-lift py-1 animate-scale-in origin-top-left">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuOpen(false);
-                      onEdit();
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <Pencil size={14} />
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuOpen(false);
-                      onDelete();
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger/5 transition-colors"
-                  >
-                    <Trash2 size={14} />
-                    Hapus
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col flex-1 p-4">
-        <div className="mb-1.5">
-          <h3 className="font-semibold text-gray-900 text-[15px] leading-snug truncate">
-            {item.name}
-          </h3>
-          {item.categoryName && (
-            <p className="text-xs text-gray-500 mt-0.5">{item.categoryName}</p>
-          )}
-        </div>
-
-        <div className="flex items-baseline gap-1 mb-2.5">
-          <span className="text-primary font-bold text-base">
-            {formatRupiah(item.price)}
-          </span>
-          <span className="text-gray-400 text-xs">/ {item.unit}</span>
-        </div>
-
-        <div className="flex items-center gap-3 mb-2.5">
-          <div
-            className={`flex items-center gap-1 text-xs font-medium ${
-              outOfStock
-                ? "text-danger"
-                : lowStock
-                  ? "text-warning"
-                  : "text-gray-600"
-            }`}
-          >
-            <Package size={12} className="shrink-0" />
-            {outOfStock
-              ? "Stok habis"
-              : `${formatNumber(stock)} ${item.unit}`}
-            {lowStock && !outOfStock && (
-              <span className="text-warning ml-0.5">· Menipis</span>
-            )}
-          </div>
-        </div>
-
-        {item.description && (
-          <p className="text-xs text-gray-500 line-clamp-2 mb-2.5 leading-relaxed">
-            {item.description}
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-          {item.quality && (
-            <span className="inline-flex items-center px-2 py-0.5 bg-[#F2E0DC] text-[#8B5E3C] text-[10px] font-semibold rounded-full">
-              {item.quality}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 text-[11px] text-gray-500 mt-auto pt-2 border-t border-gray-100">
-          <MapPin size={11} className="shrink-0 text-gray-400" />
-          <span className="truncate">{item.location}</span>
         </div>
       </div>
     </div>
@@ -316,7 +166,10 @@ export default function CommoditiesPage() {
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [publicationFilter, setPublicationFilter] = useState("all");
   const [sort, setSort] = useState("newest");
+  const [pubTarget, setPubTarget] = useState<FarmerCommodity | null>(null);
+  const [isTogglingPub, setIsTogglingPub] = useState(false);
 
   const fetchCommodities = useCallback(
     async () => (userId ? getFarmerCommodities(userId) : []),
@@ -358,6 +211,11 @@ export default function CommoditiesPage() {
     if (statusFilter !== "all") {
       list = list.filter((item) => item.status === statusFilter);
     }
+    if (publicationFilter === "published") {
+      list = list.filter((item) => item.isPublished === true);
+    } else if (publicationFilter === "private") {
+      list = list.filter((item) => item.isPublished !== true);
+    }
     switch (sort) {
       case "name":
         list.sort((a, b) => a.name.localeCompare(b.name, "id"));
@@ -375,9 +233,9 @@ export default function CommoditiesPage() {
         break;
     }
     return list;
-  }, [allCommodities, query, statusFilter, sort]);
+  }, [allCommodities, query, statusFilter, publicationFilter, sort]);
 
-  const hasActiveFilters = query.trim() || statusFilter !== "all";
+  const hasActiveFilters = query.trim() || statusFilter !== "all" || publicationFilter !== "all";
 
   function handleAdd() {
     setEditingCommodity(null);
@@ -419,9 +277,31 @@ export default function CommoditiesPage() {
     }
   }
 
+  function handleTogglePublicationClick(item: FarmerCommodity) {
+    setPubTarget(item);
+  }
+
+  async function handleTogglePublicationConfirm() {
+    if (!user || !pubTarget) return;
+    setIsTogglingPub(true);
+    try {
+      const res = await toggleCommodityPublication(pubTarget.id, user.id);
+      if (res.success) {
+        toast.success(res.message);
+        setPubTarget(null);
+        reload();
+      } else {
+        toast.error(res.message);
+      }
+    } finally {
+      setIsTogglingPub(false);
+    }
+  }
+
   function clearFilters() {
     setQuery("");
     setStatusFilter("all");
+    setPublicationFilter("all");
   }
 
   if (loading) return <CommoditiesSkeleton />;
@@ -528,6 +408,24 @@ export default function CommoditiesPage() {
                 </select>
               </div>
               <div className="relative flex-1 sm:flex-none">
+                <Eye
+                  size={13}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <select
+                  value={publicationFilter}
+                  onChange={(e) => setPublicationFilter(e.target.value)}
+                  aria-label="Filter publikasi komoditas"
+                  className={`${controlCls} w-full cursor-pointer pl-8 pr-8 sm:w-auto appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236B7280%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_8px_center] bg-no-repeat`}
+                >
+                  {PUBLICATION_FILTERS.map((f) => (
+                    <option key={f.value} value={f.value}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="relative flex-1 sm:flex-none">
                 <ArrowUpDown
                   size={13}
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -598,14 +496,16 @@ export default function CommoditiesPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {commodityList.map((item, i) => (
-            <CommodityCard
+            <ProductCard
               key={item.id}
-              item={item}
+              data={item}
+              farmer
               index={i}
               onEdit={() => handleEdit(item)}
               onDelete={() => handleDeleteClick(item)}
+              onTogglePublication={() => handleTogglePublicationClick(item)}
             />
           ))}
         </div>
@@ -624,6 +524,25 @@ export default function CommoditiesPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
         isPending={isDeleting}
+      />
+
+      <ConfirmDialog
+        open={!!pubTarget}
+        title={
+          pubTarget?.isPublished
+            ? "Sembunyikan Komoditas?"
+            : "Publikasikan Komoditas?"
+        }
+        message={
+          pubTarget?.isPublished
+            ? "Komoditas ini tidak akan lagi ditampilkan di marketplace publik, tetapi tetap tersimpan di daftar komoditas Anda."
+            : "Komoditas ini akan ditampilkan di marketplace dan dapat dilihat oleh pembeli."
+        }
+        confirmLabel={pubTarget?.isPublished ? "Jadikan Privat" : "Publikasikan"}
+        cancelLabel="Batal"
+        onConfirm={handleTogglePublicationConfirm}
+        onCancel={() => setPubTarget(null)}
+        isPending={isTogglingPub}
       />
     </div>
   );

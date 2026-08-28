@@ -10,7 +10,6 @@ import {
   updateCommodity,
 } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
-import { formatNumber } from "@/lib/format";
 import MediaUploadField from "@/components/shared/MediaUploadField";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
@@ -136,11 +135,11 @@ export default function EditCommodity() {
         <div className="grid sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga (Rp) *</label>
-            <input type="number" name="price" required min="1" defaultValue={formatNumber(commodity.price)} className={inputCls} />
+            <input type="number" name="price" required min="1" defaultValue={Number(commodity.price) || ""} className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Stok *</label>
-            <input type="number" name="stock" required min="1" defaultValue={formatNumber(commodity.stock)} className={inputCls} />
+            <input type="number" name="stock" required min="1" defaultValue={Number(commodity.stock) || ""} className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Satuan</label>
@@ -156,11 +155,11 @@ export default function EditCommodity() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Minimum Nego (Rp)</label>
-            <input type="number" name="minPrice" min="0" defaultValue={commodity.minPrice ? formatNumber(commodity.minPrice) : ""} className={inputCls} />
+            <input type="number" name="minPrice" min="0" defaultValue={commodity.minPrice ?? ""} className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Maksimum Nego (Rp)</label>
-            <input type="number" name="maxPrice" min="0" defaultValue={commodity.maxPrice ? formatNumber(commodity.maxPrice) : ""} className={inputCls} />
+            <input type="number" name="maxPrice" min="0" defaultValue={commodity.maxPrice ?? ""} className={inputCls} />
           </div>
         </div>
 
@@ -175,10 +174,7 @@ export default function EditCommodity() {
           </div>
         </div>
 
-        <MediaUploadField
-          defaultImages={commodity.images ?? []}
-          defaultVideoUrl={commodity.videoUrl}
-        />
+        <MediaUploadField />
 
         {state && !state.success && (
           <p className="text-sm text-danger animate-shake">{state.message}</p>

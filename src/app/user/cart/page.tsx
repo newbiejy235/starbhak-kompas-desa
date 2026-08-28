@@ -20,15 +20,12 @@ import {
 import { formatRupiah } from "@/lib/format";
 import { getCommoditiesByIds } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
-import {
-  getCart,
-  updateCartQuantity,
-  removeFromCart,
-} from "@/lib/cart";
+import { getCart, updateCartQuantity, removeFromCart } from "@/lib/cart";
 import { useFetch } from "@/lib/hooks";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { CommodityDetail } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { TestOrders } from "@/actions/orders/orders.action";
 
 type DeliveryMethod = "pickup" | "expedition";
 
@@ -50,23 +47,32 @@ function CartSkeleton() {
 
 export default function CartPage() {
   const router = useRouter();
-  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("pickup");
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<DeliveryMethod>("pickup");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [entries, setEntries] = useState(() => getCart());
+  // orders(entries)
+  // console.log("entries data",entries);
+  const user = getClientUser();
+  const userId = user?.fullName;
+  TestOrders();
+  console.log(userId);
+  
 
   const idsKey = entries.map((e) => e.commodityId).join(",");
 
-  const { data: products, loading } = useFetch(
-    async () => {
-      if (entries.length === 0) return [] as CommodityDetail[];
-      return (await getCommoditiesByIds(
-        entries.map((e) => e.commodityId),
-      )) as CommodityDetail[];
-    },
-    [idsKey],
-  );
+  const { data: products, loading } = useFetch(async () => {
+    if (entries.length === 0) return [] as CommodityDetail[];
+    return (await getCommoditiesByIds(
+      entries.map((e) => e.commodityId),
+    )) as CommodityDetail[];
+  }, [idsKey]);
 
-  type CartItem = { product: CommodityDetail; quantity: number; negotiatedPrice?: number };
+  type CartItem = {
+    product: CommodityDetail;
+    quantity: number;
+    negotiatedPrice?: number;
+  };
 
   const items: CartItem[] = entries
     .map((entry) => {
@@ -81,7 +87,8 @@ export default function CartPage() {
     .filter((i): i is CartItem => i !== null);
 
   const subtotal = items.reduce(
-    (sum, i) => sum + (i.negotiatedPrice ?? Number(i.product.price)) * i.quantity,
+    (sum, i) =>
+      sum + (i.negotiatedPrice ?? Number(i.product.price)) * i.quantity,
     0,
   );
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -89,7 +96,8 @@ export default function CartPage() {
 
   const changeQuantity = (commodityId: number, delta: number) => {
     const product = items.find((i) => i.product.id === commodityId)?.product;
-    const current = entries.find((e) => e.commodityId === commodityId)?.quantity ?? 1;
+    const current =
+      entries.find((e) => e.commodityId === commodityId)?.quantity ?? 1;
     if (!product) return;
     const next = Math.min(Math.max(current + delta, 1), Number(product.stock));
     updateCartQuantity(commodityId, next);
@@ -132,7 +140,9 @@ export default function CartPage() {
           <ShoppingBag size={20} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Keranjang Belanja</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Keranjang Belanja
+          </h1>
           <p className="text-sm text-gray-500">
             {totalItems > 0
               ? `${totalItems} kg komoditas di keranjang`
@@ -168,11 +178,15 @@ export default function CartPage() {
               <ul className="divide-y divide-gray-100">
                 {items.map((item) => {
                   const img = formatImage(item.product.image);
-                  const unitPrice = item.negotiatedPrice ?? Number(item.product.price);
+                  const unitPrice =
+                    item.negotiatedPrice ?? Number(item.product.price);
                   const lineTotal = unitPrice * item.quantity;
                   const isNegotiated = item.negotiatedPrice !== undefined;
                   return (
-                    <li key={item.product.id} className="flex items-center gap-4 px-6 py-5 hover:bg-primary/[0.02] transition-colors">
+                    <li
+                      key={item.product.id}
+                      className="flex items-center gap-4 px-6 py-5 hover:bg-primary/[0.02] transition-colors"
+                    >
                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                         {img ? (
                           <Image
@@ -202,7 +216,9 @@ export default function CartPage() {
                         </p>
                         <div className="flex items-center justify-between mt-3 gap-3">
                           <div>
-                            <span className={`text-sm font-extrabold ${isNegotiated ? "text-success" : "text-primary"}`}>
+                            <span
+                              className={`text-sm font-extrabold ${isNegotiated ? "text-success" : "text-primary"}`}
+                            >
                               {formatRupiah(unitPrice)}
                               <span className="text-[11px] font-medium text-gray-400">
                                 {" "}
@@ -218,7 +234,9 @@ export default function CartPage() {
                           <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
                             <button
                               type="button"
-                              onClick={() => changeQuantity(item.product.id, -1)}
+                              onClick={() =>
+                                changeQuantity(item.product.id, -1)
+                              }
                               disabled={item.quantity <= 1}
                               className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary active:scale-90 disabled:opacity-40 transition-all"
                               aria-label="Kurangi jumlah"
@@ -231,7 +249,9 @@ export default function CartPage() {
                             <button
                               type="button"
                               onClick={() => changeQuantity(item.product.id, 1)}
-                              disabled={item.quantity >= Number(item.product.stock)}
+                              disabled={
+                                item.quantity >= Number(item.product.stock)
+                              }
                               className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary active:scale-90 disabled:opacity-40 transition-all"
                               aria-label="Tambah jumlah"
                             >
@@ -265,7 +285,9 @@ export default function CartPage() {
               <div className="relative">
                 <select
                   value={deliveryMethod}
-                  onChange={(e) => setDeliveryMethod(e.target.value as DeliveryMethod)}
+                  onChange={(e) =>
+                    setDeliveryMethod(e.target.value as DeliveryMethod)
+                  }
                   className="w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm text-gray-800 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                 >
                   <option value="pickup">Ambil Sendiri / Pick Up</option>
@@ -279,7 +301,11 @@ export default function CartPage() {
 
               <div className="mt-4 flex items-start gap-3 rounded-xl bg-gray-50 p-4 animate-fade-in">
                 <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center text-primary flex-shrink-0">
-                  {deliveryMethod === "pickup" ? <Store size={18} /> : <Truck size={18} />}
+                  {deliveryMethod === "pickup" ? (
+                    <Store size={18} />
+                  ) : (
+                    <Truck size={18} />
+                  )}
                 </div>
                 <div className="text-sm">
                   <p className="font-semibold text-gray-800">
@@ -315,10 +341,14 @@ export default function CartPage() {
 
           <div className="lg:col-span-3">
             <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 lg:sticky lg:top-24">
-              <h2 className="font-bold text-gray-900 mb-4">Ringkasan Belanja</h2>
+              <h2 className="font-bold text-gray-900 mb-4">
+                Ringkasan Belanja
+              </h2>
               <div className="space-y-3 text-sm mb-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Subtotal ({totalItems} kg)</span>
+                  <span className="text-gray-500">
+                    Subtotal ({totalItems} kg)
+                  </span>
                   <span className="font-semibold text-gray-800">
                     {formatRupiah(subtotal)}
                   </span>

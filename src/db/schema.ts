@@ -8,7 +8,6 @@ import {
   boolean,
   pgEnum,
   index,
-  json,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
@@ -128,9 +127,8 @@ export const commoditiesTable = pgTable(
     image: integer().references(() => ImageUpload.id, {
       onDelete: "set null",
     }),
-    images: json("images").$type<string[]>().default([]),
-    videoUrl: text("video_url"),
     status: commodityStatusEnum().notNull().default("pending"),
+    isPublished: boolean().notNull().default(false),
     rating: numeric({ precision: 3, scale: 2 }).notNull().default("0"),
     reviewCount: integer().notNull().default(0),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -484,6 +482,37 @@ export const harvestRecordsTable = pgTable(
   ],
 );
 
+export const orderUser = pgTable("orderUser_table", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .references(() => usersTable.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const ordersComodity = pgTable("orders_comodity", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  orderUserId: integer("order_userId")
+    .notNull()
+    .references(() => orderUser.id, {
+      onDelete: "cascade",
+    }),
+  commodityId: integer("commodity_id")
+    .notNull()
+    .references(() => commoditiesTable.id, {
+      onDelete: "cascade",
+    }),
+  quantity: integer("quantity").notNull(),
+
+  negotiatedPrice: numeric("negotiated_price", {
+    precision: 15,
+    scale: 2,
+  }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;
@@ -498,5 +527,4 @@ export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;
 export type SalesTarget = typeof salesTargetsTable.$inferSelect;
 export type HarvestRecord = typeof harvestRecordsTable.$inferSelect;
-export type FarmerProfileImage =
-  typeof farmerProfileImagesTable.$inferSelect;
+export type FarmerProfileImage = typeof farmerProfileImagesTable.$inferSelect;

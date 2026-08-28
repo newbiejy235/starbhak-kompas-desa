@@ -16,16 +16,23 @@ export default function UserChatRoomPage() {
   const userFullName = currentUser?.fullName ?? "Anda";
   const rid = Number(roomId);
 
-  const { room, messages, loading, sendMessage, editMessage, deleteMessage } = useChatSSE(rid, userId, userFullName);
+  const { room, messages, loading, sendMessage, editMessage, deleteMessage } =
+    useChatSSE(rid, userId, userFullName);
 
   const handleAddToCart = (price: number, quantity: number) => {
     if (!room) return;
+
     addToCart(room.commodityId, quantity, price);
-    router.push("/user/cart");
+    router.push("/user/orders");
   };
 
   if (loading) return <LoadingState />;
-  if (!room) return <div className="text-center py-20 text-gray-500">Chat tidak ditemukan.</div>;
+  if (!room)
+    return (
+      <div className="text-center py-20 text-gray-500">
+        Chat tidak ditemukan.
+      </div>
+    );
 
   return (
     <ChatRoomView

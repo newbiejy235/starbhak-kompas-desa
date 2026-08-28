@@ -8,7 +8,7 @@ import {
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
-import ProductCard from "@/components/userpage/ProductCard";
+import ProductCard from "@/components/shared/ProductCard";
 import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/States";
@@ -129,8 +129,6 @@ export default function ProductDetail() {
         <div className="grid md:grid-cols-2">
           <ProductGallery
             primaryImage={product.image}
-            images={product.images}
-            videoUrl={product.videoUrl}
             productName={product.name}
           />
 
@@ -316,13 +314,12 @@ export default function ProductDetail() {
           <h2 className="text-xl font-bold text-gray-900 mb-6">Produk Lainnya</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {related.map((item, i) => (
-              <div
+              <ProductCard
                 key={item.id}
-                className="animate-fade-up"
-                style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
-              >
-                <ProductCard data={item} />
-              </div>
+                data={item}
+                href={`/user/product/${item.id}`}
+                index={i}
+              />
             ))}
           </div>
         </div>
