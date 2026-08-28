@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useActionState } from "react";
 import { getProfile, updateProfile } from "@/actions/profile";
-import { getClientUser, saveSession } from "@/lib/auth/client";
+import { saveSession } from "@/lib/auth/client";
 import { formatDate, ROLE_LABEL } from "@/lib/format";
 import StatusBadge from "@/components/shared/StatusBadge";
 import {
@@ -16,8 +16,9 @@ import {
   Loader2,
   Shield,
   CalendarDays,
+  Star,
 } from "lucide-react";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { AuthUser } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -37,7 +38,7 @@ function ProfileSkeleton() {
 }
 
 export default function UserProfile() {
-  const user = getClientUser();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -126,7 +127,7 @@ export default function UserProfile() {
 
   if (loading || !profile) return <ProfileSkeleton />;
 
-  const p = profile as AuthUser;
+  const p = profile as AuthUser & { avgRating: number; reviewCount: number };
   const currentFoto = removeFoto ? null : (previewUrl || p.fotoProfile);
 
   const inputCls =
@@ -225,9 +226,37 @@ export default function UserProfile() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Column: Edit Form */}
+          {/* Ulasan Card */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] p-5 space-y-4">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Ulasan</h3>
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-[#025246]/10 flex items-center justify-center shrink-0">
+                <span className="text-2xl font-extrabold text-[#025246]">
+                  {p.avgRating > 0 ? p.avgRating.toFixed(1) : "0"}
+                </span>
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={14}
+                      className={
+                        star <= Math.round(p.avgRating)
+                          ? "text-amber-400 fill-amber-400"
+                          : "text-gray-200"
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {p.reviewCount} ulasan
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="flex-1 min-w-0">
           <form
             action={formAction}

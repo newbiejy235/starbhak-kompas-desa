@@ -2,28 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import {
-  Minus,
-  Plus,
-  Trash2,
-  Truck,
-  Store,
-  ChevronDown,
-  ShoppingBag,
-  MapPin,
-  Check,
-  Sprout,
-  ChevronLeft,
-} from "lucide-react";
-import { formatRupiah } from "@/lib/format";
-import { getCommoditiesByIds } from "@/actions/commodity";
-import { getClientUser } from "@/lib/auth/client";
-import { getCart, updateCartQuantity, removeFromCart } from "@/lib/cart";
-import { useFetch } from "@/lib/hooks";
-import { EmptyState, formatImage } from "@/components/shared/States";
-import type { CommodityDetail } from "@/lib/types/market";
+import { Star } from "lucide-react";
+import { getUserOrders } from "@/actions/order";
+import { formatRupiah, formatDateTime } from "@/lib/format";
+import { EmptyState } from "@/components/shared/States";
+import StatusBadge from "@/components/shared/StatusBadge";
+import { useAuth, useFetch } from "@/lib/hooks";
+import type { BuyerOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TestOrders } from "@/actions/orders/orders.action";
 
@@ -45,19 +30,8 @@ function CartSkeleton() {
   );
 }
 
-export default function CartPage() {
-  const router = useRouter();
-  const [deliveryMethod, setDeliveryMethod] =
-    useState<DeliveryMethod>("pickup");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [entries, setEntries] = useState(() => getCart());
-  // orders(entries)
-  // console.log("entries data",entries);
-  const user = getClientUser();
-  const userId = user?.fullName;
-  TestOrders();
-  console.log(userId);
-  console.log("data entries orders", entries);
+export default function UserOrders() {
+  const { user } = useAuth();
 
   const idsKey = entries.map((e) => e.commodityId).join(",");
 

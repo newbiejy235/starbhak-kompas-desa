@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { getClientUser } from "@/lib/auth/client";
+import { useAuth } from "@/lib/hooks";
 import { useChatSSE } from "@/lib/hooks/useChatSSE";
 import { addToCart } from "@/lib/cart";
 import ChatRoomView from "@/components/shared/chat/ChatRoomView";
@@ -11,7 +11,7 @@ import { LoadingState } from "@/components/shared/States";
 export default function UserChatRoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const router = useRouter();
-  const [currentUser] = useState(() => getClientUser());
+  const { user: currentUser } = useAuth();
   const userId = currentUser?.id ?? 0;
   const userFullName = currentUser?.fullName ?? "Anda";
   const rid = Number(roomId);

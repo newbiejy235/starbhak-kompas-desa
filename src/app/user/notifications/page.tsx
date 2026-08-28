@@ -1,25 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  Bell,
-  CheckCheck,
-  CreditCard,
-  Info,
-  MessageCircle,
-  Package,
-  Star,
-  type LucideIcon,
-} from "lucide-react";
 import {
   getUserNotifications,
   markNotificationsRead,
 } from "@/actions/notification";
-import { getClientUser } from "@/lib/auth/client";
 import { formatDateTime } from "@/lib/format";
-import { EmptyState } from "@/components/shared/States";
-import { useFetch } from "@/lib/hooks";
+import { LoadingState, EmptyState } from "@/components/shared/States";
+import { Bell, CheckCheck, Package, CreditCard, Star, Info, MessageCircle, type LucideIcon } from "lucide-react";
+import { useAuth, useFetch } from "@/lib/hooks";
+import Link from "next/link";
 import type { NotificationRow } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { COLOR_PRIMARY, COLOR_PRIMARY_SOFT } from "@/constants/brand";
@@ -233,7 +223,7 @@ function NotificationItem({
 }
 
 export default function UserNotifications() {
-  const user = getClientUser();
+  const { user } = useAuth();
 
   const {
     data: notifications,

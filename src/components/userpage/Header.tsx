@@ -2,11 +2,26 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { Search, ShoppingCart, Bell } from "lucide-react";
-import { getClientUser } from "@/lib/auth/client";
+import { useState, useEffect, useRef, useActionState } from "react";
+import {
+  Search,
+  ShoppingCart,
+  Bell,
+  LogOut,
+  ChevronDown,
+  UserRound,
+  ShoppingBag,
+  Star,
+  Sprout,
+  X,
+  LifeBuoy,
+} from "lucide-react";
+import { clearSession, updateSessionRole } from "@/lib/auth/client";
+import { becomePetaniAction } from "@/actions/auth";
 import { getUnreadNotificationCount } from "@/actions/notification";
-import { useFetch } from "@/lib/hooks";
+import { useAuth, useFetch } from "@/lib/hooks";
+import Avatar from "@/components/ui/Avatar";
+import type { ActionState } from "@/lib/types/auth";
 
 /* ============================================================
    Token desain mengikuti DashboardShell / halaman petani
@@ -23,14 +38,26 @@ const iconBtn =
 export function HeaderSearch() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = search.trim();
     if (q) {
-      router.push(`/user/home?search=${encodeURIComponent(q)}`);
+      router.push(`/user/search?q=${encodeURIComponent(q)}`);
     } else {
       router.push("/user/home");
+    }
+  };
+
+  const handleChange = (value: string) => {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const q = value.trim();
+    if (q) {
+      debounceRef.current = setTimeout(() => {
+        router.push(`/user/search?q=${encodeURIComponent(q)}`);
+      }, 600);
     }
   };
 
@@ -48,10 +75,10 @@ export function HeaderSearch() {
       <input
         type="text"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cari komoditas..."
-        aria-label="Cari komoditas"
-        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 ${focusRing}`}
+        onChange={(e) => handleChange(e.target.value)}
+        placeholder="Cari komoditas atau petani..."
+        aria-label="Cari komoditas atau petani"
+        className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary ${focusRing}`}
       />
     </form>
   );
@@ -62,8 +89,13 @@ export function HeaderSearch() {
    Profil & dropdown ada di DashboardShell.
    ============================================================ */
 export function HeaderActions() {
+  const { user } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
-  const user = getClientUser();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [closingModal, setClosingModal] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const { data: unreadCount } = useFetch(
     () => (user ? getUnreadNotificationCount(user.id) : Promise.resolve(0)),

@@ -16,12 +16,17 @@ import {
   Check,
   Sprout,
   ChevronLeft,
+  Undo2,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/format";
 import { getCommoditiesByIds } from "@/actions/commodity";
-import { getClientUser } from "@/lib/auth/client";
-import { getCart, updateCartQuantity, removeFromCart } from "@/lib/cart";
-import { useFetch } from "@/lib/hooks";
+import {
+  getCart,
+  updateCartQuantity,
+  removeFromCart,
+  saveCheckoutSnapshot,
+} from "@/lib/cart";
+import { useAuth, useFetch } from "@/lib/hooks";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { CommodityDetail } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -46,18 +51,17 @@ function CartSkeleton() {
 }
 
 export default function CartPage() {
+  useAuth();
   const router = useRouter();
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>("pickup");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [entries, setEntries] = useState(() => getCart());
-  // orders(entries)
-  // console.log("entries data",entries);
-  const user = getClientUser();
-  const userId = user?.fullName;
-  TestOrders();
-  console.log(userId);
-  
+  const [isChecking, setIsChecking] = useState(false);
+  const [undoItem, setUndoItem] = useState<{
+    entry: (typeof entries)[number];
+    product: CommodityDetail;
+  } | null>(null);
 
   const idsKey = entries.map((e) => e.commodityId).join(",");
 
@@ -105,23 +109,39 @@ export default function CartPage() {
   };
 
   const removeItem = (commodityId: number) => {
+    const item = items.find((i) => i.product.id === commodityId);
+    if (!item) return;
     removeFromCart(commodityId);
     setEntries(getCart());
+    setUndoItem({ entry: { commodityId, quantity: item.quantity, negotiatedPrice: item.negotiatedPrice }, product: item.product });
+    setTimeout(() => setUndoItem(null), 5000);
   };
 
-  const checkout = () => {
-    const user = getClientUser();
-    if (!user) {
-      router.push("/auth/login");
-      return;
+  const undoRemove = () => {
+    if (!undoItem) return;
+    const { entry } = undoItem;
+    const cart = getCart();
+    cart.push(entry);
+    localStorage.setItem("kd_cart", JSON.stringify(cart));
+    setEntries(getCart());
+    setUndoItem(null);
+  };
+
+  const checkout = async () => {
+    if (items.length === 0 || isChecking) return;
+    setIsChecking(true);
+    try {
+      saveCheckoutSnapshot(
+        items.map((item) => ({
+          commodityId: item.product.id,
+          quantity: item.quantity,
+          negotiatedPrice: item.negotiatedPrice,
+        })),
+      );
+      router.push("/user/checkout");
+    } finally {
+      setIsChecking(false);
     }
-    if (items.length === 0) return;
-    const first = items[0];
-    const params = new URLSearchParams({
-      commodityId: String(first.product.id),
-      quantity: String(first.quantity),
-    });
-    router.push(`/user/checkout?${params.toString()}`);
   };
 
   if (loading) return <CartSkeleton />;
@@ -194,8 +214,8 @@ export default function CartPage() {
                             alt={item.product.name}
                             width={80}
                             height={80}
+                            sizes="80px"
                             className="object-cover w-full h-full"
-                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-black">
@@ -258,7 +278,7 @@ export default function CartPage() {
                               <Plus size={14} />
                             </button>
                           </div>
-                          <span className="text-sm font-bold text-gray-800 w-24 text-right hidden sm:block">
+                          <span className="text-sm font-bold text-gray-800 w-24 text-right">
                             {formatRupiah(lineTotal)}
                           </span>
                           <button
@@ -369,15 +389,33 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={checkout}
-                className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift"
+                disabled={isChecking}
+                className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Bayar Sekarang
+                {isChecking ? "Memproses..." : "Bayar Sekarang"}
               </button>
               <p className="text-[11px] text-gray-400 text-center mt-3 flex items-center justify-center gap-1">
                 <Check size={12} className="text-success" />
                 Pembayaran aman & transaksi terlindungi
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {undoItem && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-up">
+          <div className="flex items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-lift">
+            <span className="text-sm text-white">
+              {undoItem.product.name} dihapus
+            </span>
+            <button
+              type="button"
+              onClick={undoRemove}
+              className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/20 active:scale-95 transition-all"
+            >
+              <Undo2 size={14} /> Urungkan
+            </button>
           </div>
         </div>
       )}

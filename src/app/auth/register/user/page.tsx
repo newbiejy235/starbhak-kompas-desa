@@ -16,6 +16,12 @@ import { saveRegisterDraft } from "@/lib/register";
 import StepProgress from "@/components/auth/StepProgress";
 import Image from "next/image";
 
+const slideshowImages = [
+  "/images/Joni.svg",
+  "/",
+  "/assets/bg-login-3.jpg",
+];
+
 export default function RegisterUser() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -23,60 +29,68 @@ export default function RegisterUser() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const floatingElementsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      tl.from(".bg-curve", { 
-        scaleX: 0, 
-        transformOrigin: "left center", 
-        duration: 1.2 
-      })
-      .from(".header-item", { 
-        opacity: 0, 
-        y: -20, 
-        stagger: 0.1, 
-        duration: 0.6 
-      }, "-=0.8")
-      .from(".left-anim-item", {
-        opacity: 0,
-        x: -30,
-        stagger: 0.1,
-        duration: 0.8,
-      }, "-=0.6")
-      .from(".illus-anim", {
-        opacity: 0,
-        scale: 0.8,
-        x: -20,
-        duration: 0.8,
-        ease: "back.out(1.2)"
-      }, "-=0.6")
-      .from(".right-anim-item", {
-        opacity: 0,
-        y: 20,
-        stagger: 0.08,
-        duration: 0.7,
-      }, "-=0.7")
-      .from(".footer-anim", {
-        opacity: 0,
-        y: 10,
-        duration: 0.5
-      }, "-=0.4");
+      tl.fromTo(".bg-curve-container",
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+      )
+      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+        { opacity: 0, y: 30, rotateX: -10 },
+        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+        "-=0.9"
+      )
+      .fromTo(".footer-anim",
+        { opacity: 0, y: 10 },
+        { opacity: 1, duration: 0.8 },
+        "-=0.5"
+      );
 
-      gsap.to(".illus-anim", {
-        y: -15,
-        duration: 3,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
+      const orbs = document.querySelectorAll(".ambient-orb");
+      orbs.forEach((orb, i) => {
+        gsap.to(orb, {
+          scale: "random(1.1, 1.4)",
+          opacity: "random(0.4, 0.8)",
+          duration: "random(3, 5)",
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.3,
+        });
       });
-
     }, containerRef);
 
-    return () => ctx.revert();
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 40;
+      const y = (e.clientY / window.innerHeight - 0.5) * 40;
+      gsap.to(".ambient-orb", {
+        x: (i: number) => x * (i + 1.5),
+        y: (i: number) => y * (i + 1.5),
+        duration: 1.5,
+        ease: "power2.out"
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      ctx.revert();
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
 
   const handleNext = (e: React.FormEvent) => {
@@ -87,84 +101,89 @@ export default function RegisterUser() {
   };
 
   return (
-    <div ref={containerRef} className="h-screen w-full relative bg-white font-sans overflow-hidden flex flex-col justify-between">
-      
-      <svg 
-        className="bg-curve absolute top-0 left-0 w-full lg:w-[50%] h-full z-0 pointer-events-none hidden lg:block" 
-        preserveAspectRatio="none" 
-        viewBox="0 0 100 100"
-      >
-        <path d="M0,0 L60,0 C95,30 95,70 60,100 L0,100 Z" fill="#025246" />
+    <div ref={containerRef} className="min-h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-x-hidden flex flex-col perspective-1000">
+
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
+          </clipPath>
+        </defs>
       </svg>
 
-      <header className="relative z-20 w-full flex items-center justify-between px-6 py-4 lg:px-12 xl:px-16 flex-shrink-0">
-        <div className="header-item flex items-center gap-4 w-1/3">
+      <div
+        className="bg-curve-container absolute inset-y-0 left-0 w-full lg:w-[55%] z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
+        style={{ clipPath: "url(#emeraldCurveClip)" }}
+      >
+        {slideshowImages.map((src, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <div
+              key={src + index}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                isActive
+                  ? "opacity-30 scale-100 blur-0"
+                  : "opacity-0 scale-105 blur-md"
+              }`}
+            >
+              <Image
+                src={src}
+                alt="Background Slide"
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          );
+        })}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
+      </div>
+
+      <div ref={floatingElementsRef} className="absolute inset-y-0 left-0 w-full lg:w-[55%] z-1 pointer-events-none hidden lg:block overflow-hidden">
+        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
+        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+      </div>
+
+      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
+        <div className="header-item flex items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white lg:text-white text-sm font-semibold hover:opacity-80 transition-opacity max-lg:text-emerald-900"
+            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
             Beranda
           </Link>
-        </div>
-
-        <div className="header-item flex items-center justify-center gap-2.5 w-1/3">
-          <Image src="/logo-kompas-desa/kompas_desa_icon_color.png" alt="logo" width={26} height={26} />
-          <span className="text-xl font-extrabold tracking-tight text-neutral-900 lg:text-neutral-800">
-            Kompas&apos;Desa
-          </span>
-        </div>
-
-        <div className="header-item flex items-center justify-end gap-3 w-1/3">
-          <span className="hidden md:block text-sm font-medium text-neutral-500">
-            Sudah punya akun?
-          </span>
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center justify-center bg-white border border-neutral-200 text-neutral-800 text-xs lg:text-sm font-bold px-5 py-2 lg:px-6 lg:py-2.5 rounded-full shadow-sm hover:border-emerald-600 hover:text-emerald-700 transition-all duration-200"
-          >
-            Masuk
-          </Link>
+          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
+            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
+          </div>
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center justify-center w-full max-w-[1600px] mx-auto overflow-hidden">
-        
-        <div className="hidden lg:flex lg:w-[50%] flex-col justify-center pl-12 xl:pl-20 pr-10 text-white relative h-full">
-          <div className="relative z-20 w-full max-w-[480px]">
-            <h1 className="left-anim-item text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.05] mb-4 xl:mb-6">
-              Mulai <br />
-              Bergabung <br />
-              <span className="text-emerald-300">Bersama Kami</span>
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-stretch lg:items-center w-full max-w-[1600px] mx-auto py-2 lg:py-0">
+
+        <div className="flex lg:w-[45%] flex-col justify-center px-6 py-6 lg:py-0 lg:px-12 xl:px-16 text-center lg:text-left relative z-40">
+          <div className="relative z-10 w-full max-w-[380px] mx-auto lg:mx-0">
+            <h1 className="left-anim-item text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-3 lg:mb-4 text-neutral-900 lg:text-white">
+              Mulai <br className="hidden lg:block" />
+              <span className="text-emerald-600 lg:text-emerald-400">Bergabung Bersama Kami</span>
             </h1>
-            <p className="left-anim-item text-base xl:text-lg text-emerald-100/90 leading-relaxed font-medium max-w-md">
+            <p className="left-anim-item text-xs sm:text-sm lg:text-base text-neutral-600 lg:text-emerald-100/80 leading-relaxed font-medium">
               Bergabunglah untuk terhubung langsung dengan petani lokal dan dapatkan komoditas berkualitas dengan harga terbaik.
             </p>
           </div>
-
-          <div className="illus-anim absolute right-[-10%] xl:right-[-5%] top-1/2 -translate-y-1/2 z-10">
-            <div className="relative w-56 h-56 xl:w-64 xl:h-64 bg-emerald-800/40 backdrop-blur-md border border-emerald-500/30 rounded-3xl shadow-2xl flex items-center justify-center transform rotate-6 overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent z-10 pointer-events-none" />
-              <Image 
-                src="/images/Joni.svg"
-                alt="Ilustrasi Kompas Desa"
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            </div>
-          </div>
         </div>
 
-        <div className="w-full lg:w-[50%] flex flex-col justify-center items-center lg:items-start px-6 lg:pl-16 lg:pr-10 xl:px-24 h-full relative z-20">
-          <div className="w-full max-w-[420px]">
-            
-            <div className="right-anim-item mb-3">
+        <div className="w-full lg:w-[50%] flex flex-col justify-center items-center lg:items-start px-6 pb-10 lg:py-0 lg:pl-24 xl:pl-32 relative z-40 lg:ml-auto">
+          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+
+            <div className="right-anim-item mb-3 flex justify-center lg:justify-start">
               <StepProgress current={1} />
             </div>
 
-            <div className="right-anim-item mb-5 xl:mb-6 text-center lg:text-left">
-              <h2 className="text-2xl lg:text-3xl font-extrabold text-neutral-900 tracking-tight mb-1.5">
+            <div className="right-anim-item mb-5 text-center lg:text-left flex flex-col items-center lg:items-start">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
                 Bergabung sebagai Pelanggan
               </h2>
               <p className="text-xs lg:text-sm text-neutral-500 font-medium">
@@ -172,15 +191,15 @@ export default function RegisterUser() {
               </p>
             </div>
 
-            <form onSubmit={handleNext} className="flex flex-col gap-3 xl:gap-4">
-              
+            <form onSubmit={handleNext} className="flex flex-col gap-3.5">
+
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="fullName" className="text-[12px] font-bold text-neutral-700 ml-1">
+                <label htmlFor="fullName" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Nama Lengkap
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <User size={16} strokeWidth={2.5} />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <User size={18} strokeWidth={2.5} />
                   </div>
                   <input
                     id="fullName"
@@ -188,19 +207,19 @@ export default function RegisterUser() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Masukkan nama lengkap"
-                    className="w-full rounded-xl xl:rounded-2xl border-2 border-neutral-200 bg-white py-3 pl-11 pr-4 text-[13px] xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                 </div>
               </div>
 
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="username" className="text-[12px] font-bold text-neutral-700 ml-1">
+                <label htmlFor="username" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Nama Pengguna
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <AtSign size={16} strokeWidth={2.5} />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <AtSign size={18} strokeWidth={2.5} />
                   </div>
                   <input
                     id="username"
@@ -208,19 +227,19 @@ export default function RegisterUser() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Buat nama pengguna"
-                    className="w-full rounded-xl xl:rounded-2xl border-2 border-neutral-200 bg-white py-3 pl-11 pr-4 text-[13px] xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                 </div>
               </div>
 
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="phone" className="text-[12px] font-bold text-neutral-700 ml-1">
+                <label htmlFor="phone" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Nomor Telepon
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Phone size={16} strokeWidth={2.5} />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Phone size={18} strokeWidth={2.5} />
                   </div>
                   <input
                     id="phone"
@@ -228,19 +247,19 @@ export default function RegisterUser() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Contoh: 08123456789"
-                    className="w-full rounded-xl xl:rounded-2xl border-2 border-neutral-200 bg-white py-3 pl-11 pr-4 text-[13px] xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                 </div>
               </div>
 
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="email" className="text-[12px] font-bold text-neutral-700 ml-1">
+                <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Email
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Mail size={16} strokeWidth={2.5} />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Mail size={18} strokeWidth={2.5} />
                   </div>
                   <input
                     id="email"
@@ -248,7 +267,7 @@ export default function RegisterUser() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
-                    className="w-full rounded-xl xl:rounded-2xl border-2 border-neutral-200 bg-white py-3 pl-11 pr-4 text-[13px] xl:text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
+                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
                     required
                   />
                 </div>
@@ -258,11 +277,11 @@ export default function RegisterUser() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl xl:rounded-2xl bg-[#025246] px-4 py-3 xl:py-3.5 text-sm xl:text-[15px] font-extrabold text-white shadow-md transition-all duration-200 ease-out hover:bg-[#04382f] hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                 >
                   {loading ? (
                     <>
-                      <Loader2 size={18} className="animate-spin" />
+                      <Loader2 size={20} className="animate-spin" />
                       <span>Memproses...</span>
                     </>
                   ) : (
@@ -275,7 +294,7 @@ export default function RegisterUser() {
         </div>
       </main>
 
-      <footer className="footer-anim relative z-10 w-full text-center py-4 text-[11px] lg:text-[12px] font-medium text-neutral-400 flex-shrink-0">
+      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-6 lg:py-4 text-[12px] font-medium text-neutral-400">
         &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
     </div>

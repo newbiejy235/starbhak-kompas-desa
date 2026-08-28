@@ -182,7 +182,6 @@ export default function ProductGallery({
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-700 ease-smooth"
-                  unoptimized
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
@@ -249,7 +248,6 @@ export default function ProductGallery({
                     fill
                     sizes="80px"
                     className="object-cover"
-                    unoptimized
                   />
                 )}
               </button>
@@ -312,7 +310,6 @@ export default function ProductGallery({
                 fill
                 sizes="100vw"
                 className="object-contain"
-                unoptimized
               />
             )}
           </div>
