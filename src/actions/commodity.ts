@@ -242,6 +242,8 @@ export async function getCommodityById(id: number) {
       location: commoditiesTable.location,
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,

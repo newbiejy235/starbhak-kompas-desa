@@ -31,6 +31,12 @@ export function useAuth(expectedRole?: string) {
   return { user: hydrated ? user : null, loading: !hydrated };
 }
 
+const fetchCache = new Map<string, { promise: Promise<unknown>; subscribers: number }>();
+
+function getCacheKey(fn: Function, deps: unknown[]): string {
+  return `${fn.toString()}::${JSON.stringify(deps)}`;
+}
+
 export function useFetch<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,30 +49,69 @@ export function useFetch<T>(fn: () => Promise<T>, deps: unknown[] = []) {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const res = await fnRef.current();
+    const key = getCacheKey(fnRef.current, deps);
+
+    const cached = fetchCache.get(key);
+    if (cached) {
+      cached.subscribers++;
+      cached.promise.then(
+        (res) => {
+          if (!cancelled) {
+            setData(res as T);
+            setError(null);
+          }
+        },
+        (e) => {
+          if (!cancelled) {
+            console.error(e);
+            setError("Gagal memuat data");
+          }
+        },
+      ).finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+      return () => {
+        cancelled = true;
+        cached.subscribers--;
+        if (cached.subscribers <= 0) fetchCache.delete(key);
+      };
+    }
+
+    const entry = {
+      promise: fnRef.current(),
+      subscribers: 1,
+    };
+    fetchCache.set(key, entry);
+
+    entry.promise.then(
+      (res) => {
         if (!cancelled) {
-          setData(res);
+          setData(res as T);
           setError(null);
         }
-      } catch (e) {
+      },
+      (e) => {
         if (!cancelled) {
           console.error(e);
           setError("Gagal memuat data");
         }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+      },
+    ).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
     return () => {
       cancelled = true;
+      entry.subscribers--;
+      if (entry.subscribers <= 0) fetchCache.delete(key);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   const reload = () => {
     setLoading(true);
+    const key = getCacheKey(fnRef.current, deps);
+    fetchCache.delete(key);
     return fnRef
       .current()
       .then((res) => {

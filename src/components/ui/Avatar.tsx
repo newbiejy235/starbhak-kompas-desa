@@ -52,14 +52,13 @@ export default function Avatar({ src, name, size = "md", className = "" }: Avata
       className={`relative rounded-full overflow-hidden flex-shrink-0 ${sizeMap[size]} ${className}`}
     >
       {imgSrc ? (
-        <Image
-          src={imgSrc}
-          alt={name || "Avatar"}
-          fill
-          sizes={`${imgSizeMap[size]}px`}
-          className="object-cover"
-          unoptimized
-        />
+          <Image
+            src={imgSrc}
+            alt={name || "Avatar"}
+            fill
+            sizes={`${imgSizeMap[size]}px`}
+            className="object-cover"
+          />
       ) : (
         <div
           className={`w-full h-full bg-gradient-to-br ${hashColor(name)} flex items-center justify-center text-white font-bold rounded-full`}

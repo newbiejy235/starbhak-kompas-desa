@@ -42,32 +42,37 @@ export async function uploadMultiMediaAction(formData: FormData) {
 
   const results: { id: number; publicId: string; secureUrl: string; type: "image" | "video" }[] = [];
 
-  for (const file of files) {
-    if (!(file instanceof File)) continue;
+  const uploadResults = await Promise.all(
+    files.map(async (file) => {
+      if (!(file instanceof File)) return null;
+      const isVideo = file.type.startsWith("video/");
+      const result = isVideo
+        ? await cloudinaryService.uploadVideo(file)
+        : await cloudinaryService.uploadImage(file);
 
-    const isVideo = file.type.startsWith("video/");
-    const result = isVideo
-      ? await cloudinaryService.uploadVideo(file)
-      : await cloudinaryService.uploadImage(file);
+      const [row] = await db
+        .insert(ImageUpload)
+        .values({
+          publicId: result.publicId,
+          secureUrl: result.secureUrl,
+        })
+        .returning({ id: ImageUpload.id });
 
-    const [row] = await db
-      .insert(ImageUpload)
-      .values({
+      if (!row) {
+        throw new Error("Gagal menyimpan data media");
+      }
+
+      return {
+        id: row.id,
         publicId: result.publicId,
         secureUrl: result.secureUrl,
-      })
-      .returning({ id: ImageUpload.id });
+        type: isVideo ? "video" as const : "image" as const,
+      };
+    }),
+  );
 
-    if (!row) {
-      throw new Error("Gagal menyimpan data media");
-    }
-
-    results.push({
-      id: row.id,
-      publicId: result.publicId,
-      secureUrl: result.secureUrl,
-      type: isVideo ? "video" : "image",
-    });
+  for (const r of uploadResults) {
+    if (r) results.push(r);
   }
 
   return results;

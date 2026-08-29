@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Pin } from "lucide-react";
 import { getInitials } from "@/lib/format";
 import type { ChatRoom } from "./ChatList";
@@ -70,10 +71,11 @@ export default function ChatItem({
       {/* Avatar */}
       <div className="relative shrink-0">
         {room.otherAvatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={room.otherAvatarUrl}
             alt={room.otherName}
+            width={44}
+            height={44}
             className="h-11 w-11 rounded-full object-cover"
           />
         ) : (

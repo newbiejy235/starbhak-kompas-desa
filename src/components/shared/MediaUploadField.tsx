@@ -13,7 +13,8 @@ import {
 import { toast } from "sonner";
 import { uploadMultiMediaAction } from "@/actions/upload.action";
 
-const MAX_PHOTOS = 5;
+const MIN_PHOTOS = 3;
+const MAX_PHOTOS = 10;
 const MAX_VIDEOS = 1;
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -48,6 +49,10 @@ interface MediaUploadFieldProps {
   onChange?: (items: UploadedMedia[]) => void;
   /** Dipanggil saat status upload berubah. */
   onUploadStateChange?: (isUploading: boolean) => void;
+  /** Jumlah foto minimal yang harus diunggah (default: 3). */
+  minPhotos?: number;
+  /** Dipanggil saat status validasi berubah (minimal foto terpenuhi atau tidak). */
+  onValidationChange?: (isValid: boolean) => void;
 }
 
 async function uploadItem(
@@ -90,7 +95,7 @@ async function uploadItem(
 export default function MediaUploadField(
   props: MediaUploadFieldProps,
 ) {
-  const { onChange, onUploadStateChange } = props;
+  const { onChange, onUploadStateChange, minPhotos = MIN_PHOTOS, onValidationChange } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaItem[]>(() => {
     const initial: MediaItem[] = [];
@@ -125,6 +130,7 @@ export default function MediaUploadField(
   const canAddPhoto = photoCount < MAX_PHOTOS;
   const canAddVideo = videoCount < MAX_VIDEOS;
   const isUploading = items.some((i) => i.uploading);
+  const hasMinPhotos = photoCount >= minPhotos;
 
   useEffect(() => {
     return () => {
@@ -147,6 +153,10 @@ export default function MediaUploadField(
   useEffect(() => {
     onUploadStateChange?.(isUploading);
   }, [isUploading, onUploadStateChange]);
+
+  useEffect(() => {
+    onValidationChange?.(hasMinPhotos);
+  }, [hasMinPhotos, onValidationChange]);
 
   const validateFile = useCallback(
     (file: File): string | null => {
@@ -203,9 +213,7 @@ export default function MediaUploadField(
 
       setItems((prev) => [...prev, ...validItems]);
 
-      for (const item of validItems) {
-        uploadItem(item, setItems);
-      }
+      await Promise.all(validItems.map((item) => uploadItem(item, setItems)));
     },
     [validateFile],
   );
@@ -286,10 +294,11 @@ export default function MediaUploadField(
         <div className="flex items-center gap-3 text-[11px]">
           <span
             className={`font-medium ${
-              photoCount >= MAX_PHOTOS ? "text-amber-600" : "text-gray-500"
+              !hasMinPhotos ? "text-red-500" : photoCount >= MAX_PHOTOS ? "text-amber-600" : "text-gray-500"
             }`}
           >
             Foto: {photoCount}/{MAX_PHOTOS}
+            {!hasMinPhotos && <span className="ml-1">(min {minPhotos})</span>}
           </span>
           <span
             className={`font-medium ${
@@ -431,7 +440,7 @@ export default function MediaUploadField(
 
       {items.length > 0 && (
         <p className="text-[11px] text-gray-400">
-          Foto pertama (#1) akan menjadi Cover Utama. Seret untuk mengubah urutan.
+          Foto pertama (#1) akan menjadi Cover Utama. Seret untuk mengubah urutan. Minimal {minPhotos} foto wajib diunggah.
         </p>
       )}
     </div>

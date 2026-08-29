@@ -13,23 +13,27 @@ import ScrollReveal from "@/components/animation/ScrollReveal";
 import ScrollToTop from "@/components/landingpage/backtotop/BacktoTop";
 
 const InvitationSection = dynamic(
-  () => import("@/components/landingpage/ajakanBergabung/page")
+  () => import("@/components/landingpage/ajakanBergabung/page"),
+  { ssr: false }
 );
 
 const PartnerSection = dynamic(
-  () => import("@/components/landingpage/mitra/Mitra")
+  () => import("@/components/landingpage/mitra/Mitra"),
+  { ssr: false }
 );
 
 const About = dynamic(
   () => import("@/components/landingpage/about/About").then(
     (mod) => mod.About
-  )
+  ),
+  { ssr: false }
 );
 
 const AlurWebsite = dynamic(
   () => import("@/components/landingpage/about/WebsiteFlow").then(
     (mod) => mod.AlurWebsite
-  )
+  ),
+  { ssr: false }
 );
 
 const KomoditasMarquee = dynamic(
@@ -41,43 +45,50 @@ const KomoditasMarquee = dynamic(
 );
 
 const CardBenefit = dynamic(
-  () => import("@/components/landingpage/cardBenefit/card")
+  () => import("@/components/landingpage/cardBenefit/card"),
+  { ssr: false }
 );
 
 const CardMembership = dynamic(
   () =>
     import("@/components/landingpage/cardEndorse/membership").then(
       (mod) => mod.default
-    )
+    ),
+  { ssr: false }
 );
 
 const Testimonial = dynamic(
-  () => import("@/components/landingpage/testimonial/testi")
+  () => import("@/components/landingpage/testimonial/testi"),
+  { ssr: false }
 );
 
 const Footer = dynamic(
-  () => import("@/components/landingpage/Footer")
+  () => import("@/components/landingpage/Footer"),
+  { ssr: false }
 );
 
 const Keamanan = dynamic(
   () =>
     import("@/components/landingpage/keamanan/KeamananSection").then(
       (mod) => mod.KeamananSec
-    )
+    ),
+  { ssr: false }
 );
 
 const FiturUtama = dynamic(
   () =>
     import("@/components/landingpage/kebutuhanplatform/KebutuhanPlatform").then(
       (mod) => mod.FiturUtamaSec
-    )
+    ),
+  { ssr: false }
 );
 
 const FAQSection = dynamic(
   () =>
     import("@/components/landingpage/faq/Pertanyaanajukan").then(
       (mod) => mod.FAQSection
-    )
+    ),
+  { ssr: false }
 );
 
 export default function KompasDesaPage() {

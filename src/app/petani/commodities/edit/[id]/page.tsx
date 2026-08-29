@@ -74,6 +74,7 @@ export default function EditCommodity() {
 
   const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [isValidPhotos, setIsValidPhotos] = useState(false);
 
   const handleMediaChange = useCallback((items: UploadedMedia[]) => {
     setMediaItems(items);
@@ -81,6 +82,10 @@ export default function EditCommodity() {
 
   const handleMediaUploadStateChange = useCallback((state: boolean) => {
     setMediaUploading(state);
+  }, []);
+
+  const handleMediaValidationChange = useCallback((valid: boolean) => {
+    setIsValidPhotos(valid);
   }, []);
 
   if (loading) return <EditSkeleton />;
@@ -187,10 +192,19 @@ export default function EditCommodity() {
         </div>
 
         <MediaUploadField
-          defaultImages={commodity.image ? [commodity.image] : undefined}
+          defaultImages={
+            commodity.image
+              ? [commodity.image, ...(commodity.images ?? [])].filter(
+                  (url, i, arr) => url && arr.indexOf(url) === i,
+                )
+              : commodity.images?.length
+                ? commodity.images
+                : undefined
+          }
           defaultVideoUrl={commodity.videoUrl ?? undefined}
           onChange={handleMediaChange}
           onUploadStateChange={handleMediaUploadStateChange}
+          onValidationChange={handleMediaValidationChange}
         />
 
         <input
@@ -210,7 +224,7 @@ export default function EditCommodity() {
 
         <button
           type="submit"
-          disabled={isPending || mediaUploading}
+          disabled={isPending || mediaUploading || (!commodity.image && !isValidPhotos)}
           className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Menyimpan..." : "Simpan Perubahan"}

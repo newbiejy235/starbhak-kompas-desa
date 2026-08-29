@@ -13,14 +13,52 @@ export interface NegotiationNotification {
   otherPartyName: string;
 }
 
+const SHOWN_IDS_KEY = "negotiation_shown_ids";
+const LAST_SEEN_ID_KEY = "negotiation_last_seen_id";
+
+function loadShownIds(): Set<number> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(SHOWN_IDS_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw) as number[];
+    return new Set(arr);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveShownIds(ids: Set<number>) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(SHOWN_IDS_KEY, JSON.stringify([...ids]));
+  } catch {}
+}
+
+function loadLastSeenId(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    return Number(localStorage.getItem(LAST_SEEN_ID_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveLastSeenId(id: number) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LAST_SEEN_ID_KEY, String(id));
+  } catch {}
+}
+
 export function useNegotiationNotification(userId: number, basePath: string = "/user") {
   const router = useRouter();
   const [notification, setNotification] = useState<NegotiationNotification | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
-  const shownIdsRef = useRef<Set<number>>(new Set());
-  const lastSeenIdRef = useRef(0);
+  const shownIdsRef = useRef<Set<number>>(loadShownIds());
+  const lastSeenIdRef = useRef(loadLastSeenId());
 
   const cleanup = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -50,7 +88,10 @@ export function useNegotiationNotification(userId: number, basePath: string = "/
 
         if (shownIdsRef.current.has(data.id)) return;
         shownIdsRef.current.add(data.id);
+        saveShownIds(shownIdsRef.current);
+
         lastSeenIdRef.current = Math.max(lastSeenIdRef.current, data.id);
+        saveLastSeenId(lastSeenIdRef.current);
 
         setNotification(data);
       });

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const reviewsData = [
@@ -80,9 +81,11 @@ function CardBody({ review, isCenter }: { review: typeof reviewsData[0]; isCente
       </div>
       <div className="mt-8 flex items-center gap-3 border-t border-slate-100 pt-5">
         <div className="relative">
-          <img
+          <Image
             src={review.avatar}
             alt={review.name}
+            width={44}
+            height={44}
             loading="lazy"
             className="h-11 w-11 rounded-full border-2 border-[#E4F1EB] object-cover"
           />

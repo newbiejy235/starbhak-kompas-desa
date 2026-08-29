@@ -240,6 +240,8 @@ export async function searchPublicFarmers(params?: {
       filtered.sort((a, b) => (b.commodityCount || 0) - (a.commodityCount || 0));
   }
 
+  const totalCount = filtered.length;
+
   return filtered.slice(offset, offset + limit).map((r) => ({
     id: r.id,
     fullName: r.fullName,
@@ -253,6 +255,7 @@ export async function searchPublicFarmers(params?: {
     avgPrice: r.avgPrice,
     avgRating: r.avgRating,
     reviewCount: r.reviewCount,
+    _totalCount: totalCount,
   }));
 }
 

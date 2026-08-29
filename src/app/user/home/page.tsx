@@ -23,7 +23,6 @@ import {
 } from "@/actions/commodity";
 import {
   searchPublicFarmers,
-  countSearchPublicFarmers,
 } from "@/actions/farmer";
 import { useFetch } from "@/lib/hooks";
 import { formatRupiah } from "@/lib/format";
@@ -381,7 +380,7 @@ function HomeContent() {
       sort: farmerSort,
       limit: FARMER_LIMIT,
       offset: (farmerPage - 1) * FARMER_LIMIT,
-    }).then((r) => r as SearchPublicFarmer[]);
+    }).then((r) => r as (SearchPublicFarmer & { _totalCount: number })[]);
   }, [
     search,
     farmerFilters.categoryId,
@@ -393,33 +392,15 @@ function HomeContent() {
     farmerPage,
   ]);
 
-  const fetchFarmerCount = useCallback(() => {
-    return countSearchPublicFarmers({
-      search: search || undefined,
-      categoryId: farmerFilters.categoryId,
-      location: farmerFilters.location,
-      minPrice: farmerFilters.minPrice,
-      maxPrice: farmerFilters.maxPrice,
-      minRating: farmerFilters.minRating,
-    });
-  }, [
-    search,
-    farmerFilters.categoryId,
-    farmerFilters.location,
-    farmerFilters.minPrice,
-    farmerFilters.maxPrice,
-    farmerFilters.minRating,
-  ]);
-
   const { data: farmers, loading: farmersLoading } = useFetch(fetchFarmers, [
     fetchFarmers,
   ]);
-  const { data: farmerCount } = useFetch(fetchFarmerCount, [fetchFarmerCount]);
+  const farmerCount = farmers?.[0]?._totalCount ?? 0;
 
   const productList = products ?? [];
   const categoryList = categories ?? [];
   const farmerList = farmers ?? [];
-  const fCount = farmerCount ?? 0;
+  const fCount = farmerCount;
   const hasMoreFarmers = farmerPage * FARMER_LIMIT < fCount;
 
   const categoryOrder = [

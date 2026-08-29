@@ -36,6 +36,7 @@ export default function AddCommodity() {
 
   const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [isValidPhotos, setIsValidPhotos] = useState(false);
 
   const handleMediaChange = useCallback((items: UploadedMedia[]) => {
     setMediaItems(items);
@@ -43,6 +44,10 @@ export default function AddCommodity() {
 
   const handleMediaUploadStateChange = useCallback((state: boolean) => {
     setMediaUploading(state);
+  }, []);
+
+  const handleMediaValidationChange = useCallback((valid: boolean) => {
+    setIsValidPhotos(valid);
   }, []);
 
   const inputCls =
@@ -148,6 +153,7 @@ export default function AddCommodity() {
         <MediaUploadField
           onChange={handleMediaChange}
           onUploadStateChange={handleMediaUploadStateChange}
+          onValidationChange={handleMediaValidationChange}
         />
 
         <input
@@ -167,7 +173,7 @@ export default function AddCommodity() {
 
         <button
           type="submit"
-          disabled={isPending || mediaUploading}
+          disabled={isPending || mediaUploading || !isValidPhotos}
           className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Menyimpan..." : "Simpan Komoditas"}

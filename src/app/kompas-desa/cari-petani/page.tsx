@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import {
   searchPublicFarmers,
-  countSearchPublicFarmers,
 } from "@/actions/farmer";
 import {
   getCategoriesWithCount,
@@ -389,19 +388,8 @@ function CariPetaniContent() {
       sort,
       limit: LIMIT,
       offset: (page - 1) * LIMIT,
-    }).then((r) => r as SearchPublicFarmer[]);
+    }).then((r) => r as (SearchPublicFarmer & { _totalCount: number })[]);
   }, [debouncedQuery, filters, sort, page]);
-
-  const fetchCount = useCallback(() => {
-    return countSearchPublicFarmers({
-      search: debouncedQuery || undefined,
-      categoryId: filters.categoryId,
-      location: filters.location,
-      minPrice: filters.minPrice,
-      maxPrice: filters.maxPrice,
-      minRating: filters.minRating,
-    });
-  }, [debouncedQuery, filters]);
 
   const { data: farmers, loading } = useFetch(fetchFarmers, [
     debouncedQuery,
@@ -414,15 +402,6 @@ function CariPetaniContent() {
     page,
   ]);
 
-  const { data: totalCount } = useFetch(fetchCount, [
-    debouncedQuery,
-    filters.categoryId,
-    filters.minPrice,
-    filters.maxPrice,
-    filters.minRating,
-    filters.location,
-  ]);
-
   const { data: categories } = useFetch(
     () => getCategoriesWithCount() as Promise<CategoryWithCount[]>,
     [],
@@ -430,7 +409,7 @@ function CariPetaniContent() {
 
   const farmerList = farmers ?? [];
   const categoryList = categories ?? [];
-  const count = totalCount ?? 0;
+  const count = farmers?.[0]?._totalCount ?? 0;
   const hasMore = page * LIMIT < count;
 
   const activeFilters: { key: string; label: string; onRemove: () => void }[] =

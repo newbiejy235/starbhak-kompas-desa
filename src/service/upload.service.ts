@@ -16,6 +16,7 @@ export class CloudService {
             unique_filename: true,
             overwrite: false,
             resource_type: "image",
+            timeout: 120000,
           },
           (error, result) => {
             if (error) {
@@ -56,6 +57,7 @@ export class CloudService {
             unique_filename: true,
             overwrite: false,
             resource_type: "video",
+            timeout: 300000,
           },
           (error, result) => {
             if (error) {
