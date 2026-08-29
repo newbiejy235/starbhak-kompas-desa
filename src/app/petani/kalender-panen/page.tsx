@@ -215,11 +215,10 @@ function HarvestCard({
   const harvestDate = new Date(item.harvestEstimate!);
   return (
     <article
-      className={`group relative flex gap-3.5 overflow-hidden rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up ${
-        featured
-          ? "border-primary/25 bg-primary/[0.04]"
-          : "border-gray-200/80 bg-white"
-      }`}
+      className={`group relative flex gap-3.5 overflow-hidden rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up ${featured
+        ? "border-primary/25 bg-primary/[0.04]"
+        : "border-gray-200/80 bg-white"
+        }`}
       style={{
         animationDelay: `${Math.min(index * 50, 250)}ms`,
         animationFillMode: "backwards",
@@ -646,11 +645,10 @@ export default function KalenderPanenPage() {
                   key={f.key}
                   onClick={() => setFilter(f.key)}
                   aria-pressed={filter === f.key}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-primary ${
-                    filter === f.key
-                      ? "border-primary bg-primary text-white shadow-soft"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-primary/40 hover:text-primary"
-                  }`}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-primary ${filter === f.key
+                    ? "border-primary bg-primary text-white shadow-soft"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-primary/40 hover:text-primary"
+                    }`}
                 >
                   {f.label}
                 </button>
@@ -691,11 +689,10 @@ export default function KalenderPanenPage() {
                     key={v.key}
                     onClick={() => setViewMode(v.key)}
                     aria-pressed={viewMode === v.key}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-primary ${
-                      viewMode === v.key
-                        ? "bg-white text-primary shadow-soft"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-primary ${viewMode === v.key
+                      ? "bg-white text-primary shadow-soft"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
                   >
                     <v.icon size={14} />
                     {v.label}
@@ -754,7 +751,7 @@ export default function KalenderPanenPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-px bg-gray-100">
+          <div className="grid grid-cols-7 gap-px">
             {grid.map((day) => {
               const iso = toISODate(day);
               const inMonth = day.getMonth() === viewMonth;
@@ -777,24 +774,22 @@ export default function KalenderPanenPage() {
                   title={
                     count > 0 ? `${count} jadwal pada tanggal ini` : undefined
                   }
-                  className={`group relative flex min-h-[56px] cursor-pointer flex-col items-center gap-1 px-0.5 pb-1 pt-1.5 transition-colors duration-150 focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:min-h-[68px] sm:gap-1.5 sm:pt-2 ${
-                    inMonth
-                      ? isSelected
-                        ? "bg-primary/10"
-                        : "bg-white hover:bg-primary/[0.06]"
-                      : "cursor-default bg-gray-50/70"
-                  }`}
+                  className={`group relative flex min-h-[56px] cursor-pointer flex-col items-center gap-1 px-0.5 pb-1 pt-1.5 transition-colors duration-150 focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:min-h-[68px] sm:gap-1.5 sm:pt-2 ${inMonth
+                    ? isSelected
+                      ? "bg-primary/10"
+                      : "bg-white hover:bg-primary/[0.06]"
+                    : "cursor-default bg-gray-50/70"
+                    }`}
                 >
                   <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold transition-colors sm:h-7 sm:w-7 sm:text-[13px] ${
-                      isToday
-                        ? "bg-primary text-white shadow-soft"
-                        : isSelected
-                          ? "text-primary ring-2 ring-primary ring-offset-1"
-                          : inMonth
-                            ? "text-gray-700 group-hover:text-primary"
-                            : "text-gray-300"
-                    }`}
+                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold transition-colors sm:h-7 sm:w-7 sm:text-[13px] ${isToday
+                      ? "bg-primary text-white shadow-soft"
+                      : isSelected
+                        ? "text-primary ring-2 ring-primary ring-offset-1"
+                        : inMonth
+                          ? "text-gray-700 group-hover:text-primary"
+                          : "text-gray-300"
+                      }`}
                   >
                     {day.getDate()}
                   </span>

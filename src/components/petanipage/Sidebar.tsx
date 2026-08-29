@@ -47,7 +47,7 @@ const menuItems: SidebarEntry[] = [
   // ── OPERASIONAL ──
   { id: "heading-operasional", label: "Operasional" },
   { id: "calendar", label: "Kalender Panen", icon: CalendarDays, href: "/petani/kalender-panen" },
-  { id: "harvest-notes", label: "Catatan Panen", icon: NotebookPen, href: "/petani/catatan-panen" },
+  { id: "harvest-notes", label: "Catatan", icon: NotebookPen, href: "/petani/catatan-panen" },
 
   // ── PERFORMA ──
   { id: "heading-performa", label: "Performa" },

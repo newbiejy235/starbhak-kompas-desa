@@ -488,26 +488,50 @@ export const salesTargetsTable = pgTable(
   (table) => [index("sales_targets_farmer_idx").on(table.farmerId)],
 );
 
-export const harvestRecordsTable = pgTable(
-  "harvest_records_table",
+export const farmerNotesTable = pgTable(
+  "farmer_notes_table",
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
     farmerId: integer()
       .notNull()
       .references(() => usersTable.id, { onDelete: "cascade" }),
-    commodityId: integer()
+
+    commodityId: integer().references(() => commoditiesTable.id, {
+      onDelete: "set null",
+    }),
+
+    title: varchar({ length: 200 }),
+
+    content: text().notNull(),
+
+    category: varchar({ length: 50 })
       .notNull()
-      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
-    harvestDate: timestamp({ withTimezone: true }).notNull(),
-    quantity: numeric({ precision: 12, scale: 2 }).notNull(),
-    unit: varchar({ length: 30 }).notNull().default("kg"),
-    quality: varchar({ length: 50 }).notNull().default("A"),
-    notes: text(),
-    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+      .default("lainnya"),
+
+    noteDate: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    location: varchar({ length: 200 }),
+
+    weather: varchar({ length: 100 }),
+
+    tags: text(),
+
+    createdAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
-    index("harvest_records_farmer_idx").on(table.farmerId),
-    index("harvest_records_commodity_idx").on(table.commodityId),
+    index("farmer_notes_farmer_idx").on(table.farmerId),
+    index("farmer_notes_commodity_idx").on(table.commodityId),
+    index("farmer_notes_category_idx").on(table.category),
+    index("farmer_notes_date_idx").on(table.noteDate),
   ],
 );
 
@@ -564,7 +588,8 @@ export type ChatRoom = typeof chatRoomsTable.$inferSelect;
 export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;
 export type SalesTarget = typeof salesTargetsTable.$inferSelect;
-export type HarvestRecord = typeof harvestRecordsTable.$inferSelect;
+export type FarmerNote = typeof farmerNotesTable.$inferSelect;
+export type NewFarmerNote = typeof farmerNotesTable.$inferInsert;
 export type FarmerProfileImage = typeof farmerProfileImagesTable.$inferSelect;
 export type ContactMessage = typeof contactMessagesTable.$inferSelect;
 export type NewContactMessage = typeof contactMessagesTable.$inferInsert;
