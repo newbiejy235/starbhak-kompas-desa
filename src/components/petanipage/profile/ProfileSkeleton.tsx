@@ -1,7 +1,6 @@
 import { Skeleton } from "@/components/ui/Skeleton";
 
-const cardCls =
-  "bg-white rounded-2xl border border-gray-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden";
+const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
 
 export default function ProfileSkeleton() {
   return (
@@ -26,15 +25,20 @@ export default function ProfileSkeleton() {
             {[1, 2, 3].map((i) => (
               <div key={i} className={`${cardCls} p-6 space-y-4`}>
                 <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-20 w-full rounded-xl" />
+                <div className="space-y-3">
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3.5 w-4/5" />
+                  <Skeleton className="h-3.5 w-full" />
+                </div>
               </div>
             ))}
           </div>
           <div className="space-y-6">
             <div className={`${cardCls} p-6 space-y-4`}>
               <Skeleton className="h-5 w-44" />
-              <Skeleton className="h-10 w-full rounded-xl" />
-              <Skeleton className="h-10 w-full rounded-xl" />
+              <Skeleton className="h-3.5 w-2/3" />
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-1/2" />
             </div>
           </div>
         </div>

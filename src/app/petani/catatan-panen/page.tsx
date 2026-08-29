@@ -27,15 +27,34 @@ const QUALITY_OPTIONS = ["A", "B", "C"];
 /* ---------------------- SKELETON ---------------------- */
 function NotesSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <Skeleton className="h-8 w-48" />
-      <div className="grid grid-cols-3 gap-3">
-        <Skeleton className="h-[72px] rounded-xl" />
-        <Skeleton className="h-[72px] rounded-xl" />
-        <Skeleton className="h-[72px] rounded-xl" />
+    <div className="w-full space-y-6 p-4 sm:p-6 lg:px-8">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-80" />
       </div>
-      <Skeleton className="h-[88px] rounded-card" />
-      <Skeleton className="h-[88px] rounded-card" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Skeleton className="h-[64px] rounded-xl" />
+        <Skeleton className="h-[64px] rounded-xl" />
+        <Skeleton className="h-[64px] rounded-xl" />
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center gap-4 border-b border-gray-100 py-4">
+          <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-3 w-40" />
+          </div>
+          <Skeleton className="h-8 w-8 rounded-lg" />
+        </div>
+        <div className="flex items-center gap-4 border-b border-gray-100 py-4">
+          <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-3 w-40" />
+          </div>
+          <Skeleton className="h-8 w-8 rounded-lg" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -112,7 +131,7 @@ export default function CatatanPanenPage() {
   if (loading) return <NotesSkeleton />;
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
       <PageHeader
         icon={NotebookPen}
         title="Catatan Panen"
@@ -126,22 +145,26 @@ export default function CatatanPanenPage() {
       />
 
       {/* Mini stats */}
-      <section className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="text-xs text-gray-500">Total Catatan</p>
-          <p className="mt-0.5 text-xl font-black text-gray-900">
-            {totals.count}
-          </p>
+      <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-medium text-gray-500">Total Catatan</p>
+          </div>
+          <p className="mt-1 text-xl font-black text-gray-900">{totals.count}</p>
         </div>
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="text-xs text-gray-500">Total Hasil</p>
-          <p className="mt-0.5 text-xl font-black text-gray-900">
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-medium text-gray-500">Total Hasil</p>
+          </div>
+          <p className="mt-1 text-xl font-black text-gray-900">
             {formatNumber(totals.quantity)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="text-xs text-gray-500">Komoditas Tercatat</p>
-          <p className="mt-0.5 text-xl font-black text-gray-900">
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-medium text-gray-500">Komoditas Tercatat</p>
+          </div>
+          <p className="mt-1 text-xl font-black text-gray-900">
             {totals.commodities}
           </p>
         </div>
@@ -165,11 +188,11 @@ export default function CatatanPanenPage() {
           </Button>
         </EmptyState>
       ) : (
-        <div className="space-y-2.5">
+        <div className="divide-y divide-gray-100">
           {(records ?? []).map((r, i) => (
             <article
               key={r.id}
-              className="flex items-start gap-3.5 rounded-card border border-gray-200/80 bg-white p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 hover:shadow-lift"
+              className="group flex items-start gap-3.5 py-4 transition-colors hover:bg-gray-50/70"
               style={{
                 animationDelay: `${Math.min(i * 40, 240)}ms`,
                 animationFillMode: "backwards",

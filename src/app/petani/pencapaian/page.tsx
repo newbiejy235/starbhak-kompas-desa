@@ -46,33 +46,41 @@ export default function PencapaianPage() {
   const total = (achievements ?? []).length;
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
       <PageHeader
         icon={Trophy}
         title="Pencapaian"
         subtitle="Lihat perkembangan dan pencapaian Anda sebagai petani."
       />
 
-      <section className="mb-6 flex items-center justify-between rounded-card border border-gray-200/80 bg-white px-5 py-4 shadow-soft">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Sparkles size={19} strokeWidth={2.25} />
+      <section className="mb-6 rounded-card border border-gray-200/80 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Sparkles size={19} strokeWidth={2.25} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900">
+                {unlocked} dari {total} pencapaian terbuka
+              </p>
+              <p className="text-xs text-gray-500">
+                Semua pencapaian dihitung otomatis dari aktivitas akun Anda.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">
-              {unlocked} dari {total} pencapaian terbuka
-            </p>
-            <p className="text-xs text-gray-500">
-              Semua pencapaian dihitung otomatis dari aktivitas akun Anda.
-            </p>
-          </div>
+          <span
+            aria-hidden
+            className="hidden text-2xl font-black text-primary sm:block"
+          >
+            {total > 0 ? Math.round((unlocked / total) * 100) : 0}%
+          </span>
         </div>
-        <span
-          aria-hidden
-          className="hidden text-2xl font-black text-primary sm:block"
-        >
-          {total > 0 ? Math.round((unlocked / total) * 100) : 0}%
-        </span>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+          <div
+            className="h-full rounded-full bg-primary"
+            style={{ width: `${total > 0 ? (unlocked / total) * 100 : 0}%` }}
+          />
+        </div>
       </section>
 
       {error ? (
@@ -83,7 +91,7 @@ export default function PencapaianPage() {
             <article
               key={a.id}
               aria-label={`${a.title} — ${a.unlocked ? "tercapai" : "belum tercapai"}`}
-              className={`flex flex-col rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 ${a.unlocked
+              className={`flex flex-col rounded-card border p-4 shadow-sm animate-fade-up ${a.unlocked
                 ? "border-primary/25 bg-white"
                 : "border-gray-200/80 bg-gray-50/60"
                 }`}

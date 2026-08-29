@@ -8,8 +8,7 @@ import { addFarmImage, removeFarmImage } from "@/actions/profile";
 import { formatImage } from "@/components/shared/States";
 import type { ProfileData } from "./types";
 
-const cardCls =
-  "bg-white rounded-2xl border border-gray-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden";
+const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
 
 export default function FotoUsahaCard({
   profile,
@@ -75,7 +74,7 @@ export default function FotoUsahaCard({
   return (
     <div className={cardCls}>
       <div className="p-5 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-gray-100">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
             <ImageIcon size={16} className="text-primary" />
             Foto Usaha

@@ -25,7 +25,7 @@ export default function HarvestScheduleCard({
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
   return (
-    <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 transition-all duration-300 ease-smooth hover:shadow-lift">
+    <div className="rounded-2xl border border-gray-200/80 bg-white p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CalendarDays size={18} className="text-primary" />

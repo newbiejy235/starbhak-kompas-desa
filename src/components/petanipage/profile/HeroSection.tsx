@@ -4,8 +4,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import { formatDate, ROLE_LABEL, BUSINESS_TYPE_LABEL } from "@/lib/format";
 import type { ProfileData } from "./types";
 
-const cardCls =
-  "bg-white rounded-2xl border border-gray-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden";
+const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
 
 export default function HeroSection({
   profile,

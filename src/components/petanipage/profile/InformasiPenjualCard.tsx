@@ -3,8 +3,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import { formatDate, BUSINESS_TYPE_LABEL } from "@/lib/format";
 import type { ProfileData } from "./types";
 
-const cardCls =
-  "bg-white rounded-2xl border border-gray-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden";
+const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
 
 function TrustRow({
   label,
@@ -14,8 +13,8 @@ function TrustRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-xs text-gray-500">{label}</span>
+    <div className="flex items-center justify-between gap-3 py-2.5 border-b border-gray-100 last:border-0">
+      <span className="text-xs font-medium text-gray-500">{label}</span>
       {value}
     </div>
   );
@@ -29,11 +28,11 @@ export default function InformasiPenjualCard({
   return (
     <div className={`${cardCls} border-[#E4F1EB] bg-[#F7FBF9]`}>
       <div className="p-5">
-        <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+        <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 pb-3 mb-4 border-b border-gray-100">
           <ShieldCheck size={16} className="text-primary" />
           Informasi Penjual
         </h2>
-        <div className="space-y-3">
+        <div>
           <TrustRow label="Status Akun" value={<StatusBadge status={profile.status} />} />
           <TrustRow
             label="Bergabung Sejak"

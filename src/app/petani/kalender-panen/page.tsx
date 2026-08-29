@@ -179,21 +179,21 @@ function SummaryCard({
 }) {
   return (
     <div
-      className={`flex items-center gap-3 rounded-card border border-gray-200/80 bg-white p-3.5 shadow-soft animate-fade-up sm:p-4 ${className}`}
+      className={`border-b border-gray-200 px-1 py-3 animate-fade-up sm:px-2 ${className}`}
       style={{
         animationDelay: `${delay}ms`,
         animationFillMode: "backwards",
       }}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-        <Icon size={19} strokeWidth={2.25} />
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <span className="shrink-0 text-primary">
+          <Icon size={15} strokeWidth={2.25} />
+        </span>
       </div>
-      <div className="min-w-0">
-        <p className="truncate text-lg font-bold leading-tight text-gray-900 sm:text-xl">
-          {value}
-        </p>
-        <p className="truncate text-xs text-gray-500">{label}</p>
-      </div>
+      <p className="mt-1 truncate text-lg font-black leading-tight text-gray-900 sm:text-xl">
+        {value}
+      </p>
     </div>
   );
 }
@@ -215,7 +215,7 @@ function HarvestCard({
   const harvestDate = new Date(item.harvestEstimate!);
   return (
     <article
-      className={`group relative flex gap-3.5 overflow-hidden rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 hover:shadow-lift ${
+      className={`group relative flex gap-3.5 overflow-hidden rounded-card border p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up ${
         featured
           ? "border-primary/25 bg-primary/[0.04]"
           : "border-gray-200/80 bg-white"
@@ -288,15 +288,18 @@ function HarvestCard({
 
 function CalendarSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl space-y-5 p-4 sm:p-6 lg:p-0">
-      <Skeleton className="h-8 w-52" />
+    <div className="w-full space-y-5 p-4 sm:p-6 lg:px-8">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-52" />
+        <Skeleton className="h-4 w-80" />
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-[72px] rounded-card" />
+          <Skeleton key={i} className="h-[64px] rounded-xl" />
         ))}
       </div>
-      <Skeleton className="h-16 rounded-card" />
-      <Skeleton className="h-[420px] rounded-card" />
+      <Skeleton className="h-12 rounded-xl" />
+      <Skeleton className="h-[420px] rounded-xl" />
       <div className="grid gap-3 sm:grid-cols-2">
         <Skeleton className="h-[104px] rounded-card" />
         <Skeleton className="h-[104px] rounded-card" />
@@ -521,7 +524,7 @@ export default function KalenderPanenPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+      <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
         <PageHeader
           icon={CalendarDays}
           title="Kalender Panen"
@@ -561,7 +564,7 @@ export default function KalenderPanenPage() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
       <PageHeader
         icon={CalendarDays}
         title="Kalender Panen"
@@ -615,7 +618,7 @@ export default function KalenderPanenPage() {
       </section>
 
       {/* Toolbar pencarian, filter, urutan & mode tampilan */}
-      <section className="mb-4 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft sm:p-4">
+      <section className="mb-5 border-b border-gray-200 pb-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           <div className="relative min-w-0 flex-1 xl:max-w-xs">
             <Search

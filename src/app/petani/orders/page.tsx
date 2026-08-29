@@ -20,18 +20,36 @@ import CancelDialog from "@/components/petanipage/orders/CancelDialog";
 
 function OrdersSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl space-y-4">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
       <Skeleton className="h-8 w-48" />
-      <Skeleton className="mb-4 h-4 w-64" />
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <Skeleton className="mt-1 mb-5 h-4 w-72" />
+
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[68px] rounded-xl" />
+          <Skeleton key={i} className="h-14 border-b border-gray-200" />
         ))}
       </div>
-      <Skeleton className="h-16 rounded-xl" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-52 rounded-card" />
-      ))}
+
+      <Skeleton className="mb-6 h-11 w-full" />
+
+      <div className="hidden border-b border-gray-200 px-3 pb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 sm:grid sm:grid-cols-[minmax(0,1fr)_150px_150px_150px] sm:items-center sm:gap-5">
+        <span>Komoditas</span>
+        <span>Pembeli</span>
+        <span>Status</span>
+        <span className="text-right">Total / Aksi</span>
+      </div>
+      <div className="divide-y divide-gray-100">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 py-4">
+            <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+            <Skeleton className="hidden h-8 w-24 sm:block" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -46,10 +64,10 @@ function StatPill({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-      <p className="text-xs text-gray-500">{label}</p>
+    <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+      <p className="text-xs font-medium text-gray-500">{label}</p>
       <p
-        className={`mt-0.5 text-xl font-black ${accent ? "text-primary" : "text-gray-900"
+        className={`mt-1 text-xl font-black ${accent ? "text-primary" : "text-gray-900"
           }`}
       >
         {value}
@@ -159,14 +177,14 @@ function OrdersContent() {
 
   return (
     <div className="min-h-screen animate-fade-up">
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
+      <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">Pesanan Masuk</h1>
-        <p className="mt-1 mb-5 text-sm text-gray-500">
+        <p className="mt-1 mb-6 text-sm text-gray-500">
           Kelola pesanan, pembayaran, pengiriman, dan komunikasi dengan pembeli.
         </p>
 
         {/* Stats */}
-        <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
           <StatPill label="Total Pesanan" value={stats.total} />
           <StatPill label="Menunggu" value={stats.pending} />
           <StatPill label="Diproses" value={stats.processing} />
@@ -174,7 +192,7 @@ function OrdersContent() {
         </div>
 
         {/* Filter bar */}
-        <div className="mb-4 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
+        <section className="mb-6 border-b border-gray-200 pb-4">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search
@@ -253,7 +271,7 @@ function OrdersContent() {
               <option value="oldest">Terlama</option>
             </select>
           </div>
-        </div>
+        </section>
 
         {/* List */}
         {filtered.length === 0 ? (
@@ -266,30 +284,31 @@ function OrdersContent() {
             }
           />
         ) : (
-          <div className="space-y-3">
-            {filtered.map((o, i) => (
-              <div
-                key={o.id}
-                className="animate-fade-up"
-                style={{
-                  animationDelay: `${Math.min(i * 60, 360)}ms`,
-                  animationFillMode: "backwards",
-                }}
-              >
+          <div className="rounded-2xl border border-gray-200/80 bg-white">
+            {/* Header desktop */}
+            <div className="hidden border-b border-gray-200 px-3 pb-3 pt-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 sm:grid sm:grid-cols-[minmax(0,1fr)_150px_150px_150px] sm:items-center sm:gap-5">
+              <span>Komoditas</span>
+              <span>Pembeli</span>
+              <span>Status</span>
+              <span className="text-right">Total / Aksi</span>
+            </div>
+            <div className="divide-y divide-gray-100 px-3">
+              {filtered.map((o) => (
                 <OrderCard
+                  key={o.id}
                   order={o}
                   advancingKey={advancingKey}
                   onOpen={setSelected}
                   onAdvance={handleAdvance}
                   onCancelRequest={setCancelTarget}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Detail drawer */}
+      {/* Detail modal */}
       {selected && (
         <OrderDetailDrawer
           key={`${selected.id}-${version}`}

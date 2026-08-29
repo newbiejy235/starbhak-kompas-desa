@@ -105,9 +105,9 @@ export default function PetaniChatPage() {
   ];
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-white rounded-2xl">
+    <div className="flex h-full min-h-0 flex-col">
       {/* Header */}
-      <header className="shrink-0 border-b border-gray-100 bg-white px-4 py-4 sm:px-6 rounded-2xl">
+      <header className="shrink-0 border-b border-gray-100 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <MessageCircle size={20} strokeWidth={2.25} />
