@@ -11,6 +11,16 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 
+export const contactMessageStatusEnum = pgEnum("contact_message_status", [
+  "unread",
+  "read",
+]);
+
+export const isPaying = pgEnum("isPaying", [
+  "payed",
+  "unpayed"
+]);
+
 export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
 
 export const userStatusEnum = pgEnum("user_status", [
@@ -238,6 +248,22 @@ export const notificationsTable = pgTable(
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("notifications_user_idx").on(table.userId)],
+);
+
+export const contactMessagesTable = pgTable(
+  "contact_messages",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    name: varchar({ length: 150 }).notNull(),
+    email: varchar({ length: 150 }).notNull(),
+    whatsapp: varchar({ length: 30 }),
+    subject: varchar({ length: 50 }).notNull(),
+    message: text().notNull(),
+    status: contactMessageStatusEnum().notNull().default("unread"),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("contact_messages_status_idx").on(table.status)],
 );
 
 export const feeSettingsTable = pgTable("fee_settings_table", {
@@ -495,24 +521,33 @@ export const orderUser = pgTable("orderUser_table", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const orderCommodityPaymentStatusEnum = pgEnum(
+  "order_commodity_payment_status",
+  ["payed", "unpayed"],
+);
+
 export const ordersComodity = pgTable("orders_comodity", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
   orderUserId: integer("order_userId")
     .notNull()
     .references(() => orderUser.id, {
       onDelete: "cascade",
     }),
+
   commodityId: integer("commodity_id")
     .notNull()
     .references(() => commoditiesTable.id, {
       onDelete: "cascade",
     }),
+
   quantity: integer("quantity").notNull(),
 
   negotiatedPrice: numeric("negotiated_price", {
     precision: 15,
     scale: 2,
   }),
+  status: isPaying().notNull().default("unpayed"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -531,3 +566,5 @@ export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;
 export type SalesTarget = typeof salesTargetsTable.$inferSelect;
 export type HarvestRecord = typeof harvestRecordsTable.$inferSelect;
 export type FarmerProfileImage = typeof farmerProfileImagesTable.$inferSelect;
+export type ContactMessage = typeof contactMessagesTable.$inferSelect;
+export type NewContactMessage = typeof contactMessagesTable.$inferInsert;
