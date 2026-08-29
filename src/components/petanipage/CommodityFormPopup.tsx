@@ -108,20 +108,23 @@ export default function CommodityFormPopup({
   if (!open) return null;
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
-        className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in-fast"
         onClick={onClose}
+        aria-hidden
       />
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[520px] lg:absolute lg:inset-y-0 lg:left-full lg:w-[565px] lg:-translate-x-full bg-white shadow-2xl flex flex-col animate-slide-in">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setServerError(null);
-            handleSubmit(new FormData(e.currentTarget));
-          }}
-          className="flex flex-col h-full"
-        >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          setServerError(null);
+          handleSubmit(new FormData(e.currentTarget));
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={isEdit ? "Edit Komoditas" : "Tambah Komoditas"}
+        className="relative z-10 flex w-full max-w-2xl max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-lift animate-scale-in"
+      >
           <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 shrink-0">
             <button
               type="button"
