@@ -1,22 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import gsap from "gsap";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  ArrowLeft,
-  Mail,
-  Lock,
-} from "lucide-react";
+import Image from "next/image";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
-import Image from "next/image";
+
+const slideshowImages = [
+  "/images/login/ImageLogin.png",
+  "/images/login/ImagePetani.png",
+  "/images/login/ImagePembeli.png",
+];
 
 export default function Login() {
   const router = useRouter();
@@ -24,6 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const [state, formAction, pending] = useActionState<LoginResult, FormData>(
     loginAction,
@@ -41,106 +41,52 @@ export default function Login() {
   }, [state, router]);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    const timer = setInterval(() => {
+      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
-      // Animasi Cinematic Video (Zoom Out + Unblur)
-      tl.fromTo(
-        ".bg-video",
-        { scale: 1.15, opacity: 0, filter: "blur(10px)" },
-        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 2.5, ease: "power2.out" }
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+      tl.fromTo(".bg-curve-container",
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
       )
-      // Animasi Header
-      .fromTo(
-        ".header-item",
-        { opacity: 0, y: -20 },
-        { opacity: 1, y: 0, duration: 0.8, stagger: 0.1 },
-        "-=2"
+      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+        { opacity: 0, y: 30, rotateX: -10 },
+        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+        "-=0.9"
       )
-      // Animasi Masuk Teks Kiri
-      .fromTo(
-        ".left-anim-item",
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, stagger: 0.15, duration: 1.2, ease: "back.out(1.2)" },
-        "-=1.5"
-      )
-      // Animasi Form (Glass)
-      .fromTo(
-        ".glass-panel",
-        { opacity: 0, y: 50, scale: 0.95 },
-        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "expo.out" },
-        "-=1.2"
-      )
-      // Animasi Input Form
-      .fromTo(
-        ".right-anim-item",
-        { opacity: 0, x: 20 },
-        { opacity: 1, x: 0, stagger: 0.08, duration: 0.8 },
-        "-=0.6"
-      )
-      // Animasi Footer
-      .fromTo(
-        ".footer-anim",
+      .fromTo(".footer-anim",
         { opacity: 0, y: 10 },
         { opacity: 1, duration: 0.8 },
         "-=0.5"
       );
 
-      // --- EFEK MENGHILANGKAN TEKS KIRI & MEMUSATKAN FORM SETELAH 3.5 DETIK ---
-      const centerTl = gsap.timeline({ delay: 3.5 });
-
-      // 1. Pudar dan geser konten teks kiri terlebih dahulu
-      centerTl.to(".left-panel-content", {
-        opacity: 0,
-        filter: "blur(10px)",
-        x: -30,
-        duration: 0.8,
-        ease: "power2.inOut"
-      })
-      // 2. Shrink area kiri ke 0, luaskan area kanan ke 100%, dan lebarkan formnya
-      .to(".left-panel-wrapper", {
-        width: 0,
-        height: 0,
-        margin: 0,
-        padding: 0,
-        opacity: 0,
-        duration: 1.2,
-        ease: "power3.inOut",
-        display: "none"
-      }, "-=0.4") // Dimulai sedikit sebelum teks benar-benar hilang
-      .to(".right-panel-wrapper", {
-        width: "100%",
-        duration: 1.2,
-        ease: "power3.inOut"
-      }, "<") // Bergerak bersamaan dengan hilangnya area kiri
-      .to(".glass-panel", {
-        maxWidth: "520px", // Form melebar secara proporsional
-        duration: 1.2,
-        ease: "power3.inOut"
-      }, "<");
-
-      // Animasi Orbs
       const orbs = document.querySelectorAll(".ambient-orb");
       orbs.forEach((orb, i) => {
         gsap.to(orb, {
-          scale: "random(1.1, 1.5)",
-          opacity: "random(0.2, 0.5)",
-          duration: "random(4, 7)",
+          scale: "random(1.1, 1.4)",
+          opacity: "random(0.4, 0.8)",
+          duration: "random(3, 5)",
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
-          delay: i * 0.5,
+          delay: i * 0.3,
         });
       });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 60;
-      const y = (e.clientY / window.innerHeight - 0.5) * 60;
+      const x = (e.clientX / window.innerWidth - 0.5) * 40;
+      const y = (e.clientY / window.innerHeight - 0.5) * 40;
       gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.2),
-        y: (i: number) => y * (i + 1.2),
-        duration: 2,
+        x: (i: number) => x * (i + 1.5),
+        y: (i: number) => y * (i + 1.5),
+        duration: 1.5,
         ease: "power2.out"
       });
     };
@@ -154,126 +100,113 @@ export default function Login() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="h-[100dvh] w-full relative bg-neutral-900 font-sans overflow-hidden flex flex-col"
-    >
-      <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap");
-        .font-display {
-          font-family: "Fraunces", serif;
-        }
-        .font-sans {
-          font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-        }
-      `}</style>
+    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
+          </clipPath>
+        </defs>
+      </svg>
 
-      {/* FULLSCREEN BACKGROUND VIDEO & OVERLAYS */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <video 
-          className="bg-video absolute inset-0 w-full h-full object-cover object-center"
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-        >
-          <source src="/videos/loginpage.mp4" type="video/mp4" />
-        </video>
-        
-        <div className="absolute inset-0 bg-gradient-to-br from-[#011a14]/90 via-[#022c22]/50 to-black/80 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-emerald-950/20" />
+      <div
+        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
+        style={{ clipPath: "url(#emeraldCurveClip)" }}
+      >
+        {slideshowImages.map((src, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <div
+              key={src + index}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                isActive
+                  ? "opacity-100 scale-100 blur-0"
+                  : "opacity-0 scale-105 blur-md"
+              }`}
+            >
+              <Image
+                src={src}
+                alt="Background Slide"
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          );
+        })}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
       </div>
 
-      {/* AMBIENT FLOATING ORBS */}
-      <div ref={floatingElementsRef} className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="ambient-orb absolute top-[15%] left-[10%] w-[400px] h-[400px] rounded-full bg-emerald-500/20 blur-[100px]" />
-        <div className="ambient-orb absolute top-[60%] left-[40%] w-[500px] h-[500px] rounded-full bg-[#D9A441]/15 blur-[120px]" />
-        <div className="ambient-orb absolute top-[30%] left-[80%] w-[300px] h-[300px] rounded-full bg-teal-400/15 blur-[80px]" />
+      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-[1] pointer-events-none hidden lg:block overflow-hidden">
+        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
+        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
       </div>
 
-      {/* HEADER NAV */}
       <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
-        <div className="header-item flex items-center gap-3">
+        <div className="header-item flex items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-white/20 transition-all duration-300"
+            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
           >
             <ArrowLeft size={16} />
             Beranda
           </Link>
-        </div>
-        <div className="header-item flex items-center gap-2 text-white">
-          <div className="w-7 h-7 flex items-center justify-center">
-            <Image src="/logo-kompas-desa/kompas_desa_icon_color.png" alt="Logo Kompas Desa" width={20} height={20} />
+          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
+            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
           </div>
-          <span className="font-display text-lg font-semibold tracking-tight drop-shadow-md">
-            Kompas&apos;Desa
-          </span>
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
-      <main className="relative z-20 flex-1 flex flex-col lg:flex-row items-center justify-between w-full max-w-[1500px] mx-auto px-6 lg:px-12 xl:px-16 pb-10 overflow-y-auto lg:overflow-visible">
-        
-        {/* LEFT PANEL - Teks Besar */}
-        {/* Tambahkan overflow-hidden & shrink-0 supaya animasi menutup tidak merusak layout */}
-        <div className="left-panel-wrapper w-full lg:w-[45%] flex flex-col justify-center text-white mb-10 lg:mb-0 mt-8 lg:mt-0 pointer-events-none overflow-hidden shrink-0">
-          {/* inner container dengan min-width supaya teks tidak terpotong acak (word-wrap) saat width wrapper mengecil */}
-          <div className="left-panel-content max-w-[420px] w-full min-w-[320px] lg:min-w-[420px]"> 
-            <h1 className="left-anim-item font-display text-[2.35rem] xl:text-[2.85rem] 2xl:text-[3.1rem] leading-[1.08] text-white font-semibold mb-6 drop-shadow-xl">
-              Masuk{" "}
-              <span className="italic font-normal text-emerald-400">
-                untuk
-              {" "}
-              Menggunakan Sistem
-              </span>
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
+        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
+          <div className="relative z-10 w-full max-w-[380px]">
+            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
+              Selamat <br />
+              <span className="text-emerald-400">Datang</span>
             </h1>
-            <p className="left-anim-item text-[14.5px] xl:text-[15px] text-emerald-50/90 leading-relaxed font-medium drop-shadow-md max-w-[360px]">
-              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan,
-              dan memperluas relasi bersama petani di seluruh Indonesia.
+            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama petani di seluruh Indonesia.
             </p>
           </div>
         </div>
 
-        {/* RIGHT PANEL - Ultra Dark Glassmorphism Form */}
-        {/* Membuang lg:justify-end dan menambahkan class 'right-panel-wrapper' agar selalu terpusat dan mulus */}
-        <div className="right-panel-wrapper w-full lg:w-[50%] flex justify-center items-center">
-          <div className="glass-panel w-full max-w-[420px] bg-black/15 backdrop-blur-sm border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-[2rem] p-8 lg:p-10">
-            
-            <div className="right-anim-item mb-8 text-center lg:text-left">
-              <h2 className="font-display text-[2rem] font-semibold text-white tracking-tight leading-tight">
-                Selamat Datang
+        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
+          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+              <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold tracking-widest uppercase mb-2">
+                Akses Masuk
+              </span>
+              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight">
+                Masuk ke akun
               </h2>
-              <p className="text-sm text-neutral-300 font-medium mt-1">
-                Silakan masuk ke akun Anda.
-              </p>
             </div>
 
-            <form action={formAction} className="flex flex-col gap-4.5">
-              
-              {/* Alert Message */}
+            <form action={formAction} className="flex flex-col gap-4">
               {state.message && (
                 <div
                   role="alert"
-                  className={`right-anim-item text-[13px] font-medium rounded-2xl px-4 py-3.5 border backdrop-blur-sm ${
+                  className={`right-anim-item text-[13px] font-medium rounded-xl px-4 py-3 border ${
                     state.success
-                      ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
-                      : "bg-red-500/10 text-red-300 border-red-500/30"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-red-50 text-red-600 border-red-200"
                   }`}
                 >
                   {state.message}
                 </div>
               )}
 
-              {/* Form Input: Email */}
-              <div className="right-anim-item flex flex-col gap-1.5 mt-1">
-                <label htmlFor="email" className="text-[13px] font-bold text-neutral-200 ml-1">
+              <div className="right-anim-item flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-[13px] font-semibold text-neutral-700">
                   Email
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-emerald-400 transition-colors">
-                    <Mail size={18} strokeWidth={2.5} />
-                  </div>
+                  <Mail
+                    size={17}
+                    strokeWidth={2}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-[#025246] transition-colors"
+                  />
                   <input
                     id="email"
                     type="email"
@@ -281,29 +214,30 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@kompasdesa.id"
-                    className="w-full rounded-2xl border border-white/10 bg-white/10 py-3.5 pl-12 pr-4 text-sm font-semibold text-white outline-none transition-all duration-300 ease-out placeholder:text-white/40 hover:bg-white/15 focus:bg-white/20 focus:border-emerald-400/50 focus:ring-4 focus:ring-emerald-400/10 shadow-sm backdrop-blur-sm"
+                    className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm text-neutral-900 outline-none transition-colors duration-150 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#025246] focus:ring-4 focus:ring-[#025246]/10"
                     required
                   />
                 </div>
               </div>
 
-              {/* Form Input: Password */}
               <div className="right-anim-item flex flex-col gap-1.5">
-                <div className="flex items-center justify-between ml-1">
-                  <label htmlFor="password" className="text-[13px] font-bold text-neutral-200">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-[13px] font-semibold text-neutral-700">
                     Kata Sandi
                   </label>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-[12.5px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline transition-colors"
+                    className="text-[12.5px] font-semibold text-[#025246] hover:underline"
                   >
                     Lupa kata sandi?
                   </Link>
                 </div>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-emerald-400 transition-colors">
-                    <Lock size={18} strokeWidth={2.5} />
-                  </div>
+                  <Lock
+                    size={17}
+                    strokeWidth={2}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-[#025246] transition-colors"
+                  />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -311,71 +245,63 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Masukkan kata sandi akun"
-                    className="w-full rounded-2xl border border-white/10 bg-white/10 py-3.5 pl-12 pr-11 text-sm font-semibold text-white outline-none transition-all duration-300 ease-out placeholder:text-white/40 hover:bg-white/15 focus:bg-white/20 focus:border-emerald-400/50 focus:ring-4 focus:ring-emerald-400/10 shadow-sm backdrop-blur-sm"
+                    className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-11 pr-11 text-sm text-neutral-900 outline-none transition-colors duration-150 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#025246] focus:ring-4 focus:ring-[#025246]/10"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-1"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors"
                   >
-                    {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                    {showPassword ? <EyeOff size={17} strokeWidth={2} /> : <Eye size={17} strokeWidth={2} />}
                   </button>
                 </div>
               </div>
 
-              {/* Checkbox */}
-              <label className="right-anim-item flex items-center gap-2.5 cursor-pointer w-fit select-none ml-1 mt-1">
+              <label className="right-anim-item flex items-center gap-2.5 cursor-pointer w-fit select-none">
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-emerald-500/30 cursor-pointer"
+                  className="h-4 w-4 rounded border-neutral-300 text-[#025246] focus:ring-[#025246]/30 cursor-pointer"
                 />
-                <span className="text-[13px] font-medium text-neutral-300">Ingat saya di perangkat ini</span>
+                <span className="text-[13px] font-medium text-neutral-500">Ingat saya di perangkat ini</span>
               </label>
 
-              {/* Submit Button */}
-              <div className="right-anim-item mt-3">
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-4 text-[15px] font-extrabold text-white shadow-lg transition-all duration-300 ease-out opacity-40 hover:opacity-100 hover:bg-emerald-400 hover:shadow-[0_0_25px_rgba(52,211,153,0.6)] hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-30"
-                >
-                  {pending ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      <span>Memproses...</span>
-                    </>
-                  ) : (
-                    <span>Masuk</span>
-                  )}
-                </button>
+              <button
+                type="submit"
+                disabled={pending}
+                className="right-anim-item mt-1 group flex w-full items-center justify-center gap-2 rounded-xl bg-[#025246] px-4 py-3.5 text-[14.5px] font-bold text-white transition-all duration-200 hover:bg-[#013d34] hover:shadow-lg hover:shadow-[#025246]/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
+              >
+                {pending ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <span>Masuk</span>
+                )}
+              </button>
+
+              <div className="right-anim-item flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-neutral-200" />
+                <span className="text-[12px] text-neutral-400">atau</span>
+                <div className="h-px flex-1 bg-neutral-200" />
               </div>
 
-              {/* Divider */}
-              <div className="right-anim-item flex items-center gap-3 py-2">
-                <div className="h-px flex-1 bg-white/10" />
-                <span className="text-[12px] text-white/40 font-medium">atau</span>
-                <div className="h-px flex-1 bg-white/10" />
-              </div>
-
-              {/* Register Link */}
               <div className="right-anim-item flex items-center justify-center gap-1.5">
-                <span className="text-[13.5px] text-neutral-300 font-medium">Belum mempunyai akun?</span>
-                <Link href="/auth/register" className="text-[13.5px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline transition-colors">
+                <span className="text-[13.5px] text-neutral-500">Belum mempunyai akun?</span>
+                <Link href="/auth/register" className="text-[13.5px] font-bold text-[#025246] hover:underline">
                   Daftar sekarang
                 </Link>
               </div>
-
             </form>
           </div>
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="footer-anim relative z-20 shrink-0 w-full text-center py-5 text-[12px] font-medium text-white/50 drop-shadow-md">
+      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
         &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
     </div>

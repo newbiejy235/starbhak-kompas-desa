@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   getClientUser,
@@ -31,99 +31,70 @@ export function useAuth(expectedRole?: string) {
   return { user: hydrated ? user : null, loading: !hydrated };
 }
 
-const fetchCache = new Map<string, { promise: Promise<unknown>; subscribers: number }>();
-
-function getCacheKey(fn: Function, deps: unknown[]): string {
-  return `${fn.toString()}::${JSON.stringify(deps)}`;
-}
-
 export function useFetch<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const fnRef = useRef(fn);
+  const genRef = useRef(0);
 
   useEffect(() => {
     fnRef.current = fn;
   });
 
   useEffect(() => {
-    let cancelled = false;
-    const key = getCacheKey(fnRef.current, deps);
+    const gen = ++genRef.current;
+    let active = true;
+    setLoading(true);
 
-    const cached = fetchCache.get(key);
-    if (cached) {
-      cached.subscribers++;
-      cached.promise.then(
-        (res) => {
-          if (!cancelled) {
-            setData(res as T);
-            setError(null);
-          }
-        },
-        (e) => {
-          if (!cancelled) {
-            console.error(e);
-            setError("Gagal memuat data");
-          }
-        },
-      ).finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-      return () => {
-        cancelled = true;
-        cached.subscribers--;
-        if (cached.subscribers <= 0) fetchCache.delete(key);
-      };
-    }
-
-    const entry = {
-      promise: fnRef.current(),
-      subscribers: 1,
-    };
-    fetchCache.set(key, entry);
-
-    entry.promise.then(
+    fnRef.current().then(
       (res) => {
-        if (!cancelled) {
-          setData(res as T);
+        if (active && gen === genRef.current) {
+          setData(res);
           setError(null);
         }
       },
       (e) => {
-        if (!cancelled) {
+        if (active && gen === genRef.current) {
           console.error(e);
           setError("Gagal memuat data");
         }
       },
     ).finally(() => {
-      if (!cancelled) setLoading(false);
+      if (active && gen === genRef.current) {
+        setLoading(false);
+      }
     });
 
     return () => {
-      cancelled = true;
-      entry.subscribers--;
-      if (entry.subscribers <= 0) fetchCache.delete(key);
+      active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
-  const reload = () => {
+  const reload = useCallback(() => {
+    const gen = ++genRef.current;
     setLoading(true);
-    const key = getCacheKey(fnRef.current, deps);
-    fetchCache.delete(key);
     return fnRef
       .current()
       .then((res) => {
-        setData(res);
-        setError(null);
+        if (gen === genRef.current) {
+          setData(res);
+          setError(null);
+        }
       })
       .catch((e) => {
-        console.error(e);
-        setError("Gagal memuat data");
+        if (gen === genRef.current) {
+          console.error(e);
+          setError("Gagal memuat data");
+        }
       })
-      .finally(() => setLoading(false));
-  };
+      .finally(() => {
+        if (gen === genRef.current) {
+          setLoading(false);
+        }
+      });
+  }, []);
 
   return { data, loading, error, reload };
 }
