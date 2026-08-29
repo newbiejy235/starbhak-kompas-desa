@@ -77,10 +77,9 @@ interface ChatRoomViewProps {
   negotiationStatus?: {
     offerId: number;
     status: string;
-    buyerAccepted: boolean;
-    farmerAccepted: boolean;
     price: string;
     quantity: string;
+    orderId: number | null;
   } | null;
   onRefreshNegotiation?: () => Promise<void>;
 }
@@ -145,47 +144,44 @@ export default function ChatRoomView({
   const isFarmer = currentRole === "petani";
 
   const latestPendingOffer = useMemo(() => {
-    const isStillPending = negotiationStatus && negotiationStatus.status === "pending";
-    const onePartyAccepted = isStillPending && (
-      (negotiationStatus!.buyerAccepted && !negotiationStatus!.farmerAccepted) ||
-      (!negotiationStatus!.buyerAccepted && negotiationStatus!.farmerAccepted)
-    );
-
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
-      if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId !== currentUserId) {
-        if (onePartyAccepted) return msg;
+      if (msg.type === "offer") {
         const next = messages[i + 1];
-        if (next && (next.type === "accept" || next.type === "reject")) continue;
+        const responded =
+          next && (next.type === "accept" || next.type === "reject");
+        if (responded) return null;
         return msg;
-      }
-    }
-    return null;
-  }, [messages, currentUserId, negotiationStatus]);
-
-  const latestAcceptedOffer = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i];
-      if (msg.type === "accept") {
-        if (msg.offerPrice && msg.offerQuantity) return msg;
-        const prev = messages[i - 1];
-        if (prev && (prev.type === "offer" || prev.type === "counter_offer")) return prev;
       }
     }
     return null;
   }, [messages]);
 
-  const myLatestOffer = useMemo(() => {
+  const latestAcceptedOffer = useMemo(() => {
+    if (
+      negotiationStatus?.status === "accepted" &&
+      negotiationStatus.price &&
+      negotiationStatus.quantity
+    ) {
+      return {
+        offerPrice: negotiationStatus.price,
+        offerQuantity: negotiationStatus.quantity,
+      };
+    }
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
-      if ((msg.type === "offer" || msg.type === "counter_offer") && msg.senderId === currentUserId) return msg;
+      if (msg.type === "accept") {
+        if (msg.offerPrice && msg.offerQuantity) return msg;
+        const prev = messages[i - 1];
+        if (prev && prev.type === "offer") return prev;
+      }
     }
     return null;
-  }, [messages, currentUserId]);
+  }, [negotiationStatus, messages]);
 
   const hasAcceptedDeal = useMemo(() => {
     if (negotiationStatus && negotiationStatus.status === "accepted") return true;
-    return messages.some((m) => m.type === "accept" && m.content.startsWith("Deal!"));
+    return messages.some((m) => m.type === "accept");
   }, [messages, negotiationStatus]);
 
   useEffect(() => {
@@ -266,7 +262,7 @@ export default function ChatRoomView({
     }
   };
 
-  const handleSendOffer = async (type: "offer" | "counter_offer" = "offer") => {
+  const handleSendOffer = async () => {
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
@@ -280,11 +276,10 @@ export default function ChatRoomView({
       return;
     }
 
-    const label = type === "counter_offer" ? "Counter" : "Penawaran";
-    const offerText = `${label}: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
+    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
-    const result = await onSendMessage(offerText, type, price, qty, replyId);
+    const result = await onSendMessage(offerText, "offer", price, qty, replyId);
     if (!result?.success) {
       alert(result?.error ?? "Penawaran gagal dikirim, coba lagi.");
     }
@@ -299,31 +294,12 @@ export default function ChatRoomView({
     const qty = parseFloat(confirmDeal.quantity);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
 
-    if (minPrice !== null && price < minPrice) {
-      alert(`Harga tidak boleh di bawah harga minimum ${formatRupiah(minPrice)}.\nSilakan masukkan harga yang sesuai.`);
-      return;
-    }
-    if (maxPrice !== null && price > maxPrice) {
-      alert(`Harga tidak boleh di atas harga maksimum ${formatRupiah(maxPrice)}.\nSilakan masukkan harga yang sesuai.`);
-      return;
-    }
-
     setSubmittingDeal(true);
     try {
       const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
       setReplyTo(null);
 
-      const isBothAccepted =
-        negotiationStatus &&
-        ((isFarmer && negotiationStatus.buyerAccepted) ||
-          (!isFarmer && negotiationStatus.farmerAccepted));
-
-      let acceptText: string;
-      if (isBothAccepted) {
-        acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
-      } else {
-        acceptText = `Menyetujui penawaran ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}. Menunggu persetujuan pihak lain...`;
-      }
+      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
 
       const result = await onSendMessage(acceptText, "accept", price, qty, replyId);
       if (result?.success) {
@@ -360,7 +336,7 @@ export default function ChatRoomView({
 
   const renderMessage = (msg: ChatMessageData, isMe: boolean) => {
     const isSystem = msg.type === "system";
-    const isOffer = msg.type === "offer" || msg.type === "counter_offer";
+    const isOffer = msg.type === "offer";
     const isAccept = msg.type === "accept";
     const isReject = msg.type === "reject";
     const isEditing = editingMsg?.id === msg.id;
@@ -421,7 +397,7 @@ export default function ChatRoomView({
               <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
                 <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-[#025246]"}`}>
                   <Tag size={12} />
-                  {msg.type === "counter_offer" ? "Counter" : "Penawaran"}
+                  Penawaran
                 </div>
                 {msg.offerPrice && (
                   <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-[#025246]"}`}>
@@ -574,12 +550,14 @@ export default function ChatRoomView({
       {latestPendingOffer && (
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-4 py-3 shrink-0">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+            <div className={`flex items-center gap-2.5 ${isFarmer ? "" : "flex-col items-start"}`}>
+              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
                 <Handshake size={16} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-[11px] text-amber-600 font-medium">Penawaran dari {latestPendingOffer.senderName}</p>
+                <p className="text-[11px] text-amber-600 font-medium">
+                  {isFarmer ? `Penawaran dari ${latestPendingOffer.senderName}` : "Penawaran Anda"}
+                </p>
                 <p className="text-sm font-extrabold text-[#025246]">
                   {formatRupiah(latestPendingOffer.offerPrice)}
                   {latestPendingOffer.offerQuantity && (
@@ -588,36 +566,34 @@ export default function ChatRoomView({
                     </span>
                   )}
                 </p>
-                {negotiationStatus && negotiationStatus.status === "pending" && (
-                  (isFarmer && negotiationStatus.buyerAccepted && !negotiationStatus.farmerAccepted) ||
-                  (!isFarmer && negotiationStatus.farmerAccepted && !negotiationStatus.buyerAccepted)
-                ) && (
-                    <p className="text-[11px] text-blue-600 font-medium mt-0.5">
-                      {isFarmer ? "Pembeli" : "Petani"} sudah menyetujui. Tekan Setuju untuk menyelesaikan deal.
-                    </p>
-                  )}
+                {latestPendingOffer.offerPrice && latestPendingOffer.offerQuantity && (
+                  <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                    Total: {formatRupiah(Number(latestPendingOffer.offerPrice) * Number(latestPendingOffer.offerQuantity))}
+                  </p>
+                )}
+                {!isFarmer && (
+                  <p className="text-[11px] text-blue-600 font-medium mt-0.5">
+                    Menunggu persetujuan petani...
+                  </p>
+                )}
               </div>
             </div>
-            <div className="flex gap-1.5 shrink-0">
-              <button
-                onClick={() => setConfirmDeal({ price: latestPendingOffer.offerPrice ?? "", quantity: latestPendingOffer.offerQuantity ?? "1" })}
-                className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm"
-              >
-                Setuju
-              </button>
-              <button
-                onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
-                className="px-3 py-1.5 bg-white border border-[#025246]/20 text-[#025246] text-xs font-bold rounded-lg hover:bg-gray-50"
-              >
-                Counter
-              </button>
-              <button
-                onClick={handleReject}
-                className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs font-bold rounded-lg hover:bg-red-50"
-              >
-                Tolak
-              </button>
-            </div>
+            {isFarmer && (
+              <div className="flex gap-1.5 shrink-0">
+                <button
+                  onClick={() => setConfirmDeal({ price: latestPendingOffer.offerPrice ?? "", quantity: latestPendingOffer.offerQuantity ?? "1" })}
+                  className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm"
+                >
+                  Setuju
+                </button>
+                <button
+                  onClick={handleReject}
+                  className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs font-bold rounded-lg hover:bg-red-50"
+                >
+                  Tolak
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -645,10 +621,10 @@ export default function ChatRoomView({
             </div>
             {!isFarmer && latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity && (
               <button
-                onClick={() => onOrderCreated?.(acceptedOrderId ?? 0)}
+                onClick={() => onOrderCreated?.(negotiationStatus?.orderId ?? acceptedOrderId ?? 0)}
                 className="px-3 py-1.5 bg-[#00AA5B] text-white text-xs font-bold rounded-lg hover:bg-[#009A4F] flex items-center gap-1.5 shadow-sm shrink-0"
               >
-                <Package size={14} /> Lihat Pesanan
+                <Package size={14} /> Lanjut Bayar
               </button>
             )}
           </div>
@@ -698,11 +674,11 @@ export default function ChatRoomView({
           </div>
         )}
 
-        {showOfferForm && (
+        {showOfferForm && !isFarmer && (
           <div className="bg-gray-50 rounded-xl p-3 mb-2.5 border border-gray-200">
             <div className="flex items-center justify-between mb-2.5">
               <h4 className="text-xs font-bold text-gray-800">
-                {myLatestOffer ? "Counter Penawaran" : "Ajukan Penawaran"}
+                Ajukan Penawaran
               </h4>
               <button onClick={() => setShowOfferForm(false)} className="p-1 hover:bg-gray-200 rounded-lg transition-colors">
                 <X size={14} className="text-gray-400" />
@@ -737,17 +713,17 @@ export default function ChatRoomView({
               </p>
             )}
             <button
-              onClick={() => handleSendOffer(myLatestOffer ? "counter_offer" : "offer")}
-              disabled={!offerPrice || parseFloat(offerPrice) <= 0}
+              onClick={handleSendOffer}
+              disabled={!offerPrice || parseFloat(offerPrice) <= 0 || !offerQty || parseFloat(offerQty) <= 0}
               className="w-full bg-[#025246] text-white text-xs font-bold py-2 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
             >
-              {myLatestOffer ? "Kirim Counter" : "Kirim Penawaran"}
+              Kirim Penawaran
             </button>
           </div>
         )}
 
         <div className="flex items-center gap-2">
-          {!showOfferForm && (
+          {!showOfferForm && !isFarmer && (
             <button
               onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
               className="px-3 py-2.5 bg-[#00AA5B] text-white text-xs font-bold rounded-xl hover:bg-[#009A4F] flex items-center gap-1.5 shrink-0 shadow-sm"
@@ -858,23 +834,15 @@ export default function ChatRoomView({
             <div className="p-5 space-y-3">
               <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium">Harga per {room.commodityUnit}</label>
-                <input
-                  type="number"
-                  value={confirmDeal.price}
-                  onChange={(e) => setConfirmDeal((d) => (d ? { ...d, price: e.target.value } : d))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
-                />
+                <p className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-bold text-gray-800">
+                  {formatRupiah(confirmDeal.price)}
+                </p>
               </div>
               <div>
                 <label className="block text-[11px] text-gray-500 mb-1 font-medium">Jumlah ({room.commodityUnit})</label>
-                <input
-                  type="number"
-                  value={confirmDeal.quantity}
-                  min="1"
-                  max={stock}
-                  onChange={(e) => setConfirmDeal((d) => (d ? { ...d, quantity: e.target.value } : d))}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
-                />
+                <p className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-bold text-gray-800">
+                  {formatNumber(confirmDeal.quantity)} {room.commodityUnit}
+                </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 flex justify-between items-center border border-gray-100">
                 <span className="text-[11px] text-gray-500 font-medium">Total</span>

@@ -65,10 +65,9 @@ type ConnectionStatus = "connecting" | "connected" | "disconnected";
 export interface NegotiationStatus {
   offerId: number;
   status: string;
-  buyerAccepted: boolean;
-  farmerAccepted: boolean;
   price: string;
   quantity: string;
+  orderId: number | null;
 }
 
 export function useChatSSE(roomId: number, userId: number, userFullName: string) {
@@ -267,7 +266,7 @@ export function useChatSSE(roomId: number, userId: number, userFullName: string)
         roomId,
         userId,
         content,
-        type as "text" | "offer" | "counter_offer" | "accept" | "reject" | "system",
+        type as "text" | "offer" | "accept" | "reject" | "system",
         offerPrice,
         offerQuantity,
         replyToId,

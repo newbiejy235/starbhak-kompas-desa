@@ -146,7 +146,11 @@ function ChatRoomPanel({
   const { room, messages, loading, sendMessage, editMessage, deleteMessage, negotiationStatus, refreshNegotiationStatus } =
     useChatSSE(roomId, userId, userFullName);
 
-  const handleOrderCreated = () => {
+  const handleOrderCreated = (orderId?: number) => {
+    if (orderId && orderId > 0) {
+      router.push(`/user/checkout/${orderId}`);
+      return;
+    }
     router.push("/user/orders");
   };
 

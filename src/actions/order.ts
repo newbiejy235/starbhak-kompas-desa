@@ -8,7 +8,6 @@ import {
   usersTable,
   notificationsTable,
   ImageUpload,
-  negotiationOffersTable,
 } from "@/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -624,74 +623,4 @@ export async function getAllOrders() {
     .orderBy(desc(ordersTable.createdAt));
 
   return result;
-}
-
-// @deprecated - jalur lama, dipertahankan sementara, cek lagi sebelum dihapus permanen
-export async function createOrderFromNegotiation(
-  offerId: number,
-  buyerId: number,
-): Promise<ActionState & { orderId?: number; orderCode?: string }> {
-  const buyer = await getAuthUser(buyerId);
-  if (!buyer || buyer.role !== "pembeli") {
-    return { success: false, message: "Unauthorized" };
-  }
-
-  try {
-    const [offer] = await db
-      .select()
-      .from(negotiationOffersTable)
-      .where(eq(negotiationOffersTable.id, offerId));
-
-    if (!offer) {
-      return { success: false, message: "Penawaran tidak ditemukan" };
-    }
-
-    if (offer.buyerId !== buyerId) {
-      return { success: false, message: "Unauthorized" };
-    }
-
-    if (offer.status !== "accepted") {
-      return { success: false, message: "Penawaran belum diterima" };
-    }
-
-    const [existingOrder] = await db
-      .select({ id: ordersTable.id })
-      .from(ordersTable)
-      .where(eq(ordersTable.negotiationId, offerId))
-      .limit(1);
-
-    if (existingOrder) {
-      return {
-        success: true,
-        message: "Pesanan sudah dibuat",
-        orderId: existingOrder.id,
-      };
-    }
-
-    let resultOrderId: number | undefined;
-    let resultOrderCode: string | undefined;
-
-    await db.transaction(async (tx) => {
-      const result = await createOrderFromAcceptedOffer(tx, {
-        offerId: offer.id,
-        buyerId: offer.buyerId,
-        farmerId: offer.farmerId,
-        commodityId: offer.commodityId,
-        quantity: Number(offer.quantity),
-        unitPrice: Number(offer.price),
-      });
-      resultOrderId = result.id;
-      resultOrderCode = result.orderCode;
-    });
-
-    return {
-      success: true,
-      message: "Pesanan berhasil dibuat dari negosiasi",
-      orderId: resultOrderId,
-      orderCode: resultOrderCode,
-    };
-  } catch (error) {
-    console.error(error);
-    return { success: false, message: "Gagal membuat pesanan" };
-  }
 }
