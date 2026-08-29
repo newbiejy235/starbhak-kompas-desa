@@ -174,7 +174,7 @@ export async function createOrderFromAcceptedOffer(
     return { id: existingOrder.id, orderCode: existingOrder.orderCode, created: false };
   }
 
-const [commodity] = await tx
+  const [commodity] = await tx
     .select()
     .from(commoditiesTable)
     .where(eq(commoditiesTable.id, params.commodityId));
@@ -192,7 +192,7 @@ const [commodity] = await tx
   const totalPrice = subtotal + serviceFee + deliveryFee;
   const orderCode = generateOrderCode();
 
-const [order] = await tx
+  const [order] = await tx
     .insert(ordersTable)
     .values({
       orderCode,
@@ -420,31 +420,8 @@ export async function getUserOrders(buyerId: number) {
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(usersTable, eq(usersTable.id, ordersTable.farmerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
-    .where(eq(ordersTable.buyerId, buyerId))
-    .orderBy(desc(ordersTable.createdAt));
-
-  const now = Date.now();
-  const DEV_AUTO_COMPLETE_MS = 5_000;
-
-  for (const row of rows) {
-    if (row.status === "processing" && row.createdAt) {
-      const elapsed = now - new Date(row.createdAt).getTime();
-      if (elapsed >= DEV_AUTO_COMPLETE_MS) {
-        await db
-          .update(ordersTable)
-          .set({ status: "completed", updatedAt: new Date() })
-          .where(eq(ordersTable.id, row.id));
-
-        await db
-          .update(paymentsTable)
-          .set({ status: "paid", paidAt: new Date() })
-          .where(eq(paymentsTable.orderId, row.id));
-
-        row.status = "completed";
-        row.paymentStatus = "paid";
-      }
-    }
-  }
+.where(eq(ordersTable.buyerId, buyerId))
+      .orderBy(desc(ordersTable.createdAt));
 
   return rows;
 }
@@ -616,46 +593,6 @@ export async function updateOrderStatus(
   } catch (error) {
     console.error(error);
     return { success: false, message: "Gagal memperbarui status pesanan" };
-  }
-}
-
-export async function markOrderPaid(
-  orderId: number,
-  buyerId: number,
-): Promise<ActionState> {
-  const buyer = await getAuthUser(buyerId);
-  if (!buyer || buyer.role !== "pembeli") {
-    return { success: false, message: "Unauthorized" };
-  }
-
-  try {
-    const [order] = await db
-      .select()
-      .from(ordersTable)
-      .where(eq(ordersTable.id, orderId));
-    if (!order || order.buyerId !== buyerId) {
-      return { success: false, message: "Pesanan tidak ditemukan" };
-    }
-
-    await db
-      .update(paymentsTable)
-      .set({ status: "paid", paidAt: new Date() })
-      .where(eq(paymentsTable.orderId, orderId));
-
-    await db.insert(notificationsTable).values({
-      userId: order.farmerId,
-      title: "Pembayaran Diterima",
-      message: `Pembayaran untuk pesanan ${order.orderCode} telah diterima.`,
-      type: "payment",
-    });
-
-    revalidatePath("/user/checkout");
-    revalidatePath("/user/orders");
-    revalidatePath("/petani/dashboard");
-    return { success: true, message: "Pembayaran berhasil dikonfirmasi" };
-  } catch (error) {
-    console.error(error);
-    return { success: false, message: "Gagal mengonfirmasi pembayaran" };
   }
 }
 

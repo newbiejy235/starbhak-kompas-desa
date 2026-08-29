@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   ChevronLeft,
-  Copy,
   CheckCircle2,
   Clock,
   Package,
@@ -13,8 +12,9 @@ import {
   CreditCard,
   Store,
   MapPin,
+  Loader2,
 } from "lucide-react";
-import { getOrderById, markOrderPaid } from "@/actions/order";
+import { getOrderById } from "@/actions/order";
 import {
   formatRupiah,
   formatDate,
@@ -48,7 +48,8 @@ function OrderDetailSkeleton() {
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [copied, setCopied] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [snapError, setSnapError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const { data: order, loading, reload } = useFetch(
@@ -69,16 +70,61 @@ export default function OrderDetail() {
   const isPendingPayment = order.paymentStatus === "pending";
   const isPaid = order.paymentStatus === "paid";
 
-  const copyRef = (ref: string) => {
-    navigator.clipboard?.writeText(ref);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+  const loadSnapScript = (snapUrl: string) =>
+    new Promise<void>((resolve, reject) => {
+      if (typeof window === "undefined" || window.snap) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = snapUrl;
+      script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_CLIENT ?? "");
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Gagal memuat Midtrans Snap"));
+      document.head.appendChild(script);
+    });
 
-  const confirmPaid = async () => {
-    if (!user) return;
-    await markOrderPaid(order.id, user.id);
-    reload();
+  const payNow = async () => {
+    if (paying || !user) return;
+    setPaying(true);
+    setSnapError(null);
+    try {
+      const res = await fetch("/api/tokenizer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        throw new Error(data.error ?? "Gagal menyiapkan pembayaran");
+      }
+
+      await loadSnapScript(data.snapUrl);
+      setPaying(false);
+
+      window.snap?.pay(data.token, {
+        onSuccess: () => {
+          reload();
+        },
+        onPending: () => {
+          reload();
+        },
+        onError: () => {
+          reload();
+          setSnapError("Terjadi kesalahan saat memproses pembayaran.");
+        },
+        onClose: () => {
+          reload();
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      setPaying(false);
+      setSnapError(
+        e instanceof Error ? e.message : "Gagal menyiapkan pembayaran",
+      );
+    }
   };
 
   const steps = [
@@ -93,7 +139,6 @@ export default function OrderDetail() {
   const currentStep = statusOrder.indexOf(order.status);
   const cancelled = order.status === "cancelled";
 
-  const vaNumber = "8801 0826 0000 " + String(order.id).padStart(6, "0");
   const orderImage =
     formatImage(order.commodityImage) ??
     formatImage(order.commodityImages?.[0] ?? null);
@@ -231,33 +276,36 @@ export default function OrderDetail() {
               <div className="mt-6 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-5">
                 <p className="text-sm font-bold text-amber-800 mb-1">Menunggu Pembayaran</p>
                 <p className="text-xs text-amber-700 mb-4">
-                  Metode: {PAYMENT_METHOD_LABEL[order.paymentMethod ?? ""] ?? order.paymentMethod}
+                  Selesaikan pembayaran melalui Midtrans untuk pesanan {order.orderCode}.
                 </p>
 
-                {order.paymentMethod !== "cod" && (
-                  <div className="rounded-xl bg-white border border-amber-200 p-4 mb-4">
-                    <p className="text-[11px] text-gray-500 mb-1">Nomor Rekening Virtual</p>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono font-bold text-gray-800">{vaNumber}</span>
-                      <button
-                        onClick={() => copyRef(vaNumber)}
-                        className="inline-flex items-center gap-1 text-xs text-primary font-medium"
-                      >
-                        <Copy size={14} /> {copied ? "Tersalin!" : "Salin"}
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-gray-500 mt-2">
-                      A/n Kompas Desa · Kode: {order.paymentReference}
-                    </p>
-                  </div>
-                )}
+                <div className="rounded-xl bg-white border border-amber-200 p-4 mb-4 flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-gray-500">Total yang harus dibayar</span>
+                  <span className="font-extrabold text-primary text-lg">
+                    {formatRupiah(order.totalPrice)}
+                  </span>
+                </div>
 
                 <button
-                  onClick={confirmPaid}
-                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
+                  onClick={payNow}
+                  disabled={paying}
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Saya Sudah Bayar
+                  {paying ? (
+                    <span className="inline-flex items-center gap-2 justify-center">
+                      <Loader2 size={16} className="animate-spin" /> Menyiapkan Pembayaran...
+                    </span>
+                  ) : (
+                    "Bayar Sekarang"
+                  )}
                 </button>
+
+                {snapError && (
+                  <p className="mt-3 text-center text-xs font-medium text-red-600">{snapError}</p>
+                )}
+                <p className="mt-3 text-center text-[11px] text-amber-700">
+                  Status pembayaran diperbarui otomatis setelah pembayaran Anda dikonfirmasi Midtrans.
+                </p>
               </div>
             )}
 
