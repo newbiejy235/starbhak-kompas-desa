@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   Undo2,
 } from "lucide-react";
+
 import { formatRupiah } from "@/lib/format";
 import { getCommoditiesByIds } from "@/actions/commodity";
 import {
@@ -30,11 +31,13 @@ import { useAuth, useFetch } from "@/lib/hooks";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { CommodityDetail } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { TestOrders } from "@/actions/orders/orders.action";
+import { getAllOrders } from "@/actions/order";
 
 type DeliveryMethod = "pickup" | "expedition";
 
 const PLATFORM_FEE = 2000;
+
+type OrdersData = Awaited<ReturnType<typeof getAllOrders>>["data"];
 
 function CartSkeleton() {
   return (
@@ -43,6 +46,7 @@ function CartSkeleton() {
         <Skeleton className="h-64 rounded-card" />
         <Skeleton className="h-48 rounded-card" />
       </div>
+
       <div className="lg:col-span-3">
         <Skeleton className="h-72 rounded-card" />
       </div>
@@ -52,25 +56,69 @@ function CartSkeleton() {
 
 export default function CartPage() {
   useAuth();
+
   const router = useRouter();
+
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>("pickup");
+
   const [deliveryAddress, setDeliveryAddress] = useState("");
+
   const [entries, setEntries] = useState(() => getCart());
+
   const [isChecking, setIsChecking] = useState(false);
+
   const [undoItem, setUndoItem] = useState<{
     entry: (typeof entries)[number];
     product: CommodityDetail;
   } | null>(null);
 
+  // =========================
+  // DATA ORDERS DARI DATABASE
+  // =========================
+
+  const [orders, setOrders] = useState<OrdersData>([]);
+  
+  useEffect(() => {
+    async function loadOrders() {
+      try {
+        const result = await getAllOrders();
+
+        console.log("DATA GET ALL ORDERS:", result);
+
+        if (result.success) {
+          setOrders(result.data);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil orders:", error);
+      }
+    }
+
+    loadOrders();
+  }, []);
+
+  console.log("CART:", entries);
+  console.log("ORDERS:", orders);
+
+  // =========================
+  // AMBIL DATA COMMODITY
+  // =========================
+
   const idsKey = entries.map((e) => e.commodityId).join(",");
 
   const { data: products, loading } = useFetch(async () => {
-    if (entries.length === 0) return [] as CommodityDetail[];
+    if (entries.length === 0) {
+      return [] as CommodityDetail[];
+    }
+
     return (await getCommoditiesByIds(
       entries.map((e) => e.commodityId),
     )) as CommodityDetail[];
   }, [idsKey]);
+
+  // =========================
+  // CART ITEMS
+  // =========================
 
   type CartItem = {
     product: CommodityDetail;
@@ -81,55 +129,45 @@ export default function CartPage() {
   const items: CartItem[] = entries
     .map((entry) => {
       const product = products?.find((p) => p.id === entry.commodityId);
+
       if (!product) return null;
-      const item: CartItem = { product, quantity: entry.quantity };
+
+      const item: CartItem = {
+        product,
+        quantity: entry.quantity,
+      };
+
       if (entry.negotiatedPrice !== undefined) {
         item.negotiatedPrice = entry.negotiatedPrice;
       }
+
       return item;
     })
     .filter((i): i is CartItem => i !== null);
+
+  // =========================
+  // TOTAL
+  // =========================
 
   const subtotal = items.reduce(
     (sum, i) =>
       sum + (i.negotiatedPrice ?? Number(i.product.price)) * i.quantity,
     0,
   );
+
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
+
   const total = subtotal + PLATFORM_FEE;
 
-  const changeQuantity = (commodityId: number, delta: number) => {
-    const product = items.find((i) => i.product.id === commodityId)?.product;
-    const current =
-      entries.find((e) => e.commodityId === commodityId)?.quantity ?? 1;
-    if (!product) return;
-    const next = Math.min(Math.max(current + delta, 1), Number(product.stock));
-    updateCartQuantity(commodityId, next);
-    setEntries(getCart());
-  };
-
-  const removeItem = (commodityId: number) => {
-    const item = items.find((i) => i.product.id === commodityId);
-    if (!item) return;
-    removeFromCart(commodityId);
-    setEntries(getCart());
-    setUndoItem({ entry: { commodityId, quantity: item.quantity, negotiatedPrice: item.negotiatedPrice }, product: item.product });
-    setTimeout(() => setUndoItem(null), 5000);
-  };
-
-  const undoRemove = () => {
-    if (!undoItem) return;
-    const { entry } = undoItem;
-    const cart = getCart();
-    cart.push(entry);
-    localStorage.setItem("kd_cart", JSON.stringify(cart));
-    setEntries(getCart());
-    setUndoItem(null);
-  };
+  // =========================
+  // CHECKOUT
+  // =========================
 
   const checkout = async () => {
     if (items.length === 0 || isChecking) return;
+
     setIsChecking(true);
+
     try {
       saveCheckoutSnapshot(
         items.map((item) => ({
@@ -138,13 +176,20 @@ export default function CartPage() {
           negotiatedPrice: item.negotiatedPrice,
         })),
       );
+
       router.push("/user/checkout");
     } finally {
       setIsChecking(false);
     }
   };
 
-  if (loading) return <CartSkeleton />;
+  // =========================
+  // LOADING
+  // =========================
+
+  if (loading) {
+    return <CartSkeleton />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-up">
@@ -159,10 +204,12 @@ export default function CartPage() {
         <div className="w-10 h-10 bg-success text-white rounded-xl flex items-center justify-center shadow-sm">
           <ShoppingBag size={20} />
         </div>
+
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Keranjang Belanja
           </h1>
+
           <p className="text-sm text-gray-500">
             {totalItems > 0
               ? `${totalItems} kg komoditas di keranjang`
@@ -195,13 +242,18 @@ export default function CartPage() {
                   </span>
                 </h2>
               </div>
+
               <ul className="divide-y divide-gray-100">
                 {items.map((item) => {
                   const img = formatImage(item.product.image);
+
                   const unitPrice =
                     item.negotiatedPrice ?? Number(item.product.price);
+
                   const lineTotal = unitPrice * item.quantity;
+
                   const isNegotiated = item.negotiatedPrice !== undefined;
+
                   return (
                     <li
                       key={item.product.id}
@@ -223,72 +275,47 @@ export default function CartPage() {
                           </div>
                         )}
                       </div>
+
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-gray-900 truncate">
                           {item.product.name}
                         </h3>
+
                         <p className="text-xs text-gray-500 mt-0.5">
                           Petani: {item.product.farmerName}
                         </p>
+
                         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                           <MapPin size={12} className="text-success" />
+
                           {item.product.location}
                         </p>
+
                         <div className="flex items-center justify-between mt-3 gap-3">
                           <div>
                             <span
-                              className={`text-sm font-extrabold ${isNegotiated ? "text-success" : "text-primary"}`}
+                              className={`text-sm font-extrabold ${
+                                isNegotiated ? "text-success" : "text-primary"
+                              }`}
                             >
                               {formatRupiah(unitPrice)}
+
                               <span className="text-[11px] font-medium text-gray-400">
                                 {" "}
                                 / {item.product.unit}
                               </span>
                             </span>
+
                             {isNegotiated && (
                               <span className="ml-2 text-[10px] bg-success/10 text-success px-1.5 py-0.5 rounded-full font-medium">
                                 Harga Nego
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                changeQuantity(item.product.id, -1)
-                              }
-                              disabled={item.quantity <= 1}
-                              className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary active:scale-90 disabled:opacity-40 transition-all"
-                              aria-label="Kurangi jumlah"
-                            >
-                              <Minus size={14} />
-                            </button>
-                            <span className="w-10 text-center text-sm font-bold text-gray-800">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => changeQuantity(item.product.id, 1)}
-                              disabled={
-                                item.quantity >= Number(item.product.stock)
-                              }
-                              className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-primary active:scale-90 disabled:opacity-40 transition-all"
-                              aria-label="Tambah jumlah"
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
+
                           <span className="text-sm font-bold text-gray-800 w-24 text-right">
                             {formatRupiah(lineTotal)}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item.product.id)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-danger hover:bg-danger/10 active:scale-90 transition-all"
-                            aria-label={`Hapus ${item.product.name}`}
-                          >
-                            <Trash2 size={18} />
-                          </button>
                         </div>
                       </div>
                     </li>
@@ -302,6 +329,7 @@ export default function CartPage() {
                 <Truck size={18} className="text-primary" />
                 Pilih Metode Pengiriman
               </h2>
+
               <div className="relative">
                 <select
                   value={deliveryMethod}
@@ -311,8 +339,10 @@ export default function CartPage() {
                   className="w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm text-gray-800 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
                 >
                   <option value="pickup">Ambil Sendiri / Pick Up</option>
+
                   <option value="expedition">Jasa Ekspedisi</option>
                 </select>
+
                 <ChevronDown
                   size={18}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
@@ -327,12 +357,14 @@ export default function CartPage() {
                     <Truck size={18} />
                   )}
                 </div>
+
                 <div className="text-sm">
                   <p className="font-semibold text-gray-800">
                     {deliveryMethod === "pickup"
                       ? "Ambil Sendiri / Pick Up"
                       : "Jasa Ekspedisi"}
                   </p>
+
                   <p className="text-xs text-gray-500 mt-0.5">
                     {deliveryMethod === "pickup"
                       ? "Ambil langsung di lokasi petani. Gratis biaya pengiriman."
@@ -346,6 +378,7 @@ export default function CartPage() {
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">
                     Alamat Pengiriman *
                   </label>
+
                   <textarea
                     value={deliveryAddress}
                     onChange={(e) => setDeliveryAddress(e.target.value)}
@@ -364,28 +397,35 @@ export default function CartPage() {
               <h2 className="font-bold text-gray-900 mb-4">
                 Ringkasan Belanja
               </h2>
+
               <div className="space-y-3 text-sm mb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-500">
                     Subtotal ({totalItems} kg)
                   </span>
+
                   <span className="font-semibold text-gray-800">
                     {formatRupiah(subtotal)}
                   </span>
                 </div>
+
                 <div className="flex justify-between">
                   <span className="text-gray-500">Biaya Layanan Aplikasi</span>
+
                   <span className="font-semibold text-gray-800">
                     {formatRupiah(PLATFORM_FEE)}
                   </span>
                 </div>
+
                 <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
                   <span className="font-bold text-gray-800">Total Harga</span>
+
                   <span className="text-xl font-extrabold text-primary">
                     {formatRupiah(total)}
                   </span>
                 </div>
               </div>
+
               <button
                 type="button"
                 onClick={checkout}
@@ -394,28 +434,12 @@ export default function CartPage() {
               >
                 {isChecking ? "Memproses..." : "Bayar Sekarang"}
               </button>
+
               <p className="text-[11px] text-gray-400 text-center mt-3 flex items-center justify-center gap-1">
                 <Check size={12} className="text-success" />
                 Pembayaran aman & transaksi terlindungi
               </p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {undoItem && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-up">
-          <div className="flex items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-lift">
-            <span className="text-sm text-white">
-              {undoItem.product.name} dihapus
-            </span>
-            <button
-              type="button"
-              onClick={undoRemove}
-              className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/20 active:scale-95 transition-all"
-            >
-              <Undo2 size={14} /> Urungkan
-            </button>
           </div>
         </div>
       )}
