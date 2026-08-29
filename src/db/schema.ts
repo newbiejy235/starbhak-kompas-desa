@@ -485,6 +485,37 @@ export const harvestRecordsTable = pgTable(
   ],
 );
 
+export const orderUser = pgTable("orderUser_table", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .references(() => usersTable.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const ordersComodity = pgTable("orders_comodity", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  orderUserId: integer("order_userId")
+    .notNull()
+    .references(() => orderUser.id, {
+      onDelete: "cascade",
+    }),
+  commodityId: integer("commodity_id")
+    .notNull()
+    .references(() => commoditiesTable.id, {
+      onDelete: "cascade",
+    }),
+  quantity: integer("quantity").notNull(),
+
+  negotiatedPrice: numeric("negotiated_price", {
+    precision: 15,
+    scale: 2,
+  }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;
@@ -499,5 +530,4 @@ export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export type NegotiationOffer = typeof negotiationOffersTable.$inferSelect;
 export type SalesTarget = typeof salesTargetsTable.$inferSelect;
 export type HarvestRecord = typeof harvestRecordsTable.$inferSelect;
-export type FarmerProfileImage =
-  typeof farmerProfileImagesTable.$inferSelect;
+export type FarmerProfileImage = typeof farmerProfileImagesTable.$inferSelect;

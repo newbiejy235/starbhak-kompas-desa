@@ -92,16 +92,13 @@ export default function UserNotifications() {
             const Icon = typeIcon[n.type] ?? Bell;
             const card = (
               <div
-                key={n.id}
-                className={`bg-white rounded-card border p-5 flex gap-4 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth animate-fade-up ${
-                  n.isRead ? "border-gray-200/80 opacity-70" : "border-primary/30"
-                }`}
+                className={`bg-white rounded-card border p-5 flex gap-4 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth animate-fade-up ${n.isRead ? "border-gray-200/80 opacity-70" : "border-primary/30"
+                  }`}
                 style={{ animationDelay: `${Math.min(i * 50, 400)}ms`, animationFillMode: "backwards" }}
               >
                 <div
-                  className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    typeColor[n.type] ?? "bg-gray-100 text-gray-500"
-                  }`}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${typeColor[n.type] ?? "bg-gray-100 text-gray-500"
+                    }`}
                 >
                   <Icon size={20} />
                 </div>
@@ -112,7 +109,6 @@ export default function UserNotifications() {
                       <span className="w-2.5 h-2.5 bg-primary rounded-full flex-shrink-0 animate-pulse-soft" />
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{n.message}</p>
                   <p className="text-xs text-gray-400 mt-2">{formatDateTime(n.createdAt)}</p>
                 </div>
               </div>

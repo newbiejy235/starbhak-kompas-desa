@@ -143,14 +143,14 @@ export default function Login() {
         <div className="drift-fast absolute top-[38%] left-[62%] w-24 h-24 rounded-full bg-[#D9A441]/10 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col justify-center h-full px-10 xl:px-16 2xl:px-20 py-16">
-          <div className="max-w-[420px]"> 
+          <div className="max-w-[420px]">
 
             <h1 className="left-anim-item font-display text-[2.35rem] xl:text-[2.85rem] 2xl:text-[3.1rem] leading-[1.08] text-emerald-300 font-semibold mb-6">
               Masuk{" "}
               <span className="italic font-normal text-white ">
                 untuk
-              {" "}
-              Menggunakan  Sistem
+                {" "}
+                Menggunakan  Sistem
               </span>
             </h1>
 
@@ -202,11 +202,10 @@ export default function Login() {
               {state.message && (
                 <div
                   role="alert"
-                  className={`right-anim-item text-[13px] font-medium rounded-xl px-4 py-3 border ${
-                    state.success
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-red-50 text-red-600 border-red-200"
-                  }`}
+                  className={`right-anim-item text-[13px] font-medium rounded-xl px-4 py-3 border ${state.success
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-red-50 text-red-600 border-red-200"
+                    }`}
                 >
                   {state.message}
                 </div>
