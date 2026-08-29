@@ -78,6 +78,13 @@
       "when": 1787942445204,
       "tag": "0010_gray_korath",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1787992534896,
+      "tag": "0011_clumsy_the_leader",
+      "breakpoints": true
     }
   ]
 }

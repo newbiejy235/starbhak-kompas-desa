@@ -30,7 +30,7 @@ export default function InformasiPenjualCard({
     <div className={`${cardCls} border-[#E4F1EB] bg-[#F7FBF9]`}>
       <div className="p-5">
         <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <ShieldCheck size={16} className="text-[#025246]" />
+          <ShieldCheck size={16} className="text-primary" />
           Informasi Penjual
         </h2>
         <div className="space-y-3">

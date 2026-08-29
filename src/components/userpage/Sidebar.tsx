@@ -25,10 +25,19 @@ const menuItems: SidebarEntry[] = [
   { id: "section-belanja", label: "Belanja" },
   { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },
   { id: "transactions", label: "Riwayat Transaksi", icon: History, href: "/user/transactions" },
+
+  // ── KOMUNIKASI ──
+  { id: "heading-komunikasi", label: "Komunikasi" },
+  { id: "chat", label: "Pesan", icon: MessageCircle, href: "/user/chat" },
   { id: "reviews", label: "Ulasan Saya", icon: Star, href: "/user/reviews" },
 
   { id: "section-preferensi", label: "Preferensi" },
   { id: "notifications", label: "Notifikasi", icon: Bell, href: "/user/notifications" },
+
+  // ── LAINNYA ──
+  { id: "heading-lainnya", label: "Lainnya" },
+  { id: "guide", label: "Panduan", icon: BookOpen, href: "/user/panduan" },
+  { id: "help", label: "Bantuan", icon: CircleQuestionMark, href: "/user/bantuan" },
   { id: "profile", label: "Profil", icon: CircleUser, href: "/user/profile" },
 
   { id: "section-bantuan", label: "Bantuan" },

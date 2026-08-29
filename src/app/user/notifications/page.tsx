@@ -92,6 +92,7 @@ export default function UserNotifications() {
             const Icon = typeIcon[n.type] ?? Bell;
             const card = (
               <div
+                key={n.id}
                 className={`bg-white rounded-card border p-5 flex gap-4 shadow-soft hover:shadow-lift transition-all duration-300 ease-smooth animate-fade-up ${n.isRead ? "border-gray-200/80 opacity-70" : "border-primary/30"
                   }`}
                 style={{ animationDelay: `${Math.min(i * 50, 400)}ms`, animationFillMode: "backwards" }}

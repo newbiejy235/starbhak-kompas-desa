@@ -25,7 +25,7 @@ const navLinks = [
   },
   { href: "#layanan", label: "Layanan" },
   { href: "#testimoni", label: "Testimoni" },
-  { href: "#kontak", label: "Kontak" },
+  { href: "/contact", label: "Kontak" },
 ]
 
 export default function Navbar() {
@@ -141,7 +141,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-8 lg:gap-12 font-semibold text-base">
           {navLinks.map((link) => {
             if (link.hasDropdown) {

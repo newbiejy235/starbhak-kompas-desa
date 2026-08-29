@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export function LoadingState({ label = "Memuat data..." }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-      <Loader2 className="w-8 h-8 animate-spin text-[#025246] mb-3" />
+      <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
       <p className="text-sm">{label}</p>
     </div>
   );

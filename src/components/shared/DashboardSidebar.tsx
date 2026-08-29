@@ -255,8 +255,7 @@ export default function DashboardSidebar({
               className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${active
                 ? "bg-primary/5 text-primary"
                 : "text-gray-600 hover:bg-gray-50 hover:text-primary"
-                }`}
-            >
+                }`}>
               <item.icon size={19} />
               {item.label}
             </Link>

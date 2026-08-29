@@ -18,13 +18,13 @@ export default function KomoditasCard({
       <div className="p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <Leaf size={16} className="text-[#025246]" />
+            <Leaf size={16} className="text-primary" />
             Komoditas Saya
           </h2>
           {commodities.length > 0 && (
             <Link
               href="/petani/commodities"
-              className="text-xs font-medium text-[#025246] hover:underline inline-flex items-center gap-1"
+              className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
             >
               Lihat Semua
               <ExternalLink size={11} />
@@ -34,8 +34,8 @@ export default function KomoditasCard({
 
         {commodities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="w-14 h-14 bg-[#025246]/5 rounded-full flex items-center justify-center mb-3">
-              <Leaf className="w-6 h-6 text-[#025246]/40" />
+            <div className="w-14 h-14 bg-primary/5 rounded-full flex items-center justify-center mb-3">
+              <Leaf className="w-6 h-6 text-primary/40" />
             </div>
             <p className="text-sm font-medium text-gray-600">Belum Ada Komoditas</p>
             <p className="text-xs text-gray-400 mt-1 max-w-[240px]">
@@ -68,7 +68,7 @@ export default function KomoditasCard({
                   <p className="text-xs font-semibold text-gray-800 truncate">{c.name}</p>
                   <p className="text-[11px] text-gray-400 truncate">{c.categoryName}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-xs font-bold text-[#025246]">{formatRupiah(c.price)}</p>
+                    <p className="text-xs font-bold text-primary">{formatRupiah(c.price)}</p>
                     <span className="text-[10px] text-gray-400">/{c.unit}</span>
                   </div>
                 </div>

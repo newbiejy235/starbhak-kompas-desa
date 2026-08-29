@@ -15,7 +15,7 @@ function StatTile({
 }) {
   return (
     <div className="flex flex-col items-center text-center p-3 rounded-xl bg-gray-50/80 border border-gray-100">
-      <div className="text-[#025246] mb-1.5">{icon}</div>
+      <div className="text-primary mb-1.5">{icon}</div>
       <p className="text-lg font-bold text-gray-900">{value}</p>
       <p className="text-[11px] text-gray-400">{label}</p>
     </div>
@@ -33,7 +33,7 @@ export default function StatistikCard({
     <div className={cardCls}>
       <div className="p-5">
         <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Star size={16} className="text-[#025246]" />
+          <Star size={16} className="text-primary" />
           Statistik
         </h2>
         <div className="grid grid-cols-3 gap-3">
