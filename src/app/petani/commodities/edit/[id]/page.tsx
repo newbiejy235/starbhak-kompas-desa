@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import {
   updateCommodity,
 } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
-import MediaUploadField from "@/components/shared/MediaUploadField";
+import MediaUploadField, { type UploadedMedia } from "@/components/shared/MediaUploadField";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity } from "@/lib/types/market";
@@ -70,6 +71,17 @@ export default function EditCommodity() {
     },
     null,
   );
+
+  const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
+
+  const handleMediaChange = useCallback((items: UploadedMedia[]) => {
+    setMediaItems(items);
+  }, []);
+
+  const handleMediaUploadStateChange = useCallback((state: boolean) => {
+    setMediaUploading(state);
+  }, []);
 
   if (loading) return <EditSkeleton />;
 
@@ -174,7 +186,23 @@ export default function EditCommodity() {
           </div>
         </div>
 
-        <MediaUploadField />
+        <MediaUploadField
+          defaultImages={commodity.image ? [commodity.image] : undefined}
+          defaultVideoUrl={commodity.videoUrl ?? undefined}
+          onChange={handleMediaChange}
+          onUploadStateChange={handleMediaUploadStateChange}
+        />
+
+        <input
+          type="hidden"
+          name="images"
+          value={JSON.stringify(mediaItems.filter((i) => i.type === "image").map((i) => i.url))}
+        />
+        <input
+          type="hidden"
+          name="videoUrl"
+          value={mediaItems.find((i) => i.type === "video")?.url ?? ""}
+        />
 
         {state && !state.success && (
           <p className="text-sm text-danger animate-shake">{state.message}</p>
@@ -182,7 +210,7 @@ export default function EditCommodity() {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || mediaUploading}
           className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Menyimpan..." : "Simpan Perubahan"}

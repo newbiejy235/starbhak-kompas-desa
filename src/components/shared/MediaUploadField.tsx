@@ -27,9 +27,16 @@ interface MediaItem {
   preview: string;
   type: "image" | "video";
   uploadedUrl?: string;
+  uploadedId?: number;
   uploading?: boolean;
   progress?: number;
   error?: string;
+}
+
+export interface UploadedMedia {
+  id?: number;
+  url: string;
+  type: "image" | "video";
 }
 
 interface MediaUploadFieldProps {
@@ -37,6 +44,10 @@ interface MediaUploadFieldProps {
   defaultImages?: (string | null)[];
   /** URL video yang sudah ada (mis. saat edit komoditas). */
   defaultVideoUrl?: string;
+  /** Dipanggil setiap daftar item berubah (upload selesai / hapus). */
+  onChange?: (items: UploadedMedia[]) => void;
+  /** Dipanggil saat status upload berubah. */
+  onUploadStateChange?: (isUploading: boolean) => void;
 }
 
 async function uploadItem(
@@ -59,7 +70,7 @@ async function uploadItem(
       setItems((prev) =>
         prev.map((i) =>
           i.id === item.id
-            ? { ...i, uploadedUrl: results[0].secureUrl, uploading: false, progress: 100 }
+            ? { ...i, uploadedUrl: results[0].secureUrl, uploadedId: results[0].id, uploading: false, progress: 100 }
             : i,
         ),
       );
@@ -79,6 +90,7 @@ async function uploadItem(
 export default function MediaUploadField(
   props: MediaUploadFieldProps,
 ) {
+  const { onChange, onUploadStateChange } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<MediaItem[]>(() => {
     const initial: MediaItem[] = [];
@@ -123,6 +135,18 @@ export default function MediaUploadField(
       });
     };
   }, [items]);
+
+  useEffect(() => {
+    onChange?.(
+      items
+        .filter((i) => i.uploadedUrl)
+        .map((i) => ({ id: i.uploadedId, url: i.uploadedUrl!, type: i.type })),
+    );
+  }, [items, onChange]);
+
+  useEffect(() => {
+    onUploadStateChange?.(isUploading);
+  }, [isUploading, onUploadStateChange]);
 
   const validateFile = useCallback(
     (file: File): string | null => {

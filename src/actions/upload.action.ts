@@ -40,7 +40,7 @@ export async function uploadMultiMediaAction(formData: FormData) {
     throw new Error("Tidak ada file yang dikirim");
   }
 
-  const results: { publicId: string; secureUrl: string; type: "image" | "video" }[] = [];
+  const results: { id: number; publicId: string; secureUrl: string; type: "image" | "video" }[] = [];
 
   for (const file of files) {
     if (!(file instanceof File)) continue;
@@ -63,6 +63,7 @@ export async function uploadMultiMediaAction(formData: FormData) {
     }
 
     results.push({
+      id: row.id,
       publicId: result.publicId,
       secureUrl: result.secureUrl,
       type: isVideo ? "video" : "image",

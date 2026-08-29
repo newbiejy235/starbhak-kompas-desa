@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
   ImagePlus,
@@ -18,7 +18,7 @@ import { getClientUser } from "@/lib/auth/client";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity, CategoryRow } from "@/lib/types/market";
 import Image from "next/image";
-import MediaUploadField from "@/components/shared/MediaUploadField";
+import MediaUploadField, { type UploadedMedia } from "@/components/shared/MediaUploadField";
 
 interface CommodityFormPopupProps {
   open: boolean;
@@ -43,6 +43,8 @@ export default function CommodityFormPopup({
   const [uploadError, setUploadError] = useState("");
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -50,6 +52,8 @@ export default function CommodityFormPopup({
     const id = requestAnimationFrame(() => {
       getCategories().then(setCategories);
       setServerError(null);
+      setMediaItems([]);
+      setMediaUploading(false);
       if (commodity) {
         setPreview(commodity.image ?? "");
         setImageId(commodity.imageId ?? "");
@@ -86,6 +90,16 @@ export default function CommodityFormPopup({
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
+
+  const handleMediaChange = useCallback((items: UploadedMedia[]) => {
+    setMediaItems(items);
+    const firstImage = items.find((i) => i.type === "image");
+    setImageId(firstImage?.id ?? "");
+  }, []);
+
+  const handleMediaUploadStateChange = useCallback((state: boolean) => {
+    setMediaUploading(state);
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     if (!user) {
@@ -315,6 +329,16 @@ export default function CommodityFormPopup({
 
             <div className="border-t border-gray-100 pt-4">
               <input type="hidden" name="image" value={imageId} />
+              <input
+                type="hidden"
+                name="images"
+                value={JSON.stringify(mediaItems.filter((i) => i.type === "image").map((i) => i.url))}
+              />
+              <input
+                type="hidden"
+                name="videoUrl"
+                value={mediaItems.find((i) => i.type === "video")?.url ?? ""}
+              />
               {preview ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -353,7 +377,12 @@ export default function CommodityFormPopup({
                   </div>
                 </div>
               ) : (
-                <MediaUploadField />
+                <MediaUploadField
+                  defaultImages={isEdit && commodity?.image ? [commodity.image] : undefined}
+                  defaultVideoUrl={isEdit ? commodity?.videoUrl ?? undefined : undefined}
+                  onChange={handleMediaChange}
+                  onUploadStateChange={handleMediaUploadStateChange}
+                />
               )}
               <input
                 ref={fileInputRef}
@@ -377,7 +406,7 @@ export default function CommodityFormPopup({
           <div className="shrink-0 border-t border-gray-100 px-5 py-4 space-y-3">
             <button
               type="submit"
-              disabled={isSubmitting || uploading}
+              disabled={isSubmitting || uploading || mediaUploading}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
