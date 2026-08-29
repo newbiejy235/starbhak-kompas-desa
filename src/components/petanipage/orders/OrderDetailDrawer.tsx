@@ -193,12 +193,17 @@ export default function OrderDetailDrawer({
   const img = formatImage(detail?.commodityImage ?? summary.commodityImage) ?? formatImage(detail?.commodityImages?.[0] ?? summary.commodityImages?.[0] ?? null);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
-        className="absolute inset-0 animate-fade-in-fast bg-black/40"
+        className="absolute inset-0 animate-fade-in-fast bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#F8FAF9] shadow-lift animate-slide-left sm:max-w-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detail pesanan ${summary.orderCode}`}
+        className="relative z-10 flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-[#F8FAF9] shadow-lift animate-scale-in sm:h-auto sm:max-h-[calc(100vh-2rem)]"
+      >
         {/* Header */}
         <div className="flex shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-5 py-4">
           <button

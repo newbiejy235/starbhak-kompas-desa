@@ -370,7 +370,6 @@ export default function CommodityFormPopup({
             </p>
           </div>
         </form>
-      </div>
-    </>
+    </div>
   );
 }
