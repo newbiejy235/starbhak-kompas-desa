@@ -35,6 +35,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 // import { getOrderUsersById } from "@/actions/orders/orders.action";
 import { getUnpaid } from "@/actions/orders/orders.action";
 import { getClientUser } from "@/lib/auth/client";
+import { updatePaid } from "@/actions/orders/orders.action";
 
 type DeliveryMethod = "pickup" | "expedition";
 
@@ -238,11 +239,10 @@ export default function CartPage() {
           Jumlah += Number(items.negotiatedPrice);
         });
 
-        const qty = 1
+        const qty = 1;
         // const itemQTY = orders?.map((items) => {
         //   qty += Number(items.quantity)
         // });
-
 
         console.log("id", itemID);
         console.log("idJoin", itemIdJoin);
@@ -253,6 +253,8 @@ export default function CartPage() {
         console.log("price", total);
 
         console.log("qty", qty);
+
+        console.log("jumlah", Jumlah);
 
         console.log("PAYMENT ITEMS:", paymentItems);
         const paymentSubtotal =
@@ -271,7 +273,7 @@ export default function CartPage() {
           body: JSON.stringify({
             id: itemIdJoin,
             commodityId: commodityIdJoin,
-            price: Jumlah,
+            price: total,
             quantity: qty,
           }),
         });
@@ -289,15 +291,14 @@ export default function CartPage() {
           return;
         }
 
-        console.log("TOKEN",text.token);
-        
+        console.log("TOKEN", text.token);
 
         // const datas = JSON.parse(text);
 
         // console.log("DATAS:", datas);
 
-
         // if (text.redirect_url) {
+        //   updatePaid(Number(itemID));
         //   window.location.href = text.redirect_url;
         // }
       }

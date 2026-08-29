@@ -40,6 +40,9 @@ export async function POST(request: Request) {
         order_id: id,
         gross_amount: price * quantity,
       },
+      callbacks: {
+        finish: "https://starbhak-kompas-desa.vercel.app/auth/login",
+      },
     };
 
     const transaction = await snap.createTransaction(parameter);

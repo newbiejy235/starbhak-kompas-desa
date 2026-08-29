@@ -195,3 +195,31 @@ export async function getUnpaidOrders(id: number) {
     };
   }
 }
+
+export async function updateOrderStatus(userId: number) {
+  try {
+    await db
+      .update(ordersComodity)
+      .set({
+        status: "payed",
+      })
+      .where(
+        and(
+          eq(ordersComodity.orderUserId, userId),
+          eq(ordersComodity.status, "unpayed"),
+        ),
+      );
+
+    return {
+      success: true,
+      message: "Semua order berhasil menjadi payed",
+    };
+  } catch (error) {
+    console.error("UPDATE PAID ERROR:", error);
+
+    return {
+      success: false,
+      message: "Gagal update status",
+    };
+  }
+}
