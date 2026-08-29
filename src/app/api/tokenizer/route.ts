@@ -14,25 +14,25 @@ export async function POST(request: Request) {
     const { id, commodityId, price, quantity } = await request.json();
 
     // Ambil produk berdasarkan commodityId
-    const [commodity] = await db
-      .select({
-        id: commoditiesTable.id,
-        name: commoditiesTable.name,
-      })
-      .from(commoditiesTable)
-      .where(eq(commoditiesTable.id, commodityId))
-      .limit(1);
+    // const [commodity] = await db
+    //   .select({
+    //     id: commoditiesTable.id,
+    //     name: commoditiesTable.name,
+    //   })
+    //   .from(commoditiesTable)
+    //   .where(eq(commoditiesTable.id, commodityId))
+    //   .limit(1);
 
-    if (!commodity) {
-      return Response.json(
-        { error: "Komoditas tidak ditemukan" },
-        { status: 404 },
-      );
-    }
+    // if (!commodity) {
+    //   return Response.json(
+    //     { error: "Komoditas tidak ditemukan" },
+    //     { status: 404 },
+    //   );
+    // }
 
     const parameter = {
       item_details: {
-        name: commodity.name,
+        name: commodityId,
         price: price,
         quantity: quantity,
       },

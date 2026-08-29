@@ -24,12 +24,17 @@ export default function UserChatRoomPage() {
     if (!room) return;
 
     addToCart(room.commodityId, quantity, price);
-    router.push("/user/orders");
+    // router.push("/user/orders");
     console.log("hello");
     console.log(userId, userFullName);
 
     // getUsersOrder(userId)
     addOrders(userId,room.commodityId, quantity, price)
+    console.log("idUsers",userId);
+    console.log("commodityId",room.commodityId);
+    console.log("qty",quantity);
+    console.log("harga",price);
+    
     
   };
 

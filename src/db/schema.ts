@@ -495,6 +495,12 @@ export const orderUser = pgTable("orderUser_table", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+
+export const isPaying = pgEnum("isPaying", [
+  "payed",
+  "unpayed"
+]);
+
 export const ordersComodity = pgTable("orders_comodity", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   orderUserId: integer("order_userId")
@@ -513,6 +519,7 @@ export const ordersComodity = pgTable("orders_comodity", {
     precision: 15,
     scale: 2,
   }),
+  status : isPaying().notNull().default("unpayed"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

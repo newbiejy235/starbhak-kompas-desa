@@ -1,9 +1,10 @@
 "use client";
-import { OrdersAction } from "@/service/orders.service";
+import { getUnpaidOrders, OrdersAction } from "@/service/orders.service";
 import { CartEntry } from "@/lib/cart";
 import { addToUserOrder } from "@/service/orders.service";
 import { addToOrders } from "@/service/orders.service";
-import { getAllOrders } from "@/service/orders.service";
+// import { getAllOrders } from "@/service/orders.service";
+// import { getOrderByUsers } from "@/service/orders.service";
 
 export function orders(data: CartEntry[]) {
   console.log(data);
@@ -26,7 +27,18 @@ export async function getUsersOrder(id: number) {
   return await addToUserOrder(id);
 }
 
-export async function getDataOrders() {
-  return await getAllOrders();
+export async function getUnpaid(id: number) {
+  return await getUnpaidOrders(id);
 }
+
+
+// export async function getDataOrders() {
+//   return await getAllOrders();
+// }
+
+// export async function getOrderUsersById(id : number) {
+//   return await getOrderByUsers(id)
+// }
+
+
 

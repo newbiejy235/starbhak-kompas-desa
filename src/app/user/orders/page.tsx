@@ -31,13 +31,16 @@ import { useAuth, useFetch } from "@/lib/hooks";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { CommodityDetail } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { getAllOrders } from "@/actions/order";
+// import { getDataOrders } from "@/actions/orders/orders.action";
+// import { getOrderUsersById } from "@/actions/orders/orders.action";
+import { getUnpaid } from "@/actions/orders/orders.action";
+import { getClientUser } from "@/lib/auth/client";
 
 type DeliveryMethod = "pickup" | "expedition";
 
 const PLATFORM_FEE = 2000;
 
-type OrdersData = Awaited<ReturnType<typeof getAllOrders>>["data"];
+type OrdersData = Awaited<ReturnType<typeof getUnpaid>>["data"];
 
 function CartSkeleton() {
   return (
@@ -64,30 +67,38 @@ export default function CartPage() {
 
   const [deliveryAddress, setDeliveryAddress] = useState("");
 
-  const [entries, setEntries] = useState(() => getCart());
+  // const [entries, setEntries] = useState(() => getCart());
 
   const [isChecking, setIsChecking] = useState(false);
 
-  const [undoItem, setUndoItem] = useState<{
-    entry: (typeof entries)[number];
-    product: CommodityDetail;
-  } | null>(null);
+  // const [undoItem, setUndoItem] = useState<{
+  //   entry: (typeof entries)[number];
+  //   product: CommodityDetail;
+  // } | null>(null);
 
   // =========================
   // DATA ORDERS DARI DATABASE
   // =========================
 
   const [orders, setOrders] = useState<OrdersData>([]);
-  
+
+  const user = getClientUser();
+
+  console.log(user?.id);
+
   useEffect(() => {
     async function loadOrders() {
       try {
-        const result = await getAllOrders();
+        if (!user?.id) return;
+
+        const result = await getUnpaid(Number(user.id));
 
         console.log("DATA GET ALL ORDERS:", result);
 
         if (result.success) {
           setOrders(result.data);
+
+          console.log("DATA ORDER:", result.data);
         }
       } catch (error) {
         console.error("Gagal mengambil orders:", error);
@@ -95,67 +106,39 @@ export default function CartPage() {
     }
 
     loadOrders();
-  }, []);
-
-  console.log("CART:", entries);
-  console.log("ORDERS:", orders);
+  }, [user?.id]);
 
   // =========================
   // AMBIL DATA COMMODITY
   // =========================
 
-  const idsKey = entries.map((e) => e.commodityId).join(",");
+  // const idsKey = entries.map((e) => e.commodityId).join(",");
 
-  const { data: products, loading } = useFetch(async () => {
-    if (entries.length === 0) {
-      return [] as CommodityDetail[];
-    }
+  // const { data: products, loading } = useFetch(async () => {
+  //   if (entries.length === 0) {
+  //     return [] as CommodityDetail[];
+  //   }
 
-    return (await getCommoditiesByIds(
-      entries.map((e) => e.commodityId),
-    )) as CommodityDetail[];
-  }, [idsKey]);
-
-  // =========================
-  // CART ITEMS
-  // =========================
-
-  type CartItem = {
-    product: CommodityDetail;
-    quantity: number;
-    negotiatedPrice?: number;
-  };
-
-  const items: CartItem[] = entries
-    .map((entry) => {
-      const product = products?.find((p) => p.id === entry.commodityId);
-
-      if (!product) return null;
-
-      const item: CartItem = {
-        product,
-        quantity: entry.quantity,
-      };
-
-      if (entry.negotiatedPrice !== undefined) {
-        item.negotiatedPrice = entry.negotiatedPrice;
-      }
-
-      return item;
-    })
-    .filter((i): i is CartItem => i !== null);
+  //   return (await getCommoditiesByIds(
+  //     entries.map((e) => e.commodityId),
+  //   )) as CommodityDetail[];
+  // }, [idsKey]);
 
   // =========================
   // TOTAL
   // =========================
 
-  const subtotal = items.reduce(
-    (sum, i) =>
-      sum + (i.negotiatedPrice ?? Number(i.product.price)) * i.quantity,
-    0,
-  );
+  const subtotal =
+    orders?.reduce((sum, item) => {
+      const unitPrice = Number(item.negotiatedPrice ?? item.product.price);
 
-  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
+      return sum + unitPrice * item.quantity;
+    }, 0) ?? 0;
+
+  const totalItems =
+    orders?.reduce((sum, item) => {
+      return sum + item.quantity;
+    }, 0) ?? 0;
 
   const total = subtotal + PLATFORM_FEE;
 
@@ -164,20 +147,164 @@ export default function CartPage() {
   // =========================
 
   const checkout = async () => {
-    if (items.length === 0 || isChecking) return;
+    if (orders?.length === 0 || isChecking) return;
+
+    if (deliveryMethod === "expedition" && !deliveryAddress.trim()) {
+      console.log("Alamat pengiriman wajib diisi");
+      return;
+    }
 
     setIsChecking(true);
 
     try {
-      saveCheckoutSnapshot(
-        items.map((item) => ({
-          commodityId: item.product.id,
-          quantity: item.quantity,
-          negotiatedPrice: item.negotiatedPrice,
-        })),
-      );
+      async function payment() {
+        const result = await getUnpaid(Number(user?.id));
 
-      router.push("/user/checkout");
+        console.log("RESULT:", result);
+
+        if (!result.success) {
+          console.log(result.message);
+          return;
+        }
+
+        const orders = result.data;
+
+        console.log("ORDERS:", orders);
+
+        /*
+         * orders adalah ARRAY.
+         *
+         * Contoh:
+         *
+         * [
+         *   {
+         *     commodityId: 1,
+         *     quantity: 2,
+         *     negotiatedPrice: "25000",
+         *     product: {
+         *       name: "Tomat",
+         *       price: "30000"
+         *     }
+         *   },
+         *   {
+         *     commodityId: 2,
+         *     quantity: 3,
+         *     negotiatedPrice: "15000",
+         *     product: {
+         *       name: "Cabai",
+         *       price: "20000"
+         *     }
+         *   }
+         * ]
+         *
+         * Jadi jangan pakai:
+         *
+         * order.commodityId
+         *
+         * karena order adalah ARRAY.
+         */
+
+        const paymentItems = orders?.map((item) => {
+          const unitPrice = Number(item.negotiatedPrice ?? item.product.price);
+
+          return {
+            commodityId: item.commodityId,
+            name: item.product.name,
+            price: unitPrice,
+            quantity: item.quantity,
+            subtotal: unitPrice * item.quantity,
+          };
+        });
+
+        // const payemntData = orders?.map((items) => {
+        //   return items.id;
+        // });
+
+        const itemID = orders?.map((items) => {
+          return items.id;
+        });
+
+        const itemIdJoin = Number(itemID?.join(""));
+
+        const comodityID = orders?.map((items) => {
+          return items.commodityId;
+        });
+
+        const commodityIdJoin = Number(comodityID?.join(""));
+
+        let Jumlah = PLATFORM_FEE;
+
+        const itemPrice = orders?.map((items) => {
+          Jumlah += Number(items.negotiatedPrice);
+        });
+
+        const qty = 1
+        // const itemQTY = orders?.map((items) => {
+        //   qty += Number(items.quantity)
+        // });
+
+
+        console.log("id", itemID);
+        console.log("idJoin", itemIdJoin);
+
+        console.log("comodity", comodityID);
+        console.log("comodityJoin", commodityIdJoin);
+
+        console.log("price", total);
+
+        console.log("qty", qty);
+
+        console.log("PAYMENT ITEMS:", paymentItems);
+        const paymentSubtotal =
+          paymentItems?.reduce((sum, item) => sum + item.subtotal, 0) ?? 0;
+
+        const paymentTotal = paymentSubtotal + PLATFORM_FEE;
+
+        console.log("PAYMENT SUBTOTAL:", paymentSubtotal);
+        console.log("PAYMENT TOTAL:", paymentTotal);
+
+        const response = await fetch("http://localhost:3000/api/tokenizer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: itemIdJoin,
+            commodityId: commodityIdJoin,
+            price: Jumlah,
+            quantity: qty,
+          }),
+        });
+
+        console.log("RESPONSE STATUS:", response.status);
+        console.log("RESPONSE OK:", response.ok);
+
+        const text = await response.json();
+
+        console.log("RAW RESPONSE:", text);
+
+        if (!response.ok) {
+          console.log("API ERROR:", response);
+
+          return;
+        }
+
+        console.log("TOKEN",text.token);
+        
+
+        // const datas = JSON.parse(text);
+
+        // console.log("DATAS:", datas);
+
+
+        // if (text.redirect_url) {
+        //   window.location.href = text.redirect_url;
+        // }
+      }
+
+      payment();
+    } catch (error) {
+      console.error("Checkout error:", error);
     } finally {
       setIsChecking(false);
     }
@@ -187,9 +314,9 @@ export default function CartPage() {
   // LOADING
   // =========================
 
-  if (loading) {
-    return <CartSkeleton />;
-  }
+  // if (loading) {
+  //   return <CartSkeleton />;
+  // }
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-up">
@@ -218,7 +345,7 @@ export default function CartPage() {
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {orders?.length === 0 ? (
         <EmptyState
           title="Keranjang Kosong"
           message="Yuk mulai belanja komoditas segar langsung dari petani."
@@ -244,25 +371,26 @@ export default function CartPage() {
               </div>
 
               <ul className="divide-y divide-gray-100">
-                {items.map((item) => {
-                  const img = formatImage(item.product.image);
-
-                  const unitPrice =
-                    item.negotiatedPrice ?? Number(item.product.price);
+                {orders?.map((item) => {
+                  const unitPrice = Number(
+                    item.negotiatedPrice ?? item.product.price,
+                  );
 
                   const lineTotal = unitPrice * item.quantity;
 
-                  const isNegotiated = item.negotiatedPrice !== undefined;
+                  const isNegotiated = item.negotiatedPrice != null;
+
+                  const image = item.product.images?.[0];
 
                   return (
                     <li
-                      key={item.product.id}
+                      key={item.commodityId}
                       className="flex items-center gap-4 px-6 py-5 hover:bg-primary/[0.02] transition-colors"
                     >
                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                        {img ? (
+                        {image ? (
                           <Image
-                            src={img}
+                            src={image}
                             alt={item.product.name}
                             width={80}
                             height={80}
@@ -282,13 +410,14 @@ export default function CartPage() {
                         </h3>
 
                         <p className="text-xs text-gray-500 mt-0.5">
-                          Petani: {item.product.farmerName}
+                          {/* Petani: {item.product.farmerName} */}
+                          Petani
                         </p>
 
                         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                           <MapPin size={12} className="text-success" />
 
-                          {item.product.location}
+                          {/* {item.product.location} */}
                         </p>
 
                         <div className="flex items-center justify-between mt-3 gap-3">
