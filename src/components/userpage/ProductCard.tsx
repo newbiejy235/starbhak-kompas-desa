@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MapPin, Star, Package } from "lucide-react";
 import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
+import WishlistButton from "@/components/shared/WishlistButton";
 import { LOW_STOCK_THRESHOLD } from "@/constants/commodities";
 
 export interface ProductCardData {
@@ -24,6 +25,7 @@ export interface ProductCardData {
 
 interface ProductCardProps {
   data?: ProductCardData | null;
+  userId?: number | null;
 }
 
 const categoryGradient: Record<string, string> = {
@@ -34,7 +36,7 @@ const categoryGradient: Record<string, string> = {
   Hortikultura: "from-lime-400 to-green-600",
 };
 
-export default function ProductCard({ data }: ProductCardProps) {
+export default function ProductCard({ data, userId }: ProductCardProps) {
   if (!data) return null;
   const img = formatImage(data.image) ?? formatImage(data.images?.[0] ?? null);
   const gradient =
@@ -67,6 +69,9 @@ export default function ProductCard({ data }: ProductCardProps) {
             <span className="text-6xl font-black text-white/90">{initial}</span>
           </div>
         )}
+        <div className="absolute top-2 right-2 z-10">
+          <WishlistButton commodityId={data.id} userId={userId ?? null} size="sm" />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -95,7 +100,7 @@ export default function ProductCard({ data }: ProductCardProps) {
           <span className="text-xs text-gray-400">/ {data.unit}</span>
         </div>
 
-        <div className="mt-auto" />
+<div className="mt-auto" />
 
         <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
           <span

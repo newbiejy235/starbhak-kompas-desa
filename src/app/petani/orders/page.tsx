@@ -3,9 +3,11 @@
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin, Store } from "lucide-react";
 import { getFarmerOrders, updateOrderStatus } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
+import { formatRupiah, formatDateTime } from "@/lib/format";
+import StatusBadge from "@/components/shared/StatusBadge";
 import { useFetch } from "@/lib/hooks";
 import { EmptyState } from "@/components/shared/States";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -80,7 +82,6 @@ const selectClass =
   "rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 focus:border-primary focus:outline-none";
 
 export default function PetaniOrders() {
-  // useSearchParams dibungkus Suspense agar halaman tetap bisa di-prerender.
   return (
     <Suspense fallback={<OrdersSkeleton />}>
       <OrdersContent />
@@ -99,7 +100,6 @@ function OrdersContent() {
   );
   const orders = useMemo(() => data ?? [], [data]);
 
-  // Status awal dari URL (?status=...) agar tautan dari dashboard langsung tersaring.
   const urlStatus = searchParams.get("status");
   const [statusFilter, setStatusFilter] = useState(() =>
     urlStatus && urlStatus in ORDER_STATUS_LABEL ? urlStatus : "all",
@@ -142,9 +142,9 @@ function OrdersContent() {
     () => ({
       total: orders.length,
       pending: orders.filter((o) => o.status === "pending").length,
-      processing: orders
-        .filter((o) => ["confirmed", "processing", "shipped"].includes(o.status))
-        .length,
+      processing: orders.filter((o) =>
+        ["confirmed", "processing", "shipped"].includes(o.status),
+      ).length,
       completed: orders.filter((o) => o.status === "completed").length,
     }),
     [orders],
@@ -178,7 +178,9 @@ function OrdersContent() {
   return (
     <div className="min-h-screen animate-fade-up">
       <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Pesanan Masuk</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          Pesanan Masuk
+        </h1>
         <p className="mt-1 mb-6 text-sm text-gray-500">
           Kelola pesanan, pembayaran, pengiriman, dan komunikasi dengan pembeli.
         </p>
@@ -214,8 +216,8 @@ function OrdersContent() {
               aria-label="Tampilkan filter"
               aria-expanded={showFilters}
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors sm:hidden ${showFilters
-                  ? "border-primary bg-primary/5 text-primary"
-                  : "border-gray-200 text-gray-700"
+                ? "border-primary bg-primary/5 text-primary"
+                : "border-gray-200 text-gray-700"
                 }`}
             >
               <SlidersHorizontal size={15} />
@@ -223,7 +225,8 @@ function OrdersContent() {
           </div>
 
           <div
-            className={`${showFilters ? "grid" : "hidden"} mt-3 grid-cols-2 gap-2 sm:grid sm:grid-cols-4`}
+            className={`${showFilters ? "grid" : "hidden"
+              } mt-3 grid-cols-2 gap-2 sm:grid sm:grid-cols-4`}
           >
             <select
               value={statusFilter}

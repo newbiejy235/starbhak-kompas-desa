@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Search, ShoppingCart, Bell } from "lucide-react";
+import { Search, ShoppingCart, Bell, Bookmark } from "lucide-react";
 
 import { getUnreadNotificationCount } from "@/actions/notification";
+import { getWishlistCount } from "@/actions/wishlist";
 import { useAuth, useFetch } from "@/lib/hooks";
 
 import SearchRecommendationDropdown from "@/components/userpage/SearchRecommendationDropdown";
@@ -120,6 +121,7 @@ export function HeaderSearch() {
 
 /* ============================================================
    Tombol aksi sisi kanan (hanya aksi spesifik pembeli):
+   - Wishlist
    - Keranjang
    - Notifikasi
    Akses akun/profil berada pada dropdown profil di DashboardShell.
@@ -137,10 +139,38 @@ export function HeaderActions() {
     [user?.id, pathname],
   );
 
+  const { data: wishlistCount } = useFetch(
+    () =>
+      user
+        ? getWishlistCount(user.id)
+        : Promise.resolve(0),
+    [user?.id, pathname],
+  );
+
   const unread = Number(unreadCount ?? 0);
+  const wishlistQty = Number(wishlistCount ?? 0);
 
   return (
     <div className="flex flex-shrink-0 items-center gap-1">
+      {/* Wishlist */}
+      <Link
+        href="/user/wishlist"
+        aria-label="Wishlist"
+        aria-current={pathname.startsWith("/user/wishlist") ? "page" : undefined}
+        className={`${iconBtn} ${pathname.startsWith("/user/wishlist") ? "bg-primary/10 text-primary" : ""
+          }`}
+      >
+        <Bookmark size={19} />
+        {wishlistQty > 0 && (
+          <span
+            aria-hidden
+            className="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white"
+          >
+            {wishlistQty > 99 ? "99+" : wishlistQty}
+          </span>
+        )}
+      </Link>
+
       {/* Keranjang */}
       <Link
         href="/user/cart"

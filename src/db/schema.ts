@@ -9,6 +9,7 @@ import {
   pgEnum,
   index,
   json,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const contactMessageStatusEnum = pgEnum("contact_message_status", [
@@ -167,6 +168,9 @@ export const ordersTable = pgTable(
     commodityId: integer()
       .notNull()
       .references(() => commoditiesTable.id, { onDelete: "restrict" }),
+    negotiationId: integer().references(() => negotiationOffersTable.id, {
+      onDelete: "set null",
+    }),
     quantity: numeric({ precision: 12, scale: 2 }).notNull(),
     unitPrice: numeric({ precision: 12, scale: 2 }).notNull(),
     subtotal: numeric({ precision: 14, scale: 2 }).notNull(),
@@ -245,6 +249,12 @@ export const notificationsTable = pgTable(
     message: varchar().notNull(),
     type: varchar({ length: 30 }).notNull().default("info"),
     isRead: boolean().notNull().default(false),
+    relatedRoomId: integer().references(() => chatRoomsTable.id, {
+      onDelete: "set null",
+    }),
+    relatedOfferId: integer().references(() => negotiationOffersTable.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("notifications_user_idx").on(table.userId)],
@@ -421,9 +431,11 @@ export const chatMessagesTable = pgTable(
 
 export const negotiationStatusEnum = pgEnum("negotiation_status", [
   "pending",
+  "counter_offer",
   "accepted",
   "rejected",
   "expired",
+  "cancelled",
 ]);
 
 export const negotiationOffersTable = pgTable(
@@ -446,6 +458,8 @@ export const negotiationOffersTable = pgTable(
     quantity: numeric({ precision: 12, scale: 2 }).notNull(),
     unit: varchar({ length: 30 }).notNull().default("kg"),
     status: negotiationStatusEnum().notNull().default("pending"),
+    buyerAccepted: boolean().notNull().default(false),
+    farmerAccepted: boolean().notNull().default(false),
     acceptedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
@@ -453,6 +467,25 @@ export const negotiationOffersTable = pgTable(
     index("negotiation_room_idx").on(table.roomId),
     index("negotiation_buyer_idx").on(table.buyerId),
     index("negotiation_farmer_idx").on(table.farmerId),
+  ],
+);
+
+export const wishlistItemsTable = pgTable(
+  "wishlist_items_table",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    commodityId: integer()
+      .notNull()
+      .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("wishlist_items_user_commodity_key").on(table.userId, table.commodityId),
+    index("wishlist_items_user_idx").on(table.userId),
+    index("wishlist_items_commodity_idx").on(table.commodityId),
   ],
 );
 
@@ -575,6 +608,11 @@ export const ordersComodity = pgTable("orders_comodity", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const invoice = pgTable("invoice", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  productId: integer().references(() => commoditiesTable.id),
+});
+
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
 export type Category = typeof categoriesTable.$inferSelect;
@@ -593,3 +631,4 @@ export type NewFarmerNote = typeof farmerNotesTable.$inferInsert;
 export type FarmerProfileImage = typeof farmerProfileImagesTable.$inferSelect;
 export type ContactMessage = typeof contactMessagesTable.$inferSelect;
 export type NewContactMessage = typeof contactMessagesTable.$inferInsert;
+export type WishlistItem = typeof wishlistItemsTable.$inferSelect;

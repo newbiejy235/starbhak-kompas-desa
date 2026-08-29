@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
 import { addToCart } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
+import WishlistButton from "@/components/shared/WishlistButton";
 import type {
   CommodityDetail,
   ReviewForCommodity,
@@ -37,7 +38,7 @@ function DetailSkeleton() {
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [quantity, setQuantity] = useState(1);
+const [quantity, setQuantity] = useState(1);
   const [negoError, setNegoError] = useState<string | null>(null);
   const { user } = useAuth();
 
@@ -87,7 +88,7 @@ export default function ProductDetail() {
   const maxPrice = product.maxPrice ? Number(product.maxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
-  const handleAddToCart = () => {
+const handleAddToCart = () => {
     if (!user) {
       router.push("/auth/login");
       return;
@@ -198,9 +199,16 @@ export default function ProductDetail() {
               </div>
             )}
 
+            <div className="mb-4 flex items-center gap-2">
+              <WishlistButton commodityId={product.id} userId={user?.id ?? null} />
+              <span className="text-xs text-gray-400">
+                {user ? "Simpan ke wishlist" : "Masuk untuk wishlist"}
+              </span>
+            </div>
+
             {isAvailable && stock > 0 ? (
               <>
-                <div className="flex items-center gap-3 mb-6">
+<div className="flex items-center gap-3 mb-6">
                   <span className="text-sm font-medium text-gray-700">Jumlah</span>
                   <div className="flex items-center border border-gray-200 rounded-full">
                     <button
