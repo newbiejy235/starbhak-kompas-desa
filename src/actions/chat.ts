@@ -158,37 +158,39 @@ export async function getChatRoomDetail(roomId: number) {
       return null;
     }
 
-    const buyer = await db
-      .select({ id: usersTable.id, fullName: usersTable.fullName, fotoProfile: usersTable.fotoProfile })
-      .from(usersTable)
-      .where(eq(usersTable.id, room.buyerId))
-      .limit(1);
+    const [buyerRows, farmerRows, pendingOfferRows] = await Promise.all([
+      db
+        .select({ id: usersTable.id, fullName: usersTable.fullName, fotoProfile: usersTable.fotoProfile })
+        .from(usersTable)
+        .where(eq(usersTable.id, room.buyerId))
+        .limit(1),
+      db
+        .select({ id: usersTable.id, fullName: usersTable.fullName, fotoProfile: usersTable.fotoProfile, address: usersTable.address })
+        .from(usersTable)
+        .where(eq(usersTable.id, room.farmerId))
+        .limit(1),
+      db
+        .select()
+        .from(negotiationOffersTable)
+        .where(
+          and(
+            eq(negotiationOffersTable.roomId, roomId),
+            eq(negotiationOffersTable.status, "pending"),
+          ),
+        )
+        .orderBy(desc(negotiationOffersTable.createdAt))
+        .limit(1),
+    ]);
 
-    const farmer = await db
-      .select({ id: usersTable.id, fullName: usersTable.fullName, fotoProfile: usersTable.fotoProfile, address: usersTable.address })
-      .from(usersTable)
-      .where(eq(usersTable.id, room.farmerId))
-      .limit(1);
-
-    const [pendingOffer] = await db
-      .select()
-      .from(negotiationOffersTable)
-      .where(
-        and(
-          eq(negotiationOffersTable.roomId, roomId),
-          eq(negotiationOffersTable.status, "pending"),
-        ),
-      )
-      .orderBy(desc(negotiationOffersTable.createdAt))
-      .limit(1);
+    const pendingOffer = pendingOfferRows[0] ?? null;
 
     return {
       ...room,
-      buyerName: buyer[0]?.fullName || "",
-      buyerFoto: buyer[0]?.fotoProfile || null,
-      farmerName: farmer[0]?.fullName || "",
-      farmerFoto: farmer[0]?.fotoProfile || null,
-      farmerAddress: farmer[0]?.address || null,
+      buyerName: buyerRows[0]?.fullName || "",
+      buyerFoto: buyerRows[0]?.fotoProfile || null,
+      farmerName: farmerRows[0]?.fullName || "",
+      farmerFoto: farmerRows[0]?.fotoProfile || null,
+      farmerAddress: farmerRows[0]?.address || null,
       pendingOffer: pendingOffer
         ? {
             id: pendingOffer.id,

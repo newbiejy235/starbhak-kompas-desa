@@ -1,25 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import gsap from "gsap";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  ArrowLeft,
-  Mail,
-  Lock,
-  Sprout,
-  Truck,
-  ShieldCheck,
-} from "lucide-react";
+import Image from "next/image";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
-import Image from "next/image";
+
+const slideshowImages = [
+  "/images/login/ImageLogin.png",
+  "/images/login/ImagePetani.png",
+  "/images/login/ImagePembeli.png",
+];
 
 export default function Login() {
   const router = useRouter();
@@ -27,6 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const [state, formAction, pending] = useActionState<LoginResult, FormData>(
     loginAction,
@@ -34,6 +31,7 @@ export default function Login() {
   );
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const floatingElementsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (state.success && state.token && state.user && state.redirect) {
@@ -43,158 +41,144 @@ export default function Login() {
   }, [state, router]);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    const timer = setInterval(() => {
+      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
-      tl.fromTo(
-        ".terrace-band",
-        { yPercent: 12, opacity: 0 },
-        { yPercent: 0, opacity: 1, duration: 1.1, stagger: 0.08 },
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+      tl.fromTo(".bg-curve-container",
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
       )
-        .fromTo(
-          ".header-item",
-          { opacity: 0, y: -12 },
-          { opacity: 1, y: 0, duration: 0.7 },
-          "-=0.7",
+        .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+          { opacity: 0, y: 30, rotateX: -10 },
+          { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+          "-=0.9"
         )
-        .fromTo(
-          ".left-anim-item",
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, stagger: 0.08, duration: 0.9 },
-          "-=0.6",
-        )
-        .fromTo(
-          ".feature-badge",
-          { opacity: 0, x: -16 },
-          { opacity: 1, x: 0, stagger: 0.1, duration: 0.7 },
-          "-=0.5",
-        )
-        .fromTo(
-          ".right-anim-item",
-          { opacity: 0, y: 18 },
-          { opacity: 1, y: 0, stagger: 0.05, duration: 0.8 },
-          "-=0.8",
+        .fromTo(".footer-anim",
+          { opacity: 0, y: 10 },
+          { opacity: 1, duration: 0.8 },
+          "-=0.5"
         );
 
-      gsap.to(".drift-slow", {
-        y: 14,
-        duration: 6,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-      gsap.to(".drift-fast", {
-        y: -10,
-        x: 6,
-        duration: 4.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: 0.4,
+      const orbs = document.querySelectorAll(".ambient-orb");
+      orbs.forEach((orb, i) => {
+        gsap.to(orb, {
+          scale: "random(1.1, 1.4)",
+          opacity: "random(0.4, 0.8)",
+          duration: "random(3, 5)",
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.3,
+        });
       });
     }, containerRef);
 
-    return () => ctx.revert();
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 40;
+      const y = (e.clientY / window.innerHeight - 0.5) * 40;
+      gsap.to(".ambient-orb", {
+        x: (i: number) => x * (i + 1.5),
+        y: (i: number) => y * (i + 1.5),
+        duration: 1.5,
+        ease: "power2.out"
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      ctx.revert();
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="h-[100dvh] w-full relative bg-[#F4F7F5] font-sans overflow-hidden flex flex-col"
-    >
-      <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap");
-        .font-display {
-          font-family: "Fraunces", serif;
-        }
-        .font-sans {
-          font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-        }
-      `}</style>
+    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
+          </clipPath>
+        </defs>
+      </svg>
 
-      {/* LEFT — BRAND PANEL (full-bleed, sits behind header + footer too) */}
-      <div className="hidden lg:block absolute inset-y-0 left-0 lg:w-[46%] xl:w-[52%] h-full overflow-hidden bg-gradient-to-b from-[#022c22] to-[#04382f] z-0">
-        {/* Terasering contour bands (signature element) */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 800 900"
-          preserveAspectRatio="xMidYMax slice"
-          aria-hidden="true"
-        >
-          <path
-            className="terrace-band"
-            d="M-50,900 L-50,620 C160,560 260,650 420,600 C580,550 660,600 850,540 L850,900 Z"
-            fill="#0b3d31"
-          />
-          <path
-            className="terrace-band"
-            d="M-50,900 L-50,700 C140,660 300,720 460,680 C620,640 700,690 850,650 L850,900 Z"
-            fill="#0f4a3b"
-          />
-          <path
-            className="terrace-band"
-            d="M-50,900 L-50,780 C180,750 320,800 480,770 C640,740 720,780 850,760 L850,900 Z"
-            fill="#14584a"
-          />
-        </svg>
-
-        {/* Ambient light drift */}
-        <div className="drift-slow absolute top-[14%] left-[18%] w-40 h-40 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
-        <div className="drift-fast absolute top-[38%] left-[62%] w-24 h-24 rounded-full bg-[#D9A441]/10 blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col justify-center h-full px-10 xl:px-16 2xl:px-20 py-16">
-          <div className="max-w-[420px]">
-
-            <h1 className="left-anim-item font-display text-[2.35rem] xl:text-[2.85rem] 2xl:text-[3.1rem] leading-[1.08] text-emerald-300 font-semibold mb-6">
-              Masuk{" "}
-              <span className="italic font-normal text-white ">
-                untuk
-                {" "}
-                Menggunakan  Sistem
-              </span>
-            </h1>
-
-            <p className="left-anim-item text-[14.5px] xl:text-[15px] text-emerald-100/75 leading-relaxed mb-10 max-w-[360px]">
-              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan,
-              dan memperluas relasi bersama petani di seluruh Indonesia.
-            </p>
-
-          </div>
-        </div>
+      <div
+        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
+        style={{ clipPath: "url(#emeraldCurveClip)" }}
+      >
+        {slideshowImages.map((src, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <div
+              key={src + index}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${isActive
+                  ? "opacity-100 scale-100 blur-0"
+                  : "opacity-0 scale-105 blur-md"
+                }`}
+            >
+              <Image
+                src={src}
+                alt="Background Slide"
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          );
+        })}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
       </div>
 
-      {/* HEADER NAV — floats above the green panel, transparent */}
-      <header className="absolute top-0 left-0 z-30 w-full flex items-center justify-between px-6 py-5 lg:px-10">
-        <div className="header-item flex items-center gap-3">
+      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-[1] pointer-events-none hidden lg:block overflow-hidden">
+        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
+        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+      </div>
+
+      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
+        <div className="header-item flex items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full border border-neutral-200 shadow-sm hover:border-neutral-300 hover:bg-neutral-50 transition-colors duration-200"
+            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
           >
             <ArrowLeft size={16} />
             Beranda
           </Link>
-        </div>
-        <div className="header-item flex items-center gap-2 text-neutral-800">
-          <div className="w-7 h-7 flex items-center justify-center">
-            <Image src="/logo-kompas-desa/kompas_desa_icon_color.png" alt="Logo Kompas Desa" width={20} height={20}></Image>
+          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
+            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
           </div>
-          <span className="font-display text-lg font-semibold tracking-tight">
-            Kompas&apos;Desa
-          </span>
         </div>
       </header>
 
-      {/* MAIN */}
-      <main className="relative z-10 flex-1 min-h-0 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden">
-        {/* LEFT spacer — keeps the form column offset on desktop; visual comes from the absolute panel behind */}
-        <div className="hidden lg:block lg:w-[46%] xl:w-[52%] h-full shrink-0" aria-hidden="true" />
+      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
+        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
+          <div className="relative z-10 w-full max-w-[380px]">
+            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
+              Selamat <br />
+              <span className="text-emerald-400">Datang</span>
+            </h1>
+            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
+              Masuk ke akun Anda untuk mulai bertransaksi, memantau pesanan, dan memperluas relasi bersama petani di seluruh Indonesia.
+            </p>
+          </div>
+        </div>
 
-        {/* RIGHT — FORM PANEL */}
-        <div className="w-full lg:w-[54%] xl:w-[48%] h-full flex flex-col justify-center items-center px-6 lg:px-10 xl:px-12 pt-24 pb-8 lg:py-0 overflow-y-auto">
-          <div className="w-full max-w-[380px]">
-            <div className="right-anim-item mb-8">
-              <h2 className="font-display text-[2rem] font-semibold text-neutral-900 tracking-tight leading-tight">
-                Selamat Datang Kembali
+        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
+          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+              <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold tracking-widest uppercase mb-2">
+                Akses Masuk
+              </span>
+              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight">
+                Masuk ke akun
               </h2>
             </div>
 
@@ -315,8 +299,8 @@ export default function Login() {
         </div>
       </main>
 
-      <footer className="relative z-10 shrink-0 w-full text-center py-4 text-[12px] text-neutral-400 lg:pl-[46%] xl:pl-[52%]">
-        &copy; 2026 Kompas&apos;Desa. Hak cipta dilindungi.
+      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
+        &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
       </footer>
     </div>
   );

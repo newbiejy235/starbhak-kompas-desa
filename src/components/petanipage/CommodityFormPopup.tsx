@@ -1,11 +1,9 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
-  ImagePlus,
   Loader2,
-  Trash2,
   Upload,
 } from "lucide-react";
 import {
@@ -13,12 +11,10 @@ import {
   updateCommodity,
   getCategories,
 } from "@/actions/commodity";
-import { uploadImageAction } from "@/actions/upload.action";
 import { getClientUser } from "@/lib/auth/client";
 import type { ActionState } from "@/lib/types/auth";
 import type { FarmerCommodity, CategoryRow } from "@/lib/types/market";
-import Image from "next/image";
-import MediaUploadField from "@/components/shared/MediaUploadField";
+import MediaUploadField, { type UploadedMedia } from "@/components/shared/MediaUploadField";
 
 interface CommodityFormPopupProps {
   open: boolean;
@@ -37,24 +33,24 @@ export default function CommodityFormPopup({
   const isEdit = !!commodity;
 
   const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [preview, setPreview] = useState(commodity?.image ?? "");
   const [imageId, setImageId] = useState<number | "">(commodity?.imageId ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [isValidPhotos, setIsValidPhotos] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     const id = requestAnimationFrame(() => {
       getCategories().then(setCategories);
       setServerError(null);
+      setMediaItems([]);
+      setMediaUploading(false);
+      setIsValidPhotos(false);
       if (commodity) {
-        setPreview(commodity.image ?? "");
         setImageId(commodity.imageId ?? "");
       } else {
-        setPreview("");
         setImageId("");
       }
     });
@@ -68,24 +64,19 @@ export default function CommodityFormPopup({
     ? new Date(commodity.harvestEstimate).toISOString().slice(0, 10)
     : "";
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadError("");
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const result = await uploadImageAction(fd);
-      setImageId(result.id);
-      setPreview(result.secureUrl);
-    } catch {
-      setUploadError("Gagal mengunggah gambar");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
+  const handleMediaChange = useCallback((items: UploadedMedia[]) => {
+    setMediaItems(items);
+    const firstImage = items.find((i) => i.type === "image");
+    setImageId(firstImage?.id ?? "");
+  }, []);
+
+  const handleMediaUploadStateChange = useCallback((state: boolean) => {
+    setMediaUploading(state);
+  }, []);
+
+  const handleMediaValidationChange = useCallback((valid: boolean) => {
+    setIsValidPhotos(valid);
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     if (!user) {
@@ -315,56 +306,29 @@ export default function CommodityFormPopup({
 
             <div className="border-t border-gray-100 pt-4">
               <input type="hidden" name="image" value={imageId} />
-              {preview ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Latar Gambar (Legacy)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-36 h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
-                      <Image
-                        src={preview}
-                        alt="Pratinjau"
-                        fill
-                        sizes="144px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setImageId("");
-                          setPreview("");
-                        }}
-                        className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger/80 active:scale-95 transition-all"
-                      >
-                        <Trash2 size={13} /> Hapus
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark active:scale-95 transition-all"
-                      >
-                        <ImagePlus size={13} /> Ganti
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <MediaUploadField />
-              )}
               <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleUpload}
+                type="hidden"
+                name="images"
+                value={JSON.stringify(mediaItems.filter((i) => i.type === "image").map((i) => i.url))}
               />
-              {uploadError && (
-                <p className="text-xs text-red-500 mt-1">{uploadError}</p>
-              )}
+              <input
+                type="hidden"
+                name="videoUrl"
+                value={mediaItems.find((i) => i.type === "video")?.url ?? ""}
+              />
+              <MediaUploadField
+                defaultImages={
+                  isEdit && commodity?.image
+                    ? [commodity.image, ...(commodity.images ?? [])].filter(
+                        (url, i, arr) => url && arr.indexOf(url) === i,
+                      )
+                    : undefined
+                }
+                defaultVideoUrl={isEdit ? commodity?.videoUrl ?? undefined : undefined}
+                onChange={handleMediaChange}
+                onUploadStateChange={handleMediaUploadStateChange}
+                onValidationChange={handleMediaValidationChange}
+              />
             </div>
 
             {serverError && (
@@ -377,7 +341,7 @@ export default function CommodityFormPopup({
           <div className="shrink-0 border-t border-gray-100 px-5 py-4 space-y-3">
             <button
               type="submit"
-              disabled={isSubmitting || uploading}
+              disabled={isSubmitting || mediaUploading || (!imageId && !isValidPhotos)}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

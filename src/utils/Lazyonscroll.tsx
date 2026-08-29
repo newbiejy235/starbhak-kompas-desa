@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 
 interface LazyOnScrollProps {
   children: React.ReactNode
-  minHeight?: string // Untuk mencegah layout shift (CLS) saat komponen belum dimuat
+  minHeight?: string 
 }
 
 export default function LazyOnScroll({ children, minHeight = '200px' }: LazyOnScrollProps) {

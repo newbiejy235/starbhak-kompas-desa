@@ -118,6 +118,7 @@ export async function GET(request: Request) {
                     eq(chatMessagesTable.isEdited, true),
                     eq(chatMessagesTable.isDeleted, true),
                   ),
+                  gt(chatMessagesTable.id, Math.max(0, currentLastId - 50)),
                 ),
               );
 

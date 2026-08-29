@@ -127,6 +127,8 @@ export default function ProductDetail() {
         <div className="grid md:grid-cols-2">
           <ProductGallery
             primaryImage={product.image}
+            images={product.images}
+            videoUrl={product.videoUrl}
             productName={product.name}
           />
 

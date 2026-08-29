@@ -7,9 +7,9 @@ import gsap from "gsap";
 import Image from "next/image";
 
 const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
+  "/images/login/ImageLogin.png",
+  "/images/login/ImagePetani.png",
+  "/images/login/ImagePembeli.png",
 ];
 
 const roles = [
@@ -63,6 +63,7 @@ export default function Register() {
         "-=0.5"
       );
 
+      // Animasi Orb Ambient (Blur ijo-ijo)
       const orbs = document.querySelectorAll(".ambient-orb");
       orbs.forEach((orb, i) => {
         gsap.to(orb, {
@@ -80,6 +81,7 @@ export default function Register() {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 40;
       const y = (e.clientY / window.innerHeight - 0.5) * 40;
+      
       gsap.to(".ambient-orb", {
         x: (i: number) => x * (i + 1.5),
         y: (i: number) => y * (i + 1.5),
@@ -99,19 +101,19 @@ export default function Register() {
   return (
     <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
 
-      {/* SVG ClipPath Definition (Hidden) */}
+      {/* SVG ClipPath Definition (Lekukan Asimetris Dinamis) */}
       <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
         <defs>
-          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
+          <clipPath id="registerClip" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 L0.75,0 C0.85,0.4 0.65,0.6 0.60,1 L0,1 Z" />
           </clipPath>
         </defs>
       </svg>
 
-      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER */}
+      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER (Warna Emerald Hijau Awal) */}
       <div
         className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
-        style={{ clipPath: "url(#emeraldCurveClip)" }}
+        style={{ clipPath: "url(#registerClip)" }}
       >
         {slideshowImages.map((src, index) => {
           const isActive = index === currentSlide;
@@ -120,7 +122,7 @@ export default function Register() {
               key={src + index}
               className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                 isActive
-                  ? "opacity-30 scale-100 blur-0"
+                  ? "opacity-100 scale-100 blur-0"
                   : "opacity-0 scale-105 blur-md"
               }`}
             >
@@ -134,10 +136,12 @@ export default function Register() {
             </div>
           );
         })}
+        
+        {/* Gradient Overlay Hijau Emerald Awal */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
       </div>
 
-      {/* AMBIENT FLOATING ORBS */}
+      {/* AMBIENT FLOATING ORBS (Blur Ijo) */}
       <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
         <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
         <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
@@ -167,6 +171,11 @@ export default function Register() {
         {/* LEFT PANEL */}
         <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
           <div className="relative z-10 w-full max-w-[380px]">
+            <div className="left-anim-item mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/30 bg-emerald-950/40 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-semibold tracking-wide text-emerald-200">Langkah Pendaftaran</span>
+            </div>
+
             <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
               Tentukan <br />
               <span className="text-emerald-400">Peranmu</span>
@@ -235,6 +244,13 @@ export default function Register() {
                   </Link>
                 );
               })}
+            </div>
+
+            <div className="right-anim-item mt-8 flex items-center justify-center gap-1.5">
+              <span className="text-[13.5px] text-neutral-500">Sudah mempunyai akun?</span>
+              <Link href="/auth/login" className="text-[13.5px] font-bold text-[#025246] hover:underline">
+                Masuk di sini
+              </Link>
             </div>
           </div>
         </div>

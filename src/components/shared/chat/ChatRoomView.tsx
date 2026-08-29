@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
 import Image from "next/image";
 import {
   Send,
@@ -107,6 +107,194 @@ function shouldShowDate(messages: ChatMessageData[], index: number) {
   const curr = new Date(messages[index].createdAt);
   return prev.toDateString() !== curr.toDateString();
 }
+
+interface MessageBubbleProps {
+  msg: ChatMessageData;
+  isMe: boolean;
+  currentUserId: number;
+  commodityUnit: string;
+  allMessages: ChatMessageData[];
+  editingMsgId: number | null;
+  editContent: string;
+  setEditContent: (v: string) => void;
+  setEditingMsg: (m: ChatMessageData | null) => void;
+  handleSaveEdit: () => void;
+  onEditMessage?: (messageId: number, newContent: string) => Promise<{ success: boolean; error?: string }>;
+  onDeleteMessage?: (messageId: number) => Promise<{ success: boolean; error?: string }>;
+  handleContextMenu: (e: React.MouseEvent, msg: ChatMessageData) => void;
+}
+
+const MessageBubble = memo(function MessageBubble({
+  msg,
+  isMe,
+  currentUserId,
+  commodityUnit,
+  allMessages,
+  editingMsgId,
+  editContent,
+  setEditContent,
+  setEditingMsg,
+  handleSaveEdit,
+  onEditMessage,
+  onDeleteMessage,
+  handleContextMenu,
+}: MessageBubbleProps) {
+  const isSystem = msg.type === "system";
+  const isOffer = msg.type === "offer" || msg.type === "counter_offer";
+  const isAccept = msg.type === "accept";
+  const isReject = msg.type === "reject";
+  const isEditing = editingMsgId === msg.id;
+  const canInteract = isMe && !isSystem && !msg.isDeleted && onEditMessage;
+  const canReply = !isSystem && !msg.isDeleted;
+
+  if (isSystem) {
+    return (
+      <div className="flex justify-center my-2">
+        <span className="text-[11px] text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+          {msg.content}
+        </span>
+      </div>
+    );
+  }
+
+  const replyMsg = msg.replyToId && msg.replyToId > 0
+    ? allMessages.find((m) => m.id === msg.replyToId)
+    : undefined;
+
+  return (
+    <div
+      className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2 group`}
+      onContextMenu={(e) => (canInteract || canReply) && handleContextMenu(e, msg)}
+    >
+      <div className={`flex items-end gap-2 max-w-[80%] ${isMe ? "flex-row-reverse" : ""}`}>
+        {!isMe && (
+          <Avatar src={msg.senderFoto} name={msg.senderName} size="xs" className="mb-5" />
+        )}
+        <div className={`max-w-full`}>
+          {!isMe && (
+            <p className="text-[11px] font-semibold text-primary mb-0.5 ml-3">{msg.senderName}</p>
+          )}
+          <div
+            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe
+              ? "bg-primary text-white rounded-2xl rounded-br-sm"
+              : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
+              } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
+          >
+            {replyMsg && !msg.isDeleted && (
+              <div
+                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-primary bg-gray-50"
+                  } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
+                onClick={() => {
+                  const el = document.getElementById(`msg-${replyMsg.id}`);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  el?.classList.add("ring-2", "ring-success", "ring-offset-1");
+                  setTimeout(() => el?.classList.remove("ring-2", "ring-success", "ring-offset-1"), 1500);
+                }}
+              >
+                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-primary"}`}>
+                  {replyMsg.senderId === currentUserId ? "Anda" : replyMsg.senderName}
+                </p>
+                <p className={`text-[11px] truncate ${isMe ? "text-white/70" : "text-gray-500"} max-w-[200px]`}>
+                  {replyMsg.isDeleted ? "Pesan telah dihapus" : replyMsg.content}
+                </p>
+              </div>
+            )}
+
+            {isOffer && (
+              <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-primary"}`}>
+                  <Tag size={12} />
+                  {msg.type === "counter_offer" ? "Counter" : "Penawaran"}
+                </div>
+                {msg.offerPrice && (
+                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-primary"}`}>
+                    {formatRupiah(msg.offerPrice)}
+                    <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
+                      {" "}per {commodityUnit}
+                    </span>
+                    {msg.offerQuantity && (
+                      <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
+                        {" "}&bull; {formatWeight(msg.offerQuantity, commodityUnit)}
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+            {isAccept && (
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-green-300" : "text-green-600"}`}>
+                <Check size={14} /> Deal disetujui
+              </div>
+            )}
+            {isReject && (
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-red-300" : "text-red-500"}`}>
+                <X size={14} /> Penawaran ditolak
+              </div>
+            )}
+
+            {isEditing ? (
+              <div className="min-w-[200px]">
+                <input
+                  id="edit-input"
+                  type="text"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveEdit();
+                    if (e.key === "Escape") { setEditingMsg(null); setEditContent(""); }
+                  }}
+                  autoFocus
+                  className="w-full bg-white/20 text-white placeholder-white/50 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-white/40"
+                  placeholder="Edit pesan..."
+                />
+                <div className="flex gap-1.5 mt-1.5">
+                  <button onClick={handleSaveEdit} className="text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md transition-colors">
+                    Simpan
+                  </button>
+                  <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md transition-colors">
+                    Batal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="whitespace-pre-line">{msg.content}</p>
+                {msg.isEdited && !msg.isDeleted && (
+                  <span className={`text-[9px] italic ${isMe ? "text-white/40" : "text-gray-400"}`}>diedit</span>
+                )}
+                <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
+                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
+                  {isMe && (
+                    msg.id < 0 ? (
+                      <Loader2 size={11} className="animate-spin" />
+                    ) : msg.isRead ? (
+                      <CheckCheck size={13} className="text-[#53BDEB]" />
+                    ) : (
+                      <CheckCheck size={13} />
+                    )
+                  )}
+                </div>
+              </>
+            )}
+
+            {(canInteract || canReply) && !isEditing && (
+              <button
+                id={`msg-${msg.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleContextMenu(e as unknown as React.MouseEvent, msg);
+                }}
+                className={`absolute top-1/2 -translate-y-1/2 ${isMe ? "-left-8" : "-right-8"} opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-black/5`}
+              >
+                <MoreVertical size={14} className="text-gray-400" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export default function ChatRoomView({
   room,
@@ -275,163 +463,6 @@ export default function ChatRoomView({
     return messages.find((m) => m.id === replyToId);
   };
 
-  const renderMessage = (msg: ChatMessageData, isMe: boolean) => {
-    const isSystem = msg.type === "system";
-    const isOffer = msg.type === "offer" || msg.type === "counter_offer";
-    const isAccept = msg.type === "accept";
-    const isReject = msg.type === "reject";
-    const isEditing = editingMsg?.id === msg.id;
-    const canInteract = isMe && !isSystem && !msg.isDeleted && onEditMessage;
-    const canReply = !isSystem && !msg.isDeleted;
-
-    if (isSystem) {
-      return (
-        <div className="flex justify-center my-2">
-          <span className="text-[11px] text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
-            {msg.content}
-          </span>
-        </div>
-      );
-    }
-
-    const replyMsg = getReplyMessage(msg.replyToId);
-
-    return (
-      <div
-        className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2 group`}
-        onContextMenu={(e) => (canInteract || canReply) && handleContextMenu(e, msg)}
-      >
-        <div className={`flex items-end gap-2 max-w-[80%] ${isMe ? "flex-row-reverse" : ""}`}>
-          {!isMe && (
-            <Avatar src={msg.senderFoto} name={msg.senderName} size="xs" className="mb-5" />
-          )}
-          <div className={`max-w-full`}>
-            {!isMe && (
-              <p className="text-[11px] font-semibold text-primary mb-0.5 ml-3">{msg.senderName}</p>
-            )}
-          <div
-            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe
-              ? "bg-primary text-white rounded-2xl rounded-br-sm"
-              : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
-              } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
-          >
-            {/* Reply quote */}
-            {replyMsg && !msg.isDeleted && (
-              <div
-                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-primary bg-gray-50"
-                  } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
-                onClick={() => {
-                  const el = document.getElementById(`msg-${replyMsg.id}`);
-                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  el?.classList.add("ring-2", "ring-success", "ring-offset-1");
-                  setTimeout(() => el?.classList.remove("ring-2", "ring-success", "ring-offset-1"), 1500);
-                }}
-              >
-                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-primary"}`}>
-                  {replyMsg.senderId === currentUserId ? "Anda" : replyMsg.senderName}
-                </p>
-                <p className={`text-[11px] truncate ${isMe ? "text-white/70" : "text-gray-500"} max-w-[200px]`}>
-                  {replyMsg.isDeleted ? "Pesan telah dihapus" : replyMsg.content}
-                </p>
-              </div>
-            )}
-
-            {isOffer && (
-              <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
-                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-primary"}`}>
-                  <Tag size={12} />
-                  {msg.type === "counter_offer" ? "Counter" : "Penawaran"}
-                </div>
-                {msg.offerPrice && (
-                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-primary"}`}>
-                    {formatRupiah(msg.offerPrice)}
-                    <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                      {" "}per {room.commodityUnit}
-                    </span>
-                    {msg.offerQuantity && (
-                      <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                        {" "}&bull; {formatWeight(msg.offerQuantity, room.commodityUnit)}
-                      </span>
-                    )}
-                  </p>
-                )}
-              </div>
-            )}
-            {isAccept && (
-              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-green-300" : "text-green-600"}`}>
-                <Check size={14} /> Deal disetujui
-              </div>
-            )}
-            {isReject && (
-              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-red-300" : "text-red-500"}`}>
-                <X size={14} /> Penawaran ditolak
-              </div>
-            )}
-
-            {isEditing ? (
-              <div className="min-w-[200px]">
-                <input
-                  id="edit-input"
-                  type="text"
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSaveEdit();
-                    if (e.key === "Escape") { setEditingMsg(null); setEditContent(""); }
-                  }}
-                  autoFocus
-                  className="w-full bg-white/20 text-white placeholder-white/50 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-white/40"
-                  placeholder="Edit pesan..."
-                />
-                <div className="flex gap-1.5 mt-1.5">
-                  <button onClick={handleSaveEdit} className="text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md transition-colors">
-                    Simpan
-                  </button>
-                  <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md transition-colors">
-                    Batal
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="whitespace-pre-line">{msg.content}</p>
-                {msg.isEdited && !msg.isDeleted && (
-                  <span className={`text-[9px] italic ${isMe ? "text-white/40" : "text-gray-400"}`}>diedit</span>
-                )}
-                <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
-                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                  {isMe && (
-                    msg.id < 0 ? (
-                      <Loader2 size={11} className="animate-spin" />
-                    ) : msg.isRead ? (
-                      <CheckCheck size={13} className="text-[#53BDEB]" />
-                    ) : (
-                      <CheckCheck size={13} />
-                    )
-                  )}
-                </div>
-              </>
-            )}
-
-            {(canInteract || canReply) && !isEditing && (
-              <button
-                id={`msg-${msg.id}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleContextMenu(e as unknown as React.MouseEvent, msg);
-                }}
-                className={`absolute top-1/2 -translate-y-1/2 ${isMe ? "-left-8" : "-right-8"} opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-black/5`}
-              >
-                <MoreVertical size={14} className="text-gray-400" />
-              </button>
-            )}
-          </div>
-        </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col h-[100dvh] lg:h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
@@ -589,7 +620,21 @@ export default function ChatRoomView({
                   </span>
                 </div>
               )}
-              {renderMessage(msg, isMe)}
+              <MessageBubble
+                msg={msg}
+                isMe={isMe}
+                currentUserId={currentUserId}
+                commodityUnit={room.commodityUnit}
+                allMessages={messages}
+                editingMsgId={editingMsg?.id ?? null}
+                editContent={editContent}
+                setEditContent={setEditContent}
+                setEditingMsg={setEditingMsg}
+                handleSaveEdit={handleSaveEdit}
+                onEditMessage={onEditMessage}
+                onDeleteMessage={onDeleteMessage}
+                handleContextMenu={handleContextMenu}
+              />
             </div>
           );
         })}

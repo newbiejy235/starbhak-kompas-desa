@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { toast } from "sonner";
@@ -8,7 +9,7 @@ import { getCategories, createCommodity } from "@/actions/commodity";
 import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
-import MediaUploadField from "@/components/shared/MediaUploadField";
+import MediaUploadField, { type UploadedMedia } from "@/components/shared/MediaUploadField";
 
 export default function AddCommodity() {
   const router = useRouter();
@@ -32,6 +33,22 @@ export default function AddCommodity() {
     },
     null,
   );
+
+  const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [isValidPhotos, setIsValidPhotos] = useState(false);
+
+  const handleMediaChange = useCallback((items: UploadedMedia[]) => {
+    setMediaItems(items);
+  }, []);
+
+  const handleMediaUploadStateChange = useCallback((state: boolean) => {
+    setMediaUploading(state);
+  }, []);
+
+  const handleMediaValidationChange = useCallback((valid: boolean) => {
+    setIsValidPhotos(valid);
+  }, []);
 
   const inputCls =
     "w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
@@ -133,7 +150,22 @@ export default function AddCommodity() {
           </div>
         </div>
 
-        <MediaUploadField />
+        <MediaUploadField
+          onChange={handleMediaChange}
+          onUploadStateChange={handleMediaUploadStateChange}
+          onValidationChange={handleMediaValidationChange}
+        />
+
+        <input
+          type="hidden"
+          name="images"
+          value={JSON.stringify(mediaItems.filter((i) => i.type === "image").map((i) => i.url))}
+        />
+        <input
+          type="hidden"
+          name="videoUrl"
+          value={mediaItems.find((i) => i.type === "video")?.url ?? ""}
+        />
 
         {state && !state.success && (
           <p className="text-sm text-danger animate-shake">{state.message}</p>
@@ -141,7 +173,7 @@ export default function AddCommodity() {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || mediaUploading || !isValidPhotos}
           className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Menyimpan..." : "Simpan Komoditas"}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   getClientUser,
@@ -36,49 +36,65 @@ export function useFetch<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const fnRef = useRef(fn);
+  const genRef = useRef(0);
 
   useEffect(() => {
     fnRef.current = fn;
   });
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fnRef.current();
-        if (!cancelled) {
+    const gen = ++genRef.current;
+    let active = true;
+    setLoading(true);
+
+    fnRef.current().then(
+      (res) => {
+        if (active && gen === genRef.current) {
           setData(res);
           setError(null);
         }
-      } catch (e) {
-        if (!cancelled) {
+      },
+      (e) => {
+        if (active && gen === genRef.current) {
           console.error(e);
           setError("Gagal memuat data");
         }
-      } finally {
-        if (!cancelled) setLoading(false);
+      },
+    ).finally(() => {
+      if (active && gen === genRef.current) {
+        setLoading(false);
       }
-    })();
+    });
+
     return () => {
-      cancelled = true;
+      active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
-  const reload = () => {
+  const reload = useCallback(() => {
+    const gen = ++genRef.current;
     setLoading(true);
     return fnRef
       .current()
       .then((res) => {
-        setData(res);
-        setError(null);
+        if (gen === genRef.current) {
+          setData(res);
+          setError(null);
+        }
       })
       .catch((e) => {
-        console.error(e);
-        setError("Gagal memuat data");
+        if (gen === genRef.current) {
+          console.error(e);
+          setError("Gagal memuat data");
+        }
       })
-      .finally(() => setLoading(false));
-  };
+      .finally(() => {
+        if (gen === genRef.current) {
+          setLoading(false);
+        }
+      });
+  }, []);
 
   return { data, loading, error, reload };
 }

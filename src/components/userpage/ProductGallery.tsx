@@ -61,6 +61,8 @@ export default function ProductGallery({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showLightbox, setShowLightbox] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const selectedItem = allItems[selectedIndex] ?? allItems[0];
 
@@ -109,6 +111,25 @@ export default function ProductGallery({
       videoRef.current.requestFullscreen();
     }
   }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+    if (Math.abs(diff) < minSwipeDistance) return;
+    if (diff > 0) {
+      goTo(selectedIndex + 1);
+    } else {
+      goTo(selectedIndex - 1);
+    }
+  }, [goTo, selectedIndex]);
 
   if (allItems.length === 0) {
     return (
@@ -256,10 +277,13 @@ export default function ProductGallery({
         )}
       </div>
 
-      {showLightbox && selectedItem?.type === "image" && (
+      {showLightbox && (
         <div
           className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center animate-fade-in"
           onClick={() => setShowLightbox(false)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <button
             onClick={() => setShowLightbox(false)}
@@ -273,26 +297,18 @@ export default function ProductGallery({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  const prevIndex = selectedIndex > 0 ? selectedIndex - 1 : allItems.length - 1;
-                  const prevItem = allItems[prevIndex];
-                  if (prevItem.type === "image") {
-                    setSelectedIndex(prevIndex);
-                  }
+                  goTo(selectedIndex > 0 ? selectedIndex - 1 : allItems.length - 1);
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
               >
                 <ChevronLeft size={20} />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  const nextIndex = selectedIndex < allItems.length - 1 ? selectedIndex + 1 : 0;
-                  const nextItem = allItems[nextIndex];
-                  if (nextItem.type === "image") {
-                    setSelectedIndex(nextIndex);
-                  }
+                  goTo(selectedIndex < allItems.length - 1 ? selectedIndex + 1 : 0);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
               >
                 <ChevronRight size={20} />
               </button>
@@ -300,10 +316,17 @@ export default function ProductGallery({
           )}
 
           <div
-            className="relative w-full h-full max-w-5xl max-h-[90vh] p-8"
+            className="relative w-full h-full max-w-5xl max-h-[90vh] p-8 flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            {formatImage(selectedItem?.url) && (
+            {selectedItem?.type === "video" ? (
+              <video
+                src={selectedItem.url}
+                controls
+                autoPlay
+                className="max-w-full max-h-full object-contain"
+              />
+            ) : formatImage(selectedItem?.url) ? (
               <Image
                 src={formatImage(selectedItem.url)!}
                 alt={productName}
@@ -311,8 +334,14 @@ export default function ProductGallery({
                 sizes="100vw"
                 className="object-contain"
               />
-            )}
+            ) : null}
           </div>
+
+          {allItems.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm font-medium px-3 py-1.5 rounded-full">
+              {selectedIndex + 1} / {allItems.length}
+            </div>
+          )}
         </div>
       )}
     </>

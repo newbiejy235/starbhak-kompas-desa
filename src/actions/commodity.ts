@@ -242,6 +242,8 @@ export async function getCommodityById(id: number) {
       location: commoditiesTable.location,
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -280,6 +282,8 @@ export async function getFarmerCommodities(farmerId: number) {
       harvestEstimate: commoditiesTable.harvestEstimate,
       image: ImageUpload.secureUrl,
       imageId: commoditiesTable.image,
+      images: commoditiesTable.images,
+      videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       isPublished: commoditiesTable.isPublished,
       createdAt: commoditiesTable.createdAt,
@@ -316,6 +320,17 @@ export async function createCommodity(
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
   const imageRaw = (data.get("image") as string)?.trim() || "";
   const image = imageRaw ? Number(imageRaw) : null;
+  const imagesRaw = data.get("images") as string | null;
+  const images: string[] = imagesRaw
+    ? (() => {
+        try {
+          return JSON.parse(imagesRaw) as string[];
+        } catch {
+          return [];
+        }
+      })()
+    : [];
+  const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
 
   if (!name || !categoryId || !price || !stock || !location) {
     return { success: false, message: "Lengkapi semua field wajib" };
@@ -338,6 +353,8 @@ export async function createCommodity(
         ? new Date(harvestEstimateRaw)
         : null,
       image,
+      images,
+      videoUrl,
       status: "pending",
     });
 
@@ -386,6 +403,17 @@ export async function updateCommodity(
   const harvestEstimateRaw = data.get("harvestEstimate") as string | null;
   const imageRaw = (data.get("image") as string)?.trim() || "";
   const image = imageRaw ? Number(imageRaw) : null;
+  const imagesRaw = data.get("images") as string | null;
+  const images: string[] = imagesRaw
+    ? (() => {
+        try {
+          return JSON.parse(imagesRaw) as string[];
+        } catch {
+          return [];
+        }
+      })()
+    : [];
+  const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
   const status = (data.get("status") as string) || undefined;
 
   if (!name || !categoryId || !price || !stock || !location) {
@@ -410,6 +438,8 @@ export async function updateCommodity(
           ? new Date(harvestEstimateRaw)
           : null,
         image,
+        images,
+        videoUrl,
         ...(status ? { status: status as never } : {}),
       })
       .where(eq(commoditiesTable.id, id));
