@@ -1,6 +1,6 @@
 {
-  "id": "19466928-269f-4dad-924a-336aa72684b6",
-  "prevId": "5a1cad5d-5a25-4500-a2ec-6ceeaf23ee19",
+  "id": "b592a4ec-d237-4eb8-a256-b5b1bd3fe4d6",
+  "prevId": "19466928-269f-4dad-924a-336aa72684b6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -831,6 +831,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "isPublished": {
+          "name": "isPublished",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "harvestEstimate": {
           "name": "harvestEstimate",
           "type": "timestamp with time zone",
@@ -843,6 +850,19 @@
           "primaryKey": false,
           "notNull": false
         },
+        "images": {
+          "name": "images",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
+        },
+        "video_url": {
+          "name": "video_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "commodity_status",
@@ -850,13 +870,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
-        },
-        "isPublished": {
-          "name": "isPublished",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "rating": {
           "name": "rating",

@@ -50,9 +50,9 @@ export default function KomoditasCard({
                 className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
               >
                 <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 relative">
-                  {c.image ? (
+                  {(formatImage(c.image)) ? (
                     <Image
-                      src={formatImage(c.image) || ""}
+                      src={(formatImage(c.image)) || ""}
                       alt={c.name}
                       fill
                       className="object-cover"

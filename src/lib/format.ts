@@ -10,6 +10,49 @@ export function formatNumber(value: string | number | null | undefined): string 
   return num.toLocaleString("id-ID");
 }
 
+/* ── Satuan berat (kg-only) ───────────────────────────────
+   Komoditas distandarkan ke "kg". Konversi hanya tampilan
+   (bukan mengubah data). Satuan yang tak dikenal (mis.
+   karung/ikat) TIDAK dibuatkan konversi fiktif.
+*/
+const KG_FACTORS: Record<string, number> = {
+  kg: 1,
+  kilogram: 1,
+  kilogam: 1,
+  kw: 100,
+  kuintal: 100,
+  ton: 1000,
+  gram: 0.001,
+  g: 0.001,
+};
+
+/** Konversi jumlah + satuan menjadi kilogram; null bila satuan tak dikenal. */
+export function toKg(
+  value: string | number | null | undefined,
+  unit: string | null | undefined,
+): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const num = Number(value);
+  if (Number.isNaN(num)) return null;
+  const factor = KG_FACTORS[(unit || "kg").toLowerCase().trim()];
+  if (factor === undefined) return null;
+  return num * factor;
+}
+
+/** Tampilkan berat dalam kg bila satuan dikenal; satuan lain ditampilkan apa adanya. */
+export function formatWeight(
+  value: string | number | null | undefined,
+  unit: string | null | undefined,
+): string {
+  const kg = toKg(value, unit);
+  if (kg === null) {
+    const num = Number(value ?? 0);
+    return `${Number.isNaN(num) ? 0 : num} ${unit ?? "kg"}`.trim();
+  }
+  const rounded = Math.round(kg * 100) / 100;
+  return `${rounded.toLocaleString("id-ID", { maximumFractionDigits: 2 })} kg`;
+}
+
 export function formatDate(
   value: string | Date | null | undefined,
   withTime = false,

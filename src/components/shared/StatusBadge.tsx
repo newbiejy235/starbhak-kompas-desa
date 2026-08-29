@@ -48,9 +48,8 @@ export default function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-medium whitespace-nowrap ${
-        tone[status] ?? tone.default
-      }`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-medium whitespace-nowrap ${tone[status] ?? tone.default
+        }`}
     >
       {label ?? mapped}
     </span>

@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useActionState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronDown, LogOut, UserRound, LifeBuoy } from "lucide-react";
 import { useAuth } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Avatar from "@/components/ui/Avatar";
-import {
-  clearSession,
-  updateSessionRole,
-} from "@/lib/auth/client";
-import { becomePetaniAction } from "@/actions/auth";
-import type { ActionState } from "@/lib/types/auth";
+import { clearSession } from "@/lib/auth/client";
 
 /* ── Token desain ─────────────────────────────────────────── */
 const focusRing =
@@ -46,22 +42,6 @@ export default function DashboardShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  /* ── "Daftar Jadi Petani" modal state (pembeli only) ── */
-  const [modalOpen, setModalOpen] = useState(false);
-  const [closingModal, setClosingModal] = useState(false);
-
-  const [becomeState, becomeFormAction, becomePending] = useActionState(
-    async (prev: ActionState | null, data: FormData) => {
-      const res = await becomePetaniAction(prev, data);
-      if (res.success) {
-        updateSessionRole("petani");
-        router.push("/petani/dashboard");
-      }
-      return res;
-    },
-    null,
-  );
-
   /* ── Scroll listener ── */
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -71,6 +51,18 @@ export default function DashboardShell({
   }, []);
 
 
+  /* ── Helpers ── */
+  const logout = () => {
+    clearSession();
+    router.replace("/auth/login");
+  };
+
+  const profileHref = `/${role}/profile`;
+
+  const menuItems = [
+    { href: profileHref, label: "Lihat Profil", icon: UserRound },
+    { href: `/${role}/bantuan`, label: "Pusat Bantuan", icon: LifeBuoy },
+  ];
 
   /* ── Loading skeleton ── */
   if (loading || !user) {
@@ -150,6 +142,46 @@ export default function DashboardShell({
                 </span>
               </button>
 
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-12 z-50 w-64 origin-top-right overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-lift animate-scale-in"
+                >
+                  <div className="border-b border-gray-100 px-5 py-4">
+                    <p className="truncate text-sm font-bold text-gray-900">
+                      {user.fullName}
+                    </p>
+                    <p className="truncate text-xs text-gray-400">
+                      {user.email}
+                    </p>
+                  </div>
+                  <nav className="flex flex-col gap-1 p-2">
+                    {menuItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        role="menuitem"
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-primary/5 hover:text-primary ${focusRing}`}
+                      >
+                        <item.icon size={18} aria-hidden />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </nav>
+                  <div className="border-t border-gray-100 p-2">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={logout}
+                      className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-danger transition-colors duration-150 hover:bg-danger/5 ${focusRing}`}
+                    >
+                      <LogOut size={18} aria-hidden />
+                      Keluar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -158,7 +190,6 @@ export default function DashboardShell({
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <main className="flex-1 sm:p-6 lg:p-8">{children}</main>
       </div>
-
     </div>
   );
 }

@@ -17,16 +17,16 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
   return (
     <Link
       href={`/user/farmer/${farmer.id}`}
-      className="group block overflow-hidden rounded-2xl border border-gray-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-[#025246]/20 hover:shadow-[0_16px_48px_rgba(2,82,70,0.1)]"
+      className="group block overflow-hidden rounded-card border border-gray-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lift"
     >
-      <div className="relative h-24 bg-gradient-to-r from-[#025246] to-[#047857] sm:h-28">
+      <div className="relative h-24 bg-gradient-to-r from-primary to-primary-dark sm:h-28">
         <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10" />
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent" />
       </div>
 
       <div className="px-5 pb-5">
         <div className="flex items-end gap-4 -mt-8">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-[#EEF3F0] shadow-md">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-primary/5 shadow-md">
             {farmer.fotoProfile ? (
               <Image
                 src={farmer.fotoProfile}
@@ -37,7 +37,7 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
                 unoptimized
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-lg font-bold text-[#025246]">
+              <div className="flex h-full w-full items-center justify-center text-lg font-bold text-primary">
                 {farmer.fullName?.charAt(0)?.toUpperCase() || "P"}
               </div>
             )}
@@ -45,13 +45,13 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
 
           <div className="min-w-0 flex-1 pb-1">
             <div className="flex items-center gap-2">
-              <h3 className="line-clamp-1 text-[15px] font-bold text-[#1F302B] group-hover:text-[#025246] transition-colors">
+              <h3 className="line-clamp-1 text-[15px] font-bold text-gray-900 group-hover:text-primary transition-colors">
                 {farmer.fullName}
               </h3>
-              <Store size={14} className="shrink-0 text-[#025246] opacity-60" />
+              <Store size={14} className="shrink-0 text-primary opacity-60" />
             </div>
-            <div className="mt-0.5 flex items-center gap-1 text-xs text-[#71817D]">
-              <MapPin size={12} className="shrink-0 text-[#025246]" />
+            <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
+              <MapPin size={12} className="shrink-0 text-primary" />
               <span className="truncate">
                 {farmer.village || "Lokasi tidak tersedia"}
               </span>
@@ -59,10 +59,10 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-4 text-xs text-[#71817D]">
+        <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
           <div className="flex items-center gap-1">
-            <Package size={13} className="text-[#025246]" />
-            <span className="font-semibold text-[#344640]">
+            <Package size={13} className="text-primary" />
+            <span className="font-semibold text-gray-800">
               {farmer.commodityCount}
             </span>{" "}
             Produk
@@ -72,14 +72,14 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
               <Star size={13} fill="currentColor" />
               <span className="font-semibold">{avgRating.toFixed(1)}</span>
               {farmer.reviewCount > 0 && (
-                <span className="text-[#8A9C98]">({farmer.reviewCount})</span>
+                <span className="text-gray-400">({farmer.reviewCount})</span>
               )}
             </div>
           )}
           {avgPrice !== null && avgPrice > 0 && (
-            <span className="text-[#81908C]">
+            <span className="text-gray-500">
               Rata-rata{" "}
-              <span className="font-semibold text-[#025246]">
+              <span className="font-semibold text-primary">
                 {formatRupiah(avgPrice)}
               </span>
             </span>
@@ -87,10 +87,10 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#025246]/60">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-primary/60">
             Toko Petani
           </span>
-          <span className="rounded-xl border border-[#DDE5E1] px-4 py-2 text-xs font-semibold text-[#344640] transition group-hover:border-[#025246] group-hover:bg-[#025246] group-hover:text-white">
+          <span className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-800 transition group-hover:border-primary group-hover:bg-primary group-hover:text-white">
             Lihat Toko
           </span>
         </div>

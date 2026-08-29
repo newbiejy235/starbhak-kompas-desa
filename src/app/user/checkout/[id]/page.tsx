@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   ChevronLeft,
   Copy,
@@ -14,11 +15,35 @@ import {
   MapPin,
 } from "lucide-react";
 import { getOrderById, markOrderPaid } from "@/actions/order";
-import { formatRupiah, formatDate, formatDateTime, PAYMENT_METHOD_LABEL } from "@/lib/format";
-import { LoadingState } from "@/components/shared/States";
+import {
+  formatRupiah,
+  formatDate,
+  formatDateTime,
+  formatWeight,
+  PAYMENT_METHOD_LABEL,
+} from "@/lib/format";
+import { formatImage } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { useAuth, useFetch } from "@/lib/hooks";
-import type { OrderDetail } from "@/lib/types/market";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+function OrderDetailSkeleton() {
+  return (
+    <div className="mx-auto max-w-4xl animate-fade-up">
+      <div className="mb-6">
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <Skeleton className="mb-6 h-28 rounded-card" />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Skeleton className="h-44 rounded-card" />
+          <Skeleton className="h-64 rounded-card" />
+        </div>
+        <Skeleton className="h-48 rounded-card" />
+      </div>
+    </div>
+  );
+}
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -31,11 +56,11 @@ export default function OrderDetail() {
     [id],
   );
 
-  if (loading) return <LoadingState />;
+  if (loading) return <OrderDetailSkeleton />;
 
   if (!order) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500">
+      <div className="rounded-card border border-gray-200/80 bg-white p-10 text-center text-gray-500 shadow-soft">
         Pesanan tidak ditemukan.
       </div>
     );
@@ -69,9 +94,12 @@ export default function OrderDetail() {
   const cancelled = order.status === "cancelled";
 
   const vaNumber = "8801 0826 0000 " + String(order.id).padStart(6, "0");
+  const orderImage =
+    formatImage(order.commodityImage) ??
+    formatImage(order.commodityImages?.[0] ?? null);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-fade-up">
       <button
         onClick={() => router.back()}
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary mb-6"
@@ -131,13 +159,27 @@ export default function OrderDetail() {
               <Store size={18} className="text-primary" /> Detail Produk
             </h2>
             <div className="flex gap-4">
-              <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-white text-2xl font-black">
-                {order.commodityName?.charAt(0)?.toUpperCase()}
+              <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                {orderImage ? (
+                  <Image
+                    src={orderImage}
+                    alt={order.commodityName ?? "Komoditas"}
+                    width={80}
+                    height={80}
+                    sizes="80px"
+                    className="object-cover w-full h-full"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-black">
+                    {order.commodityName?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-gray-900">{order.commodityName}</h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {order.quantity} {order.commodityUnit} × {formatRupiah(order.unitPrice)}
+                  {formatWeight(order.quantity, order.commodityUnit)} × {formatRupiah(order.unitPrice)}
                 </p>
                 <p className="text-sm font-semibold text-primary mt-2">
                   {formatRupiah(order.subtotal)}
@@ -212,7 +254,7 @@ export default function OrderDetail() {
 
                 <button
                   onClick={confirmPaid}
-                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors duration-150 active:scale-[0.98]"
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
                 >
                   Saya Sudah Bayar
                 </button>
@@ -248,7 +290,7 @@ export default function OrderDetail() {
             )}
             <button
               onClick={() => router.push("/user/home")}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors duration-150 active:scale-[0.98]"
+              className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
             >
               Belanja Lagi
             </button>

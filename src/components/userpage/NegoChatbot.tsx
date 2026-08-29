@@ -158,7 +158,7 @@ export default function NegoChatbot({
         onClick={onClose}
       />
       <div className="relative bg-white w-full sm:max-w-md h-[85vh] sm:h-[600px] sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col overflow-hidden">
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 bg-[#025246] text-white shrink-0">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 bg-primary text-white shrink-0">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <MessageCircle size={20} />
           </div>
@@ -183,7 +183,7 @@ export default function NegoChatbot({
               <div
                 className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
                   msg.sender === "USER"
-                    ? "bg-[#025246] text-white rounded-br-md"
+                    ? "bg-primary text-white rounded-br-md"
                     : "bg-gray-100 text-gray-800 rounded-bl-md"
                 }`}
               >
@@ -196,7 +196,7 @@ export default function NegoChatbot({
             <div className="flex gap-2 justify-center">
               <button
                 onClick={handleAcceptCounter}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-[#025246] text-white text-sm font-bold rounded-xl hover:bg-[#024036] transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors"
               >
                 <Check size={16} />
                 Setuju {formatRupiah(counterOffer)}
@@ -214,7 +214,7 @@ export default function NegoChatbot({
             <div className="flex justify-center">
               <button
                 onClick={handleConfirmDeal}
-                className="flex items-center gap-2 px-6 py-3 bg-[#00AA5B] text-white text-sm font-bold rounded-xl hover:bg-[#009A4F] transition-colors shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-success text-white text-sm font-bold rounded-xl hover:bg-success/90 transition-colors shadow-lg"
               >
                 <ShoppingCart size={18} />
                 Masukkan ke Keranjang - {formatRupiah(dealPrice)}
@@ -240,12 +240,12 @@ export default function NegoChatbot({
                   : "Negosiasi selesai"
               }
               disabled={phase === "deal" || phase === "rejected"}
-              className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-[#025246] disabled:bg-gray-50"
+              className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-primary disabled:bg-gray-50"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || phase === "deal" || phase === "rejected"}
-              className="w-12 h-12 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] transition-colors disabled:opacity-40 shrink-0"
+              className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-dark transition-colors disabled:opacity-40 shrink-0"
             >
               <Send size={18} />
             </button>

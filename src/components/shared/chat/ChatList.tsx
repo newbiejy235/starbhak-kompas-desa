@@ -29,6 +29,7 @@ interface ChatRoomItem {
   commodityName: string;
   commodityPrice: string;
   commodityImage: string | null;
+  commodityImages: string[] | null;
   commodityUnit: string;
   hasDeal?: boolean;
 }
@@ -143,7 +144,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama atau produk..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors"
             />
           </div>
           <button
@@ -165,7 +166,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
             <select
               value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
+              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">Semua Bulan</option>
               {MONTHS.map((m, i) => (
@@ -175,7 +176,7 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
+              className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
             >
               <option value="">Semua Tahun</option>
               {availableYears.map((y) => (

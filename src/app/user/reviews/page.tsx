@@ -8,6 +8,7 @@ import { getUserOrders } from "@/actions/order";
 import { createReview } from "@/actions/review";
 import { formatRupiah, formatDateTime } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
+import PageHeader from "@/components/shared/PageHeader";
 import { useAuth, useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { BuyerOrder } from "@/lib/types/market";
@@ -63,8 +64,11 @@ function ReviewsContent() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Ulasan</h1>
-      <p className="text-sm text-gray-500 mb-6">Berikan penilaian untuk pesanan yang sudah selesai.</p>
+      <PageHeader
+        icon={Star}
+        title="Ulasan"
+        subtitle="Berikan penilaian untuk pesanan yang sudah selesai."
+      />
 
       {selectedOrder ? (
         <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-8 max-w-xl mx-auto animate-scale-in">

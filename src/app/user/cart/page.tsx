@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   Undo2,
 } from "lucide-react";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, formatWeight, toKg } from "@/lib/format";
 import { getCommoditiesByIds } from "@/actions/commodity";
 import {
   getCart,
@@ -95,7 +95,10 @@ export default function CartPage() {
       sum + (i.negotiatedPrice ?? Number(i.product.price)) * i.quantity,
     0,
   );
-  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
+  const totalKg = items.reduce(
+    (sum, i) => sum + (toKg(i.quantity, i.product.unit) ?? i.quantity),
+    0,
+  );
   const total = subtotal + PLATFORM_FEE;
 
   const changeQuantity = (commodityId: number, delta: number) => {
@@ -164,8 +167,8 @@ export default function CartPage() {
             Keranjang Belanja
           </h1>
           <p className="text-sm text-gray-500">
-            {totalItems > 0
-              ? `${totalItems} kg komoditas di keranjang`
+            {totalKg > 0
+              ? `${formatWeight(totalKg, "kg")} komoditas di keranjang`
               : "Belum ada komoditas di keranjang"}
           </p>
         </div>
@@ -190,9 +193,9 @@ export default function CartPage() {
               <div className="px-6 py-4 border-b border-gray-100">
                 <h2 className="font-bold text-gray-900">
                   Daftar Komoditas
-                  <span className="ml-2 text-sm font-medium text-gray-400">
-                    ({totalItems} kg)
-                  </span>
+<span className="ml-2 text-sm font-medium text-gray-400">
+                      ({formatWeight(totalKg, "kg")})
+                    </span>
                 </h2>
               </div>
               <ul className="divide-y divide-gray-100">
@@ -366,9 +369,7 @@ export default function CartPage() {
               </h2>
               <div className="space-y-3 text-sm mb-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">
-                    Subtotal ({totalItems} kg)
-                  </span>
+                  <span className="text-gray-500">Subtotal ({formatWeight(totalKg, "kg")})</span>
                   <span className="font-semibold text-gray-800">
                     {formatRupiah(subtotal)}
                   </span>

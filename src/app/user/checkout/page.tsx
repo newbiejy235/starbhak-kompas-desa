@@ -13,7 +13,7 @@ import {
   clearCheckoutSnapshot,
   type CheckoutSnapshotItem,
 } from "@/lib/cart";
-import { formatRupiah } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { ActionState } from "@/lib/types/auth";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -216,7 +216,7 @@ function CheckoutContent() {
                           {formatRupiah(unitPrice)} / {ci.product.unit}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {ci.quantity} {ci.product.unit} ={" "}
+                          {formatWeight(ci.quantity, ci.product.unit)} ={" "}
                           <span className="font-semibold text-gray-800">
                             {formatRupiah(itemSubtotal)}
                           </span>

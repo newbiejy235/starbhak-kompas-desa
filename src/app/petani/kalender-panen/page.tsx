@@ -211,7 +211,7 @@ function HarvestCard({
   featured?: boolean;
   onEdit: (item: HarvestScheduleRow) => void;
 }) {
-  const img = formatImage(item.image);
+  const img = formatImage(item.image) ?? formatImage(item.images?.[0] ?? null);
   const harvestDate = new Date(item.harvestEstimate!);
   return (
     <article

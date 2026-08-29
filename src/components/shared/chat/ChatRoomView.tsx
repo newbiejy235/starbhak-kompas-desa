@@ -22,7 +22,7 @@ import {
   AlertTriangle,
   Reply,
 } from "lucide-react";
-import { formatRupiah, formatNumber } from "@/lib/format";
+import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 import Avatar from "@/components/ui/Avatar";
 
@@ -39,6 +39,7 @@ interface ChatRoomData {
   commodityStock: string;
   commodityUnit: string;
   commodityImage: string | null;
+  commodityImages: string[] | null;
   commodityDescription: string | null;
   commodityStatus: string;
   buyerName: string;
@@ -132,7 +133,7 @@ export default function ChatRoomView({
   const [deleteConfirm, setDeleteConfirm] = useState<ChatMessageData | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMessageData | null>(null);
 
-  const img = formatImage(room.commodityImage);
+  const img = formatImage(room.commodityImage) ?? formatImage(room.commodityImages?.[0] ?? null);
   const minPrice = room.commodityMinPrice ? Number(room.commodityMinPrice) : null;
   const maxPrice = room.commodityMaxPrice ? Number(room.commodityMaxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
@@ -237,7 +238,7 @@ export default function ChatRoomView({
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
+    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
     await onSendMessage(offerText, "offer", price, qty, replyId);
@@ -252,7 +253,7 @@ export default function ChatRoomView({
     try {
       const price = Number(pendingOffer.price);
       const qty = Number(pendingOffer.quantity);
-      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
+      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)} = ${formatRupiah(price * qty)}`;
       await onSendMessage(acceptText, "accept", price, qty);
     } finally {
       setSubmittingDeal(false);
@@ -317,13 +318,13 @@ export default function ChatRoomView({
             {/* Reply quote */}
             {replyMsg && !msg.isDeleted && (
               <div
-                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-[#025246] bg-gray-50"
+                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-primary bg-gray-50"
                   } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
                 onClick={() => {
                   const el = document.getElementById(`msg-${replyMsg.id}`);
                   el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  el?.classList.add("ring-2", "ring-[#00AA5B]", "ring-offset-1");
-                  setTimeout(() => el?.classList.remove("ring-2", "ring-[#00AA5B]", "ring-offset-1"), 1500);
+                  el?.classList.add("ring-2", "ring-success", "ring-offset-1");
+                  setTimeout(() => el?.classList.remove("ring-2", "ring-success", "ring-offset-1"), 1500);
                 }}
               >
                 <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-primary"}`}>
@@ -349,7 +350,7 @@ export default function ChatRoomView({
                     </span>
                     {msg.offerQuantity && (
                       <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                        {" "}&bull; {formatNumber(msg.offerQuantity)} {room.commodityUnit}
+                        {" "}&bull; {formatWeight(msg.offerQuantity, room.commodityUnit)}
                       </span>
                     )}
                   </p>
@@ -485,7 +486,7 @@ export default function ChatRoomView({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatNumber(room.commodityStock)}</span> {room.commodityUnit}</p>
+              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatWeight(room.commodityStock, room.commodityUnit)}</span></p>
               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                 <MapPin size={10} className="text-primary" /> {room.farmerAddress || "Lokasi tidak diketahui"}
               </p>
@@ -510,7 +511,7 @@ export default function ChatRoomView({
                   {formatRupiah(pendingOffer.price)}
                   {pendingOffer.quantity && (
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(pendingOffer.quantity)} {pendingOffer.unit}
+                      {" "}x {formatWeight(pendingOffer.quantity, pendingOffer.unit)}
                     </span>
                   )}
                 </p>
@@ -524,7 +525,7 @@ export default function ChatRoomView({
                 <button
                   onClick={handleAcceptOffer}
                   disabled={submittingDeal}
-                  className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark shadow-sm disabled:opacity-40 transition-colors duration-150"
+                  className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark shadow-sm disabled:opacity-40"
                 >
                   {submittingDeal ? "Proses..." : "Terima"}
                 </button>
@@ -555,7 +556,7 @@ export default function ChatRoomView({
                   <p className="text-sm font-extrabold text-primary">
                     {formatRupiah(latestAcceptedOffer.offerPrice)}
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatNumber(latestAcceptedOffer.offerQuantity)} {room.commodityUnit} = {" "}
+                      {" "}x {formatWeight(latestAcceptedOffer.offerQuantity, room.commodityUnit)} = {" "}
                       {formatRupiah(Number(latestAcceptedOffer.offerPrice) * Number(latestAcceptedOffer.offerQuantity))}
                     </span>
                   </p>
@@ -565,7 +566,7 @@ export default function ChatRoomView({
             {!isFarmer && latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity && (
               <button
                 onClick={() => onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity))}
-                className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark flex items-center gap-1.5 shadow-sm shrink-0 transition-colors duration-150"
+                className="px-3 py-1.5 bg-success text-white text-xs font-bold rounded-lg hover:bg-success/90 flex items-center gap-1.5 shadow-sm shrink-0"
               >
                 <ShoppingCart size={14} /> Keranjang
               </button>
@@ -636,7 +637,7 @@ export default function ChatRoomView({
                 value={offerPrice}
                 onChange={(e) => setOfferPrice(e.target.value)}
                 placeholder="Harga"
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
               />
               <input
                 type="number"
@@ -645,7 +646,7 @@ export default function ChatRoomView({
                 min="1"
                 max={stock}
                 placeholder={`Qty (${room.commodityUnit})`}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-colors duration-200"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
               />
             </div>
             {offerPrice && offerQty && (
@@ -656,7 +657,7 @@ export default function ChatRoomView({
             <button
               onClick={handleSendOffer}
               disabled={!offerPrice || parseFloat(offerPrice) <= 0 || hasPendingOffer}
-              className="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg hover:bg-primary-dark disabled:opacity-40 transition-colors duration-150"
+              className="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg hover:bg-primary-dark disabled:opacity-40 transition-colors"
             >
               Kirim Penawaran
             </button>
@@ -667,7 +668,7 @@ export default function ChatRoomView({
           {!showOfferForm && hasPriceRange && !hasPendingOffer && (
             <button
               onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
-              className="px-3 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-dark flex items-center gap-1.5 shrink-0 shadow-sm transition-colors duration-150"
+              className="px-3 py-2.5 bg-success text-white text-xs font-bold rounded-xl hover:bg-success/90 flex items-center gap-1.5 shrink-0 shadow-sm"
             >
               <Tag size={14} /> Nego
             </button>
@@ -680,13 +681,13 @@ export default function ChatRoomView({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ketik pesan..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15 transition-all duration-200"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary/20 transition-all"
             />
           </div>
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-dark disabled:opacity-40 shrink-0 shadow-sm transition-colors duration-150"
+            className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-dark disabled:opacity-40 shrink-0 shadow-sm transition-colors"
           >
             <Send size={16} />
           </button>

@@ -31,7 +31,7 @@ export default function OrderCard({
   const next = nextOrderStatus(order.status);
   const actionLabel = nextActionLabel(order.status);
   const busy = advancingKey !== null;
-  const img = formatImage(order.commodityImage);
+  const img = formatImage(order.commodityImage) ?? formatImage(order.commodityImages?.[0] ?? null);
 
   return (
     <div className="overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift">

@@ -13,8 +13,8 @@ export class CloudService {
         const stream = cloudinary.uploader.upload_stream(
           {
             use_filename: true,
-            unique_filename: false,
-            overwrite: true,
+            unique_filename: true,
+            overwrite: false,
             resource_type: "image",
           },
           (error, result) => {
@@ -53,8 +53,8 @@ export class CloudService {
         const stream = cloudinary.uploader.upload_stream(
           {
             use_filename: true,
-            unique_filename: false,
-            overwrite: true,
+            unique_filename: true,
+            overwrite: false,
             resource_type: "video",
           },
           (error, result) => {

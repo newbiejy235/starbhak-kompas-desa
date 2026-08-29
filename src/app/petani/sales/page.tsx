@@ -315,7 +315,7 @@ export default function PetaniSales() {
 
                 <div className="space-y-2.5">
                   {list.map((o, i) => {
-                    const img = formatImage(o.commodityImage);
+                    const img = formatImage(o.commodityImage) ?? formatImage(o.commodityImages?.[0] ?? null);
                     return (
                       <article
                         key={o.id}
