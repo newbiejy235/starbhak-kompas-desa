@@ -21,7 +21,6 @@ const menuItems: SidebarEntry[] = [
   // ── UTAMA ──
   { id: "heading-utama", label: "Utama" },
   { id: "home", label: "Beranda", icon: LayoutDashboard, href: "/user/home" },
-  { id: "cart", label: "Keranjang", icon: ShoppingCart, href: "/user/cart" },
   { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },
 
   // ── BELANJA ──

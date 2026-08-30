@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -12,7 +11,6 @@ import {
   CreditCard,
   Store,
   MapPin,
-  Loader2,
 } from "lucide-react";
 import { getOrderById } from "@/actions/order";
 import {
@@ -48,11 +46,9 @@ function OrderDetailSkeleton() {
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [paying, setPaying] = useState(false);
-  const [snapError, setSnapError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const { data: order, loading, reload } = useFetch(
+  const { data: order, loading } = useFetch(
     () => getOrderById(Number(id)),
     [id],
   );
@@ -69,68 +65,6 @@ export default function OrderDetail() {
 
   const isPendingPayment = order.paymentStatus === "pending";
   const isPaid = order.paymentStatus === "paid";
-
-  const loadSnapScript = (snapUrl: string) =>
-    new Promise<void>((resolve, reject) => {
-      if (typeof window === "undefined" || window.snap) {
-        resolve();
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = snapUrl;
-      script.setAttribute(
-        "data-client-key",
-        (process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
-          process.env.NEXT_PUBLIC_CLIENT) ??
-          "",
-      );
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Gagal memuat Midtrans Snap"));
-      document.head.appendChild(script);
-    });
-
-  const payNow = async () => {
-    if (paying || !user) return;
-    setPaying(true);
-    setSnapError(null);
-    try {
-      const res = await fetch("/api/tokenizer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.token) {
-        throw new Error(data.error ?? "Gagal menyiapkan pembayaran");
-      }
-
-      await loadSnapScript(data.snapUrl);
-      setPaying(false);
-
-      window.snap?.pay(data.token, {
-        onSuccess: () => {
-          reload();
-        },
-        onPending: () => {
-          reload();
-        },
-        onError: () => {
-          reload();
-          setSnapError("Terjadi kesalahan saat memproses pembayaran.");
-        },
-        onClose: () => {
-          reload();
-        },
-      });
-    } catch (e) {
-      console.error(e);
-      setPaying(false);
-      setSnapError(
-        e instanceof Error ? e.message : "Gagal menyiapkan pembayaran",
-      );
-    }
-  };
 
   const steps = [
     { key: "pending", label: "Pesanan Dibuat", icon: Clock },
@@ -278,38 +212,24 @@ export default function OrderDetail() {
             </div>
 
             {isPendingPayment && (
-              <div className="mt-6 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-5">
-                <p className="text-sm font-bold text-amber-800 mb-1">Menunggu Pembayaran</p>
-                <p className="text-xs text-amber-700 mb-4">
-                  Selesaikan pembayaran melalui Midtrans untuk pesanan {order.orderCode}.
+              <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50/50 p-5">
+                <p className="text-sm font-bold text-gray-900 mb-1">
+                  Menunggu Pembayaran
+                </p>
+                <p className="text-xs text-gray-500 mb-4">
+                  Selesaikan pembayaran melalui halaman pembayaran untuk
+                  pesanan {order.orderCode}.
                 </p>
 
-                <div className="rounded-xl bg-white border border-amber-200 p-4 mb-4 flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-gray-500">Total yang harus dibayar</span>
-                  <span className="font-extrabold text-primary text-lg">
-                    {formatRupiah(order.totalPrice)}
-                  </span>
-                </div>
-
                 <button
-                  onClick={payNow}
-                  disabled={paying}
-                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={() => router.push(`/user/payment/${order.id}`)}
+                  className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark transition-colors"
                 >
-                  {paying ? (
-                    <span className="inline-flex items-center gap-2 justify-center">
-                      <Loader2 size={16} className="animate-spin" /> Menyiapkan Pembayaran...
-                    </span>
-                  ) : (
-                    "Bayar Sekarang"
-                  )}
+                  Bayar Sekarang
                 </button>
-
-                {snapError && (
-                  <p className="mt-3 text-center text-xs font-medium text-red-600">{snapError}</p>
-                )}
-                <p className="mt-3 text-center text-[11px] text-amber-700">
-                  Status pembayaran diperbarui otomatis setelah pembayaran Anda dikonfirmasi Midtrans.
+                <p className="mt-3 text-center text-[11px] text-gray-400">
+                  Status pembayaran diperbarui otomatis setelah dikonfirmasi
+                  Midtrans.
                 </p>
               </div>
             )}
