@@ -493,7 +493,7 @@ function HomeContent() {
     <div className="animate-fade-up">
       {/* Hero */}
       <div className="mb-6">
-        <HeroCarousel />
+        {/* <HeroCarousel /> */}
       </div>
 
       {/* Tab switcher */}

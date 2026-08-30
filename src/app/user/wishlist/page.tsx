@@ -8,7 +8,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import { getClientUser } from "@/lib/auth/client";
 import { getUserWishlist, removeFromWishlist } from "@/actions/wishlist";
 import { formatRupiah, formatNumber } from "@/lib/format";
-import { EmptyState } from "@/components/shared/States";
+import { EmptyState, ErrorState } from "@/components/shared/States";
 import { useFetch } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -32,7 +32,7 @@ export default function UserWishlistPage() {
   const userId = user?.id ?? 0;
   const [removing, setRemoving] = useState<number | null>(null);
 
-  const { data: items, loading, reload } = useFetch(
+  const { data: items, loading, error, reload } = useFetch(
     () =>
       userId ? getUserWishlist(userId) : Promise.resolve([] as WishlistRow[]),
     [userId],
@@ -52,7 +52,7 @@ export default function UserWishlistPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="max-w-6xl mx-auto space-y-4">
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-4 w-64 mb-6" />
         {Array.from({ length: 4 }).map((_, i) => (
@@ -65,14 +65,19 @@ export default function UserWishlistPage() {
   const list = items ?? [];
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-up">
+    <div className="max-w-6xl mx-auto animate-fade-up">
       <PageHeader
         icon={Bookmark}
         title="Wishlist Saya"
         subtitle="Komoditas yang Anda tandai untuk dibeli atau dinegosiasi."
       />
 
-      {list.length === 0 ? (
+      {error ? (
+        <ErrorState
+          message="Wishlist gagal dimuat. Silakan coba lagi."
+          onRetry={reload}
+        />
+      ) : list.length === 0 ? (
         <EmptyState
           title="Wishlist Masih Kosong"
           message="Tandai komoditas dengan ikon bookmark untuk menyimpannya di sini."

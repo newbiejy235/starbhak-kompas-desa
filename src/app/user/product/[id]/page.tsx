@@ -28,7 +28,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function DetailSkeleton() {
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       <Skeleton className="h-96 rounded-card" />
       <div className="grid md:grid-cols-2 gap-6">
         <Skeleton className="h-48 rounded-card" />
@@ -128,7 +128,7 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto animate-fade-up">
+    <div className="max-w-7xl mx-auto animate-fade-up">
       <button
         onClick={() => router.back()}
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-6"
@@ -311,7 +311,7 @@ export default function ProductDetail() {
           </div>
           <Link
             href={`/user/farmer/${product.farmerId}`}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-[#025246] transition-colors duration-200 hover:border-primary hover:bg-[#F0F7F5]"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5"
           >
             Lihat Profil Petani
             <ChevronRight size={15} />

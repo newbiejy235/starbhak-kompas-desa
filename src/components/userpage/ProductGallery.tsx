@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
   X,
@@ -130,6 +131,26 @@ export default function ProductGallery({
       goTo(selectedIndex - 1);
     }
   }, [goTo, selectedIndex]);
+
+  useEffect(() => {
+    if (!showLightbox) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowLightbox(false);
+      } else if (e.key === "ArrowLeft" && allItems.length > 1) {
+        setSelectedIndex((i) => (i > 0 ? i - 1 : allItems.length - 1));
+      } else if (e.key === "ArrowRight" && allItems.length > 1) {
+        setSelectedIndex((i) => (i < allItems.length - 1 ? i + 1 : 0));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [showLightbox, allItems.length]);
 
   if (allItems.length === 0) {
     return (
@@ -277,9 +298,11 @@ export default function ProductGallery({
         )}
       </div>
 
-      {showLightbox && (
+      {showLightbox &&
+        typeof document !== "undefined" &&
+        createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center animate-fade-in"
+          className="fixed inset-0 z-[100] w-screen h-dvh max-w-none bg-black/95 flex items-center justify-center animate-fade-in"
           onClick={() => setShowLightbox(false)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -342,7 +365,8 @@ export default function ProductGallery({
               {selectedIndex + 1} / {allItems.length}
             </div>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useActionState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,6 +15,7 @@ import {
   ShoppingCart,
   Star,
   Wallet,
+  X,
 } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import { getUserOrders } from "@/actions/order";
@@ -322,7 +324,7 @@ function ReviewArea({
 }) {
   if (existingReview) {
     return (
-      <div className="border-t border-gray-100 bg-[#F5FAF8] px-5 py-4">
+      <div className="border-t border-gray-100 bg-primary/[0.04] px-5 py-4">
         <div className="flex items-start gap-2.5">
           <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -355,11 +357,11 @@ function ReviewArea({
 
   if (!expanded) {
     return (
-      <div className="border-t border-gray-100 bg-[#F5FAF8] px-5 py-3">
+      <div className="border-t border-gray-100 bg-primary/[0.04] px-5 py-3">
         <button
           type="button"
           onClick={onStart}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[#025246] transition-colors hover:bg-[#025246]/10 active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 active:scale-[0.98]"
         >
           <Star size={14} className="fill-amber-400 text-amber-400" />
           Beri ulasan
@@ -368,28 +370,35 @@ function ReviewArea({
     );
   }
 
-  return (
-    <div className="rounded-b-2xl border-t border-gray-100 bg-gray-50/70 px-5 py-4">
-      <form action={formAction} className="animate-scale-in">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-bold text-gray-800">Beri Ulasan</p>
-          <button
-            type="button"
-            onClick={onCancel}
-            aria-label="Tutup form ulasan"
-            className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-200/60 hover:text-gray-600"
-          >
-            <span className="flex h-4 w-4 items-center justify-center text-xs">✕</span>
-          </button>
-        </div>
+  const form = (
+    <form
+      action={formAction}
+      className="flex max-h-full flex-col overflow-y-auto rounded-2xl border border-gray-200/80 bg-white shadow-lift"
+    >
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <p className="text-base font-bold text-gray-900">Beri Ulasan</p>
+        <button
+          type="button"
+          onClick={onCancel}
+          aria-label="Tutup form ulasan"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        >
+          <X size={18} />
+        </button>
+      </div>
 
-        <p className="mt-1 text-xs text-gray-500">
+      <div className="flex-1 px-6 py-5">
+        <p className="text-sm text-gray-500">
           Bagaimana pengalaman Anda berbelanja?
         </p>
 
         <input type="hidden" name="orderId" value={orderId} />
 
-        <div className="mt-3 flex gap-1.5" role="radiogroup" aria-label="Nilai ulasan">
+        <div
+          className="mt-4 flex gap-2"
+          role="radiogroup"
+          aria-label="Nilai ulasan"
+        >
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -403,7 +412,7 @@ function ReviewArea({
               className="transition-transform duration-150 hover:scale-125 active:scale-95"
             >
               <Star
-                size={26}
+                size={30}
                 className={
                   (hoverRating || rating) >= star
                     ? "fill-amber-400 text-amber-400"
@@ -419,8 +428,9 @@ function ReviewArea({
           value={comment}
           onChange={(e) => onComment(e.target.value)}
           placeholder="Tulis ulasan Anda di sini..."
-          rows={2}
-          className="mt-3 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+          rows={4}
+          autoFocus
+          className="mt-4 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition hover:border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
         />
 
         {state && !state.success && (
@@ -429,26 +439,41 @@ function ReviewArea({
         {state && state.success && (
           <p className="mt-2 text-sm text-success animate-fade-in">{state.message}</p>
         )}
+      </div>
 
-        <div className="mt-3 flex gap-2.5">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 rounded-xl border border-gray-200 bg-white py-2 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 active:scale-[0.98]"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary py-2 text-sm font-bold text-white transition-all hover:bg-primary-dark active:scale-[0.98] disabled:opacity-50"
-          >
-            <Send size={14} />
-            {isPending ? "Mengirim..." : "Kirim Ulasan"}
-          </button>
+      <div className="flex gap-2.5 border-t border-gray-100 px-6 py-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-100 active:scale-[0.98]"
+        >
+          Batal
+        </button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-dark active:scale-[0.98] disabled:opacity-50"
+        >
+          <Send size={14} />
+          {isPending ? "Mengirim..." : "Kirim Ulasan"}
+        </button>
+      </div>
+    </form>
+  );
+
+  return (
+    typeof document !== "undefined" &&
+    createPortal(
+      <div className="fixed inset-0 z-[100] grid w-screen max-w-none place-items-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm animate-fade-in sm:p-6">
+        <div
+          className="w-full max-w-lg animate-scale-in"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {form}
         </div>
-      </form>
-    </div>
+      </div>,
+      document.body,
+    )
   );
 }
 
@@ -461,6 +486,15 @@ export default function UserTransactions() {
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    if (expandedReview === null) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [expandedReview]);
 
   const { data: orders, loading: ordersLoading, reload } = useFetch(
     () =>
