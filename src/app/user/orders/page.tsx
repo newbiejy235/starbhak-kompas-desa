@@ -231,10 +231,22 @@ export default function UserOrders() {
 
                   <div className="flex flex-col items-end gap-2">
                     <StatusBadge status={o.status} />
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-colors duration-200 group-hover:text-primary-dark">
-                      Lihat Detail
-                      <ChevronRight size={14} />
-                    </span>
+                    {o.paymentStatus === "pending" ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-primary transition-colors duration-200 group-hover:text-primary-dark">
+                          Bayar Sekarang
+                          <ChevronRight size={14} />
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          Lihat Detail →
+                        </span>
+                      </>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-colors duration-200 group-hover:text-primary-dark">
+                        Lihat Detail
+                        <ChevronRight size={14} />
+                      </span>
+                    )}
                   </div>
                 </Link>
 
@@ -283,9 +295,23 @@ export default function UserOrders() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-end gap-1 text-sm font-semibold text-primary transition-colors duration-200 group-hover:text-primary-dark">
-                    Lihat Detail
-                    <ChevronRight size={16} />
+                  <div className="mt-4 flex items-center justify-end gap-4">
+                    {o.paymentStatus === "pending" ? (
+                      <>
+                        <span className="text-[11px] text-gray-400">
+                          Lihat Detail
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-sm font-bold text-primary transition-colors duration-200 group-hover:text-primary-dark">
+                          Bayar Sekarang
+                          <ChevronRight size={16} />
+                        </span>
+                      </>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors duration-200 group-hover:text-primary-dark">
+                        Lihat Detail
+                        <ChevronRight size={16} />
+                      </span>
+                    )}
                   </div>
                 </Link>
               </div>

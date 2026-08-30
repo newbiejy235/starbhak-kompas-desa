@@ -78,7 +78,12 @@ export default function OrderDetail() {
       }
       const script = document.createElement("script");
       script.src = snapUrl;
-      script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_CLIENT ?? "");
+      script.setAttribute(
+        "data-client-key",
+        (process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
+          process.env.NEXT_PUBLIC_CLIENT) ??
+          "",
+      );
       script.async = true;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error("Gagal memuat Midtrans Snap"));
