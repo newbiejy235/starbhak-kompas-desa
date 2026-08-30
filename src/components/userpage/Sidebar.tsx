@@ -20,7 +20,6 @@ const menuItems: SidebarEntry[] = [
   { id: "section-utama", label: "Utama" },
   { id: "home", label: "Beranda", icon: LayoutDashboard, href: "/user/home" },
   { id: "chat", label: "Pesan", icon: MessageCircle, href: "/user/chat" },
-  { id: "cart", label: "Keranjang", icon: ShoppingCart, href: "/user/cart" },
 
   { id: "section-belanja", label: "Belanja" },
   { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },

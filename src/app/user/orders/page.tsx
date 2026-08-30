@@ -58,7 +58,7 @@ function CartSkeleton() {
   );
 }
 
-export default function CartPage() {
+export default function OrderPage() {
   useAuth();
 
   const router = useRouter();
@@ -297,10 +297,14 @@ export default function CartPage() {
 
         // console.log("DATAS:", datas);
 
-        // if (text.redirect_url) {
-        //   updatePaid(Number(itemID));
-        //   window.location.href = text.redirect_url;
-        // }
+        if (text.redirect_url) {
+          const update = await updatePaid(Number(user?.id));
+          if (update.success) {
+            console.log(update.message);
+
+            window.location.href = text.redirect_url;
+          }
+        }
       }
 
       payment();
@@ -334,13 +338,11 @@ export default function CartPage() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Keranjang Belanja
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Pesanan Anda</h1>
 
           <p className="text-sm text-gray-500">
             {totalItems > 0
-              ? `${totalItems} kg komoditas di keranjang`
+              ? `${totalItems} kg komoditas di Pesanan`
               : "Belum ada komoditas di keranjang"}
           </p>
         </div>

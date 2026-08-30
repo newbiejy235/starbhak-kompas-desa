@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { commoditiesTable, orderUser, ordersComodity } from "@/db/schema";
+import { commoditiesTable, orderUser, ordersComodity   } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
 // testing buat liat id komoditas
@@ -220,6 +220,58 @@ export async function updateOrderStatus(userId: number) {
     return {
       success: false,
       message: "Gagal update status",
+    };
+  }
+}
+
+export async function getPaidOrders(id: number) {
+  try {
+    const dataResult = await db
+      .select({
+        id: ordersComodity.id,
+        commodityId: ordersComodity.commodityId,
+        quantity: ordersComodity.quantity,
+        negotiatedPrice: ordersComodity.negotiatedPrice,
+        status: ordersComodity.status,
+
+        product: {
+          name: commoditiesTable.name,
+          price: commoditiesTable.price,
+          unit: commoditiesTable.unit,
+          image: commoditiesTable.image,
+          images: commoditiesTable.images,
+          
+        },
+      })
+      .from(ordersComodity)
+      .innerJoin(
+        commoditiesTable,
+        eq(ordersComodity.commodityId, commoditiesTable.id),
+      )
+      .where(
+        and(
+          eq(ordersComodity.orderUserId, id),
+          eq(ordersComodity.status, "payed"),
+        ),
+      );
+
+    if (dataResult.length == 0) {
+      return {
+        success: false,
+        message: "tidak ada data yang ditemukan",
+        data: dataResult,
+      };
+    }
+
+    return {
+      success: true,
+      message: `data ditemukan, data ada sebanyak : ${dataResult.length}`,
+      data: dataResult,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Internal server error ${error}`,
     };
   }
 }

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         gross_amount: price * quantity,
       },
       callbacks: {
-        finish: "https://starbhak-kompas-desa.vercel.app/auth/login",
+        finish: "https://www.kompasdesa.site/user/home",
       },
     };
 

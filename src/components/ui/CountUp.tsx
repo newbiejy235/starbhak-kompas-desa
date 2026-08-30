@@ -26,7 +26,6 @@ export default function CountUp({
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    // Count-up angka statistik (PRD 8.3 & 9.2)
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -34,6 +33,8 @@ export default function CountUp({
 
     const el = ref.current;
     if (!el) return;
+
+    started.current = false; // <-- reset tiap value berubah
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -43,13 +44,13 @@ export default function CountUp({
         const t0 = performance.now();
         const tick = (now: number) => {
           const p = dur === 0 ? 1 : Math.min((now - t0) / dur, 1);
-          const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+          const eased = 1 - Math.pow(1 - p, 3);
           setDisplay(value * eased);
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
       },
-      { threshold: 0.4 }
+      { threshold: 0.4 },
     );
     observer.observe(el);
     return () => observer.disconnect();

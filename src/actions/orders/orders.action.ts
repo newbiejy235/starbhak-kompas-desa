@@ -4,6 +4,7 @@ import { CartEntry } from "@/lib/cart";
 import { addToUserOrder } from "@/service/orders.service";
 import { addToOrders } from "@/service/orders.service";
 import { updateOrderStatus } from "@/service/orders.service";
+import { getPaidOrders } from "@/service/orders.service";
 // import { getAllOrders } from "@/service/orders.service";
 // import { getOrderByUsers } from "@/service/orders.service";
 
@@ -34,6 +35,10 @@ export async function getUnpaid(id: number) {
 
 export async function updatePaid(id: number) {
   return await updateOrderStatus(id);
+}
+
+export async function getPaidUsers(id: number) {
+  return await getPaidOrders(id);
 }
 
 
