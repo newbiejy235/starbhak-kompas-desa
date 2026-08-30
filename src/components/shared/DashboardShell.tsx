@@ -191,7 +191,7 @@ export default function DashboardShell({
       </header>
 
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <main className="flex-1 sm:p-6 lg:p-8">{children}</main>
+        <main className="w-full flex-1 px-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

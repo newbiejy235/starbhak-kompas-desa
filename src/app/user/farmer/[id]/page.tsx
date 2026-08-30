@@ -284,88 +284,88 @@ function FarmGallery({
       {open &&
         typeof document !== "undefined" &&
         createPortal(
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={current.caption || "Pratinjau foto usaha"}
-          onClick={close}
-          className="fixed inset-0 z-[100] h-dvh max-h-[100dvh] w-screen max-w-none animate-fade-in overflow-hidden bg-black/95"
-        >
-          {/* Top bar */}
-          <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-3 text-white">
-              <span className="text-sm font-semibold">Foto Usaha</span>
-              {total > 1 && (
-                <span className="text-xs text-white/60">
-                  {index + 1} / {total}
-                </span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={close}
-              aria-label="Tutup"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              <X size={22} />
-            </button>
-          </div>
-
-          {/* Gambar — mengisi layar, proporsi asli, tanpa kartu putih */}
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 z-10 flex items-center justify-center px-20 py-24 sm:px-28 sm:py-24"
+            role="dialog"
+            aria-modal="true"
+            aria-label={current.caption || "Pratinjau foto usaha"}
+            onClick={close}
+            className="fixed inset-0 z-[100] h-dvh max-h-[100dvh] w-screen max-w-none animate-fade-in overflow-hidden bg-black/95"
           >
-            <Image
-              src={current.url!}
-              alt={current.caption || "Foto usaha petani"}
-              width={1600}
-              height={1200}
-              sizes="100vw"
-              className="h-full w-full object-contain"
-              unoptimized
-            />
-          </div>
-
-          {/* Caption */}
-          {current.caption && (
-            <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-6 pb-8 pt-14">
-              <p className="mx-auto max-w-xl truncate text-center text-sm text-white">
-                {current.caption}
-              </p>
+            {/* Top bar */}
+            <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 py-4 sm:px-6">
+              <div className="flex items-center gap-3 text-white">
+                <span className="text-sm font-semibold">Foto Usaha</span>
+                {total > 1 && (
+                  <span className="text-xs text-white/60">
+                    {index + 1} / {total}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Tutup"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <X size={22} />
+              </button>
             </div>
-          )}
 
-          {/* Navigasi prev/next (hanya jika lebih dari satu foto) */}
-          {total > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prev();
-                }}
-                aria-label="Foto sebelumnya"
-                className="absolute left-3 top-1/2 z-20 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:left-6"
-              >
-                <ChevronLeft size={22} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  next();
-                }}
-                aria-label="Foto berikutnya"
-                className="absolute right-3 top-1/2 z-20 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:right-6"
-              >
-                <ChevronRight size={22} />
-              </button>
-            </>
-          )}
-        </div>,
-        document.body,
-      )}
+            {/* Gambar — mengisi layar, proporsi asli, tanpa kartu putih */}
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-0 z-10 flex items-center justify-center px-20 py-24 sm:px-28 sm:py-24"
+            >
+              <Image
+                src={current.url!}
+                alt={current.caption || "Foto usaha petani"}
+                width={1600}
+                height={1200}
+                sizes="100vw"
+                className="h-full w-full object-contain"
+                unoptimized
+              />
+            </div>
+
+            {/* Caption */}
+            {current.caption && (
+              <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/70 to-transparent px-6 pb-8 pt-14">
+                <p className="mx-auto max-w-xl truncate text-center text-sm text-white">
+                  {current.caption}
+                </p>
+              </div>
+            )}
+
+            {/* Navigasi prev/next (hanya jika lebih dari satu foto) */}
+            {total > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prev();
+                  }}
+                  aria-label="Foto sebelumnya"
+                  className="absolute left-3 top-1/2 z-20 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:left-6"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    next();
+                  }}
+                  aria-label="Foto berikutnya"
+                  className="absolute right-3 top-1/2 z-20 -translate-y-1/2 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:right-6"
+                >
+                  <ChevronRight size={22} />
+                </button>
+              </>
+            )}
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
