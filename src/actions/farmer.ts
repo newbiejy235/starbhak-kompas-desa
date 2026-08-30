@@ -196,7 +196,8 @@ export async function searchPublicFarmers(params?: {
       usersTable.createdAt,
     );
 
-  let filtered = rows;
+  // Hanya tampilkan petani yang benar-benar punya komoditas aktif
+  let filtered = rows.filter((r) => (r.commodityCount || 0) > 0);
 
   if (params?.minPrice !== undefined) {
     filtered = filtered.filter(
@@ -528,6 +529,9 @@ export async function searchFarmersForBuyer(params?: {
     avgRating: reviewMap.get(r.id)?.avgRating ?? null,
     reviewCount: reviewMap.get(r.id)?.reviewCount ?? 0,
   }));
+
+  // Hanya tampilkan petani yang benar-benar punya komoditas aktif
+  enriched = enriched.filter((r) => (r.commodityCount || 0) > 0);
 
   if (params?.minRating !== undefined) {
     enriched = enriched.filter(

@@ -405,9 +405,9 @@ function HomeContent() {
       activeTab === "petani"
         ? Promise.resolve([] as PublicCommodity[])
         : getPublicCommodities({
-            search: search || undefined,
-            categoryId: catParam ? Number(catParam) : undefined,
-          }) as Promise<PublicCommodity[]>,
+          search: search || undefined,
+          categoryId: catParam ? Number(catParam) : undefined,
+        }) as Promise<PublicCommodity[]>,
     [search, catParam, activeTab],
   );
 
@@ -594,11 +594,10 @@ function HomeContent() {
                   </span>
                   {c.count > 0 && (
                     <span
-                      className={`shrink-0 text-xs font-semibold ${
-                        catParam === String(c.id)
-                          ? "text-white/80"
-                          : "text-gray-400"
-                      }`}
+                      className={`shrink-0 text-xs font-semibold ${catParam === String(c.id)
+                        ? "text-white/80"
+                        : "text-gray-400"
+                        }`}
                     >
                       ({c.count})
                     </span>
