@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
-  MapPin, Star, Truck, Store, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
+  MapPin, Star, Truck, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
+  BadgeCheck, ChevronRight,
 } from "lucide-react";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
@@ -11,6 +13,7 @@ import { getOrCreateChatRoom } from "@/actions/chat";
 import ProductCard from "@/components/shared/ProductCard";
 import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
+import Avatar from "@/components/ui/Avatar";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
 import { addToCart } from "@/lib/cart";
@@ -279,27 +282,40 @@ export default function ProductDetail() {
       <div className="mt-8 grid md:grid-cols-2 gap-6">
         <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-              <Store size={22} className="text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900">{product.farmerName}</h3>
+            <Avatar
+              src={product.farmerFoto}
+              name={product.farmerName}
+              size="lg"
+              className="shadow-soft"
+            />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="truncate font-bold text-gray-900">
+                  {product.farmerName}
+                </h3>
+                {product.farmerStatus === "verified" && (
+                  <span
+                    title="Terverifikasi"
+                    className="inline-flex shrink-0 items-center"
+                  >
+                    <BadgeCheck
+                      size={15}
+                      className="text-primary"
+                      aria-label="Petani terverifikasi"
+                    />
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-500">Petani di {product.location}</p>
             </div>
           </div>
-          <div className="text-sm text-gray-600 space-y-2">
-            <p>
-              <span className="font-medium text-gray-800">Email:</span> {product.farmerEmail}
-            </p>
-            <p>
-              <span className="font-medium text-gray-800">Telepon:</span> {product.farmerNoTelp}
-            </p>
-            {product.farmerAddress && (
-              <p>
-                <span className="font-medium text-gray-800">Alamat:</span> {product.farmerAddress}
-              </p>
-            )}
-          </div>
+          <Link
+            href={`/user/farmer/${product.farmerId}`}
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-[#025246] transition-colors duration-200 hover:border-primary hover:bg-[#F0F7F5]"
+          >
+            Lihat Profil Petani
+            <ChevronRight size={15} />
+          </Link>
         </div>
 
         <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
