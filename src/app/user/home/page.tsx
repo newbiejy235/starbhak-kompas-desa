@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { SearchPublicFarmer } from "@/lib/types/market";
 import {
@@ -13,7 +13,6 @@ import {
   Package,
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
-import HeroCarousel from "@/components/userpage/HeroCarousel";
 import FarmerStoreCard from "@/components/userpage/FarmerStoreCard";
 import { EmptyState } from "@/components/shared/States";
 import {
@@ -74,6 +73,19 @@ const RATING_OPTIONS = [
   { label: "2+", value: 2 },
 ];
 
+const CATEGORY_ORDER = [
+  "Sayuran",
+  "Buah-buahan",
+  "Umbi-umbian",
+  "Padi & Serealia",
+  "Kacang-kacangan",
+  "Rempah-rempah",
+  "Tanaman Perkebunan",
+  "Tanaman Herbal",
+  "Tanaman Hias",
+  "Lainnya",
+];
+
 function CatalogSkeleton() {
   return (
     <div className="animate-fade-up">
@@ -91,7 +103,7 @@ function CatalogSkeleton() {
         <Skeleton className="h-3.5 w-72" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
@@ -348,21 +360,55 @@ function HomeContent() {
   const switchTab = useCallback(
     (tab: Tab) => {
       setActiveTab(tab);
-      const params = new URLSearchParams();
-      if (search) params.set("search", search);
-      if (tab !== "komoditas") params.set("tab", tab);
-      router.replace(`/user/home?${params.toString()}`, { scroll: false });
+      const params = new URLSearchParams(searchParams.toString());
+      if (tab === "petani") {
+        params.set("tab", "petani");
+        // 'category' hanya milik tab komoditas
+        params.delete("category");
+      } else {
+        params.delete("tab");
+        // Bersihkan parameter khusus petani
+        params.delete("cat");
+        params.delete("minP");
+        params.delete("maxP");
+        params.delete("rating");
+        params.delete("loc");
+        params.delete("sort");
+      }
+      const qs = params.toString();
+      router.replace(qs ? `/user/home?${qs}` : "/user/home", { scroll: false });
     },
-    [router, search],
+    [router, searchParams],
+  );
+
+  // Membangun URL filter kategori sambil mempertahankan 'search' & menyingkirkan parameter petani
+  const categoryUrl = useCallback(
+    (id?: number | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("tab");
+      params.delete("cat");
+      params.delete("minP");
+      params.delete("maxP");
+      params.delete("rating");
+      params.delete("loc");
+      params.delete("sort");
+      if (id) params.set("category", String(id));
+      else params.delete("category");
+      const qs = params.toString();
+      return qs ? `/user/home?${qs}` : "/user/home";
+    },
+    [searchParams],
   );
 
   const { data: products, loading: productsLoading } = useFetch(
     () =>
-      getPublicCommodities({
-        search: search || undefined,
-        categoryId: catParam ? Number(catParam) : undefined,
-      }) as Promise<PublicCommodity[]>,
-    [search, catParam],
+      activeTab === "petani"
+        ? Promise.resolve([] as PublicCommodity[])
+        : getPublicCommodities({
+            search: search || undefined,
+            categoryId: catParam ? Number(catParam) : undefined,
+          }) as Promise<PublicCommodity[]>,
+    [search, catParam, activeTab],
   );
 
   const { data: categories } = useFetch(
@@ -393,50 +439,49 @@ function HomeContent() {
     farmerPage,
   ]);
 
-  const { data: farmers, loading: farmersLoading } = useFetch(fetchFarmers, [
-    fetchFarmers,
+  const farmerFetch = useCallback(
+    () =>
+      activeTab === "komoditas"
+        ? Promise.resolve([] as (SearchPublicFarmer & { _totalCount: number })[])
+        : fetchFarmers(),
+    [activeTab, fetchFarmers],
+  );
+
+  const { data: farmers, loading: farmersLoading } = useFetch(farmerFetch, [
+    farmerFetch,
   ]);
   const farmerCount = farmers?.[0]?._totalCount ?? 0;
 
-  const productList = products ?? [];
-  const categoryList = categories ?? [];
+  const productList = useMemo(() => products ?? [], [products]);
+  const categoryList = useMemo(() => categories ?? [], [categories]);
   const farmerList = farmers ?? [];
   const fCount = farmerCount;
   const hasMoreFarmers = farmerPage * FARMER_LIMIT < fCount;
 
-  const categoryOrder = [
-    "Sayuran",
-    "Buah-buahan",
-    "Umbi-umbian",
-    "Padi & Serealia",
-    "Kacang-kacangan",
-    "Rempah-rempah",
-    "Tanaman Perkebunan",
-    "Tanaman Herbal",
-    "Tanaman Hias",
-    "Lainnya",
-  ];
+  const sortedCategories = useMemo(
+    () =>
+      [...categoryList].sort((a, b) => {
+        const indexA = CATEGORY_ORDER.indexOf(a.name);
+        const indexB = CATEGORY_ORDER.indexOf(b.name);
 
-  const sortedCategories = [...categoryList].sort((a, b) => {
-    const indexA = categoryOrder.indexOf(a.name);
-    const indexB = categoryOrder.indexOf(b.name);
+        // Kategori yang tidak ada di daftar diletakkan paling belakang.
+        if (indexA === -1 && indexB === -1) return 0;
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
 
-    // Kategori yang tidak ada di daftar diletakkan paling belakang.
-    if (indexA === -1 && indexB === -1) return 0;
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-
-    return indexA - indexB;
-  });
+        return indexA - indexB;
+      }),
+    [categoryList],
+  );
 
   const chipClass = (active: boolean) =>
-    `inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${focusRing} ${active
+    `inline-flex w-full items-center justify-start gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ${focusRing} ${active
       ? "bg-primary text-white"
-      : "border border-gray-200 bg-white text-gray-600 hover:border-primary hover:text-primary"
+      : "text-gray-600 hover:bg-gray-100"
     }`;
 
   const tabClass = (active: boolean) =>
-    `inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${focusRing} ${active
+    `inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 sm:flex-none sm:justify-center ${focusRing} ${active
       ? "bg-primary text-white shadow-soft"
       : "bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-gray-200"
     }`;
@@ -491,13 +536,8 @@ function HomeContent() {
 
   return (
     <div className="animate-fade-up">
-      {/* Hero */}
-      <div className="mb-6">
-        {/* <HeroCarousel /> */}
-      </div>
-
       {/* Tab switcher */}
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex gap-2 sm:inline-flex">
         <button
           type="button"
           onClick={() => switchTab("komoditas")}
@@ -528,33 +568,43 @@ function HomeContent() {
             <div
               role="group"
               aria-label="Filter kategori"
-              className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
             >
-              <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => router.push(categoryUrl(null))}
+                aria-pressed={!catParam}
+                className={chipClass(!catParam)}
+              >
+                <span className="min-w-0 flex-1 truncate text-left">Semua</span>
+              </button>
+              {sortedCategories.map((c) => (
                 <button
+                  key={c.id}
                   type="button"
-                  onClick={() => router.push("/user/home")}
-                  aria-pressed={!catParam}
-                  className={chipClass(!catParam)}
+                  onClick={() => router.push(categoryUrl(c.id))}
+                  aria-pressed={catParam === String(c.id)}
+                  className={chipClass(catParam === String(c.id))}
                 >
-                  Semua
-                </button>
-                {sortedCategories.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => router.push(`/user/home?category=${c.id}`)}
-                    aria-pressed={catParam === String(c.id)}
-                    className={chipClass(catParam === String(c.id))}
-                  >
-                    {c.icon && <span className="mr-1">{c.icon}</span>}
+                  {c.icon && (
+                    <span className="shrink-0 text-base leading-none">{c.icon}</span>
+                  )}
+                  <span className="min-w-0 flex-1 truncate text-left">
                     {c.name}
-                    {c.count > 0 && (
-                      <span className="ml-1.5 text-xs opacity-60">({c.count})</span>
-                    )}
-                  </button>
-                ))}
-              </div>
+                  </span>
+                  {c.count > 0 && (
+                    <span
+                      className={`shrink-0 text-xs font-semibold ${
+                        catParam === String(c.id)
+                          ? "text-white/80"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      ({c.count})
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </section>
 
@@ -571,7 +621,7 @@ function HomeContent() {
             </div>
 
             {productsLoading ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div
                     key={i}
