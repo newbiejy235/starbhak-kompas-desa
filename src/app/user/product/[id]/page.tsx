@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   MapPin, Star, Truck, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
-  BadgeCheck, ChevronRight,
+  BadgeCheck, ChevronRight, Loader2,
 } from "lucide-react";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
@@ -28,11 +28,12 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function DetailSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-5 lg:px-6 py-6 space-y-8 animate-fade-up">
+      <Skeleton className="h-10 w-24 rounded-lg" />
       <Skeleton className="h-96 rounded-card" />
-      <div className="grid md:grid-cols-2 gap-6">
-        <Skeleton className="h-48 rounded-card" />
-        <Skeleton className="h-48 rounded-card" />
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+        <Skeleton className="h-56 rounded-card" />
+        <Skeleton className="h-56 rounded-card" />
       </div>
     </div>
   );
@@ -42,7 +43,8 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
-  const [negoError, setNegoError] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatOpening, setChatOpening] = useState(false);
   const { user } = useAuth();
 
   const { data, loading, error, reload } = useFetch(
@@ -109,26 +111,36 @@ export default function ProductDetail() {
     router.push("/user/cart");
   };
 
-  const handleNego = async () => {
+  const openChat = async () => {
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    setNegoError(null);
+    if (user.id === product.farmerId) return;
+    setChatError(null);
+    setChatOpening(true);
     try {
       const result = await getOrCreateChatRoom(user.id, product.farmerId, product.id);
       if (result?.roomId) {
         router.push(`/user/chat/${result.roomId}`);
       } else {
-        setNegoError("Gagal membuka chat. Silakan coba lagi.");
+        setChatError("Gagal membuka chat dengan petani. Silakan coba lagi.");
       }
     } catch {
-      setNegoError("Terjadi kesalahan. Silakan coba lagi.");
+      setChatError("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setChatOpening(false);
     }
   };
 
+  const handleNego = async () => {
+    await openChat();
+  };
+
+  const isOwnProduct = !!user && user.id === product.farmerId;
+
   return (
-    <div className="max-w-7xl mx-auto animate-fade-up">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-5 lg:px-6 py-6 animate-fade-up">
       <button
         onClick={() => router.back()}
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-6"
@@ -252,10 +264,11 @@ export default function ProductDetail() {
                   {hasPriceRange ? (
                     <button
                       onClick={handleNego}
-                      className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift"
+                      disabled={chatOpening || isOwnProduct}
+                      className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <MessageCircle size={18} />
-                      Nego Harga
+                      {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+                      {chatOpening ? "Membuka Chat..." : "Nego Harga"}
                     </button>
                   ) : (
                     <button
@@ -266,8 +279,18 @@ export default function ProductDetail() {
                     </button>
                   )}
                 </div>
-                {negoError && (
-                  <p className="text-xs text-red-500 mt-2 text-center">{negoError}</p>
+                {!hasPriceRange && !isOwnProduct && (
+                  <button
+                    onClick={openChat}
+                    disabled={chatOpening}
+                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+                    {chatOpening ? "Membuka Chat..." : "Chat Petani"}
+                  </button>
+                )}
+                {chatError && (
+                  <p className="text-xs text-red-500 mt-2 text-center">{chatError}</p>
                 )}
               </>
             ) : (
@@ -309,13 +332,25 @@ export default function ProductDetail() {
               <p className="text-xs text-gray-500">Petani di {product.location}</p>
             </div>
           </div>
-          <Link
-            href={`/user/farmer/${product.farmerId}`}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5"
-          >
-            Lihat Profil Petani
-            <ChevronRight size={15} />
-          </Link>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Link
+              href={`/user/farmer/${product.farmerId}`}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5"
+            >
+              Lihat Profil Petani
+              <ChevronRight size={15} />
+            </Link>
+            {!isOwnProduct && (
+              <button
+                onClick={openChat}
+                disabled={chatOpening}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary transition-all duration-200 hover:bg-primary/5 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {chatOpening ? <Loader2 size={15} className="animate-spin" /> : <MessageCircle size={15} />}
+                {chatOpening ? "Membuka Chat..." : "Chat Petani"}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6">
@@ -345,7 +380,7 @@ export default function ProductDetail() {
       {related.length > 0 && (
         <div className="mt-10">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Produk Lainnya</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {related.map((item, i) => (
               <ProductCard
                 key={item.id}
