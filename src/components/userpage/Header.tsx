@@ -89,7 +89,7 @@ export function HeaderSearch() {
     <form
       onSubmit={submitSearch}
       role="search"
-      className="hidden flex-1 mx-4 sm:relative sm:block lg:mx-8"
+      className="relative min-w-0 flex-1 mx-2 sm:mx-4 lg:mx-8 py-3"
     >
       <Search
         size={16}
@@ -107,7 +107,6 @@ export function HeaderSearch() {
         aria-label="Cari komoditas atau petani"
         className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 ${focusRing}`}
       />
-
       <SearchRecommendationDropdown
         query={search}
         isOpen={dropdownOpen}
