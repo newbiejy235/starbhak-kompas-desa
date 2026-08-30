@@ -16,7 +16,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import Avatar from "@/components/ui/Avatar";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
-import { addToCart } from "@/lib/cart";
+import { addToCart, saveCheckoutSnapshot } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
 import WishlistButton from "@/components/shared/WishlistButton";
 import type {
@@ -109,6 +109,16 @@ export default function ProductDetail() {
     }
     addToCart(product.id, quantity);
     router.push("/user/cart");
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    addToCart(product.id, quantity);
+    saveCheckoutSnapshot([{ commodityId: product.id, quantity }]);
+    router.push("/user/checkout");
   };
 
   const openChat = async () => {
@@ -231,68 +241,80 @@ export default function ProductDetail() {
             </div>
 
             {isAvailable && stock > 0 ? (
-              <>
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="text-sm font-medium text-gray-700">Jumlah</span>
-                  <div className="flex items-center border border-gray-200 rounded-xl">
-                    <button
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
-                      aria-label="Kurangi jumlah"
-                    >
-                      <Minus size={18} />
-                    </button>
-                    <span className="w-10 text-center font-bold">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
-                      className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
-                      aria-label="Tambah jumlah"
-                    >
-                      <Plus size={18} />
-                    </button>
-                  </div>
-                  <span className="text-xs text-gray-400">{formatWeight(1, product.unit)}</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              hasPriceRange ? (
+                <div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-5 flex flex-col items-center text-center">
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                    Produk ini <span className="font-semibold text-gray-900">memerlukan negosiasi</span> sebelum pembelian. Hubungi petani untuk menawar harga dan jumlah pesanan.
+                  </p>
                   <button
-                    onClick={handleAddToCart}
-                    className="rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                    onClick={handleNego}
+                    disabled={chatOpening || isOwnProduct}
+                    className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Masukkan ke Keranjang
+                    {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+                    {chatOpening ? "Membuka Chat..." : "Nego Harga"}
                   </button>
-                  {hasPriceRange ? (
-                    <button
-                      onClick={handleNego}
-                      disabled={chatOpening || isOwnProduct}
-                      className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
-                      {chatOpening ? "Membuka Chat..." : "Nego Harga"}
-                    </button>
-                  ) : (
+                  {chatError && (
+                    <p className="text-xs text-red-500 mt-3 text-center">{chatError}</p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <span className="text-sm font-medium text-gray-700">Jumlah</span>
+                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={quantity <= 1}
+                        className="p-2.5 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                        aria-label="Kurangi jumlah"
+                      >
+                        <Minus size={18} />
+                      </button>
+                      <span className="w-11 text-center font-bold tabular-nums">{quantity}</span>
+                      <button
+                        onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
+                        disabled={quantity >= stock}
+                        className="p-2.5 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                        aria-label="Tambah jumlah"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      Stok tersedia: {formatWeight(product.stock, product.unit)}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={handleAddToCart}
-                      className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift"
+                      className="w-full rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                    >
+                      Masukkan ke Keranjang
+                    </button>
+                    <button
+                      onClick={handleBuyNow}
+                      className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift"
                     >
                       Beli Sekarang
                     </button>
+                  </div>
+                  {!isOwnProduct && (
+                    <button
+                      onClick={openChat}
+                      disabled={chatOpening}
+                      className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+                      {chatOpening ? "Membuka Chat..." : "Chat Petani"}
+                    </button>
                   )}
-                </div>
-                {!hasPriceRange && !isOwnProduct && (
-                  <button
-                    onClick={openChat}
-                    disabled={chatOpening}
-                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
-                    {chatOpening ? "Membuka Chat..." : "Chat Petani"}
-                  </button>
-                )}
-                {chatError && (
-                  <p className="text-xs text-red-500 mt-2 text-center">{chatError}</p>
-                )}
-              </>
+                  {chatError && (
+                    <p className="text-xs text-red-500 mt-2 text-center">{chatError}</p>
+                  )}
+                </>
+              )
             ) : (
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-500">
                 Komoditas ini sedang tidak tersedia
