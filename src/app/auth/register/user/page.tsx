@@ -24,9 +24,9 @@ import { animateStepExit, prefersReducedMotion } from "@/lib/authTransition";
 import Image from "next/image";
 
 const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
+  "/images/auth/Desa.jpg",
+  "/images/auth/Tracktor.jpg",
+  "/images/auth/Sawah.jpg",
 ];
 
 export default function RegisterUser() {
