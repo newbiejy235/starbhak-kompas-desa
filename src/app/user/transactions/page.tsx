@@ -12,12 +12,12 @@ import {
   History,
   Package,
   Send,
-  ShoppingCart,
   Star,
   Wallet,
   X,
 } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
+import TransactionTabs from "@/components/userpage/TransactionTabs";
 import { getUserOrders } from "@/actions/order";
 import { getReviewsByBuyer, createReview } from "@/actions/review";
 import { getClientUser } from "@/lib/auth/client";
@@ -25,6 +25,7 @@ import {
   formatDate,
   formatNumber,
   formatRupiah,
+  PAYMENT_METHOD_LABEL,
   PAYMENT_STATUS_LABEL,
 } from "@/lib/format";
 import { EmptyState, formatImage } from "@/components/shared/States";
@@ -44,68 +45,64 @@ interface BuyerReview {
   commodityName: string;
 }
 
-const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
-
 /* ============================================================
-   Skeleton — meniru struktur halaman sesungguhnya
+   Skeleton
    ============================================================ */
 function TransactionsSkeleton() {
   return (
     <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
-      <Skeleton className="h-8 w-56" />
-      <Skeleton className="mt-1 mb-6 h-4 w-72" />
+      <div className="mx-auto max-w-5xl">
+        <Skeleton className="mb-1 h-8 w-56" />
+        <Skeleton className="mb-4 h-4 w-72" />
 
-      {/* Statistik */}
-      <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-gray-200/80 bg-white px-5 py-4 sm:grid-cols-4 sm:px-6">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i}>
-            <Skeleton className="mb-2 h-8 w-8 rounded-lg" />
-            <Skeleton className="h-6 w-20" />
-            <Skeleton className="mt-1 h-3 w-16" />
-          </div>
-        ))}
-      </div>
-
-      {/* Header daftar */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <Skeleton className="h-5 w-44" />
-          <Skeleton className="mt-1 h-3 w-56" />
+        <div className="mb-6 flex items-center gap-6 border-b border-gray-200">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-14" />
+          <Skeleton className="h-5 w-12" />
         </div>
-        <Skeleton className="h-6 w-24" />
-      </div>
 
-      {/* Kartu transaksi */}
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className={`${cardCls} mb-4 overflow-hidden`}>
-          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-5 py-3">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-          </div>
-          <div className="flex items-center gap-4 px-5 py-4">
-            <Skeleton className="h-16 w-16 shrink-0 rounded-xl sm:h-[72px] sm:w-[72px]" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-3 w-32" />
-              <Skeleton className="h-3 w-24" />
+        <div className="mb-6 flex flex-wrap gap-x-6 gap-y-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="mt-1 h-3 w-20" />
             </div>
-            <div className="text-right">
-              <Skeleton className="ml-auto h-3 w-12" />
-              <Skeleton className="ml-auto mt-1 h-5 w-20" />
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-            <Skeleton className="h-3 w-28" />
-            <Skeleton className="h-6 w-24 rounded-lg" />
-          </div>
+          ))}
         </div>
-      ))}
+
+        <div className="divide-y divide-gray-200">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="py-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-2">
+                  <Skeleton className="h-3.5 w-40" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+              <div className="mt-5 flex items-start gap-4">
+                <Skeleton className="h-20 w-20 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="hidden shrink-0 space-y-2 text-right sm:block">
+                  <Skeleton className="ml-auto h-3 w-20" />
+                  <Skeleton className="ml-auto h-4 w-24" />
+                  <Skeleton className="ml-auto mt-3 h-4 w-20" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 /* ============================================================
-   Statistik ringkas (selaras dashboard petani)
+   Statistik ringkas
    ============================================================ */
 function StatTile({
   icon,
@@ -120,7 +117,7 @@ function StatTile({
 }) {
   return (
     <div className="min-w-0">
-      <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="mb-1.5 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
         {icon}
       </div>
       <p className={`text-2xl font-bold tracking-tight ${valueClassName}`}>
@@ -132,9 +129,9 @@ function StatTile({
 }
 
 /* ============================================================
-   Kartu transaksi
+   Transaksi sukses (baris flat, bukan card)
    ============================================================ */
-function OrderCard({
+function TransactionRow({
   order,
   index,
   existingReview,
@@ -171,6 +168,11 @@ function OrderCard({
   const img =
     formatImage(order.commodityImage) ??
     formatImage(order.commodityImages?.[0] ?? null);
+  const payLabel =
+    PAYMENT_STATUS_LABEL[order.paymentStatus ?? "pending"] ?? "Lunas";
+  const payMethod = order.paymentMethod
+    ? PAYMENT_METHOD_LABEL[order.paymentMethod] ?? order.paymentMethod
+    : null;
 
   const startReview = () => {
     onExpanded();
@@ -179,117 +181,128 @@ function OrderCard({
   };
 
   return (
-    <div
-      className={`${cardCls} overflow-hidden transition-all duration-300 ease-smooth hover:-translate-y-0.5 hover:shadow-lift animate-fade-up`}
+    <section
+      className="py-6 animate-fade-up"
       style={{
-        animationDelay: `${Math.min(index * 60, 360)}ms`,
+        animationDelay: `${Math.min(index * 50, 250)}ms`,
         animationFillMode: "backwards",
       }}
+      aria-label={`Transaksi ${order.orderCode}`}
     >
-      {/* Header order */}
-      <div className="flex items-center justify-between gap-3 rounded-t-2xl border-b border-gray-100 bg-gray-50/70 px-5 py-3">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
-          <span className="inline-flex items-center gap-1.5 text-gray-500">
-            <Clock size={15} className="text-primary" />
-            {formatDate(order.createdAt)}
-          </span>
-          <span aria-hidden className="text-gray-300">·</span>
-          <span className="truncate font-semibold text-gray-700">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-gray-900">
             {order.orderCode}
-          </span>
+          </p>
+          <p className="mt-0.5 text-xs text-gray-500">
+            {formatDate(order.createdAt)}
+          </p>
         </div>
-        <StatusBadge status={order.status} />
+        <StatusBadge
+          status={order.paymentStatus ?? "paid"}
+          label={payLabel}
+        />
       </div>
 
       {/* Produk */}
-      <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-4">
-        <div className="flex min-w-0 items-center gap-3.5">
-          <Link
-            href={`/user/checkout/${order.id}`}
-            className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-primary/10 ring-1 ring-gray-100 transition-transform duration-300 hover:scale-[1.03] sm:h-[72px] sm:w-[72px]"
-            aria-label={`Detail pesanan ${order.commodityName}`}
-          >
-            {img ? (
-              <Image
-                src={img}
-                alt={order.commodityName}
-                fill
-                sizes="72px"
-                className="object-cover"
-                unoptimized
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-primary">
-                <Package size={24} />
-              </div>
-            )}
-          </Link>
-
-          <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold text-gray-900">
-              {order.commodityName}
-            </p>
-            <p className="mt-0.5 text-sm text-gray-500">
-              {formatNumber(order.quantity)} kg × {formatRupiah(order.unitPrice)}
-            </p>
-            <p className="mt-0.5 truncate text-xs text-gray-400">
-              Petani: {order.farmerName}
-            </p>
-          </div>
+      <div className="mt-5 flex items-start gap-4">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-100">
+          {img ? (
+            <Image
+              src={img}
+              alt={order.commodityName}
+              fill
+              sizes="80px"
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-50 text-gray-300">
+              <Package size={22} strokeWidth={1.5} />
+            </div>
+          )}
         </div>
 
-        <div className="shrink-0 sm:ml-auto sm:text-right">
-          <p className="text-xs text-gray-400">Total</p>
-          <p className="mt-0.5 text-lg font-extrabold tracking-tight text-primary">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-lg font-bold text-gray-900">
+            {order.commodityName}
+          </h3>
+          <p className="mt-1 text-sm text-gray-600">
+            {formatNumber(order.quantity)} kg × {formatRupiah(order.unitPrice)}
+          </p>
+          <p className="mt-0.5 text-xs text-gray-500">
+            Petani: {order.farmerName}
+          </p>
+          {payMethod && (
+            <p className="mt-0.5 text-xs text-gray-400">
+              Pembayaran: {payMethod}
+            </p>
+          )}
+        </div>
+
+        {/* Total + aksi — desktop */}
+        <div className="hidden shrink-0 text-right sm:block">
+          <p className="text-[11px] uppercase tracking-wider text-gray-400">
+            Total
+          </p>
+          <p className="mt-1 text-lg font-extrabold text-primary">
+            {formatRupiah(order.totalPrice)}
+          </p>
+          <Link
+            href={`/user/checkout/${order.id}`}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 hover:text-primary-dark transition-colors"
+          >
+            Lihat Detail <ChevronRight size={16} />
+          </Link>
+        </div>
+      </div>
+
+      {/* Total + aksi — mobile */}
+      <div className="mt-4 flex items-end justify-between gap-3 sm:hidden">
+        <div>
+          <p className="text-[11px] uppercase tracking-wider text-gray-400">
+            Total
+          </p>
+          <p className="mt-1 text-lg font-extrabold text-primary">
             {formatRupiah(order.totalPrice)}
           </p>
         </div>
-      </div>
-
-      {/* Footer: pembayaran + aksi */}
-      <div className="flex flex-col gap-2.5 rounded-b-2xl border-t border-gray-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-gray-500">
-          Pembayaran
-          <span aria-hidden className="text-gray-300">·</span>
-          <StatusBadge
-            status={order.paymentStatus ?? "pending"}
-            label={PAYMENT_STATUS_LABEL[order.paymentStatus ?? "pending"]}
-          />
-        </p>
         <Link
           href={`/user/checkout/${order.id}`}
-          className="inline-flex items-center justify-center gap-1 self-start rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-primary hover:text-primary sm:self-auto"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5 hover:text-primary-dark transition-colors"
         >
-          Lihat Detail
-          <ChevronRight size={13} />
+          Lihat Detail <ChevronRight size={16} />
         </Link>
       </div>
 
-      {/* Ulasan */}
+      {/* Ulasan — hanya order selesai */}
       {isCompleted && (
-        <ReviewArea
-          existingReview={existingReview}
-          expanded={expanded}
-          rating={rating}
-          hoverRating={hoverRating}
-          comment={comment}
-          onStart={startReview}
-          onRating={onRating}
-          onHoverRating={onHoverRating}
-          onComment={onComment}
-          onCancel={onCancel}
-          state={state}
-          isPending={isPending}
-          formAction={formAction}
-          orderId={order.id}
-        />
+        <div className={existingReview ? "mt-4" : "mt-2"}>
+          <ReviewArea
+            existingReview={existingReview}
+            expanded={expanded}
+            rating={rating}
+            hoverRating={hoverRating}
+            comment={comment}
+            onStart={startReview}
+            onRating={onRating}
+            onHoverRating={onHoverRating}
+            onComment={onComment}
+            onCancel={onCancel}
+            state={state}
+            isPending={isPending}
+            formAction={formAction}
+            orderId={order.id}
+          />
+        </div>
       )}
-    </div>
+    </section>
   );
 }
 
 /* ============================================================
-   Area ulasan (hanya order selesai)
+   Area ulasan (modal)
    ============================================================ */
 function ReviewArea({
   existingReview,
@@ -324,32 +337,24 @@ function ReviewArea({
 }) {
   if (existingReview) {
     return (
-      <div className="border-t border-gray-100 bg-primary/[0.04] px-5 py-4">
-        <div className="flex items-start gap-2.5">
-          <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                size={14}
-                aria-hidden
-                className={
-                  star <= existingReview.rating
-                    ? "fill-amber-400 text-amber-400"
-                    : "fill-gray-200 text-gray-200"
-                }
-              />
-            ))}
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-gray-700">
-              Ulasan Anda · {existingReview.rating}/5
+      <div className="flex items-start gap-2.5 rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3">
+        <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <StarIcon
+              key={star}
+              filled={star <= existingReview.rating}
+            />
+          ))}
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-gray-700">
+            Ulasan Anda · {existingReview.rating}/5
+          </p>
+          {existingReview.comment && (
+            <p className="mt-1 text-sm leading-relaxed text-gray-600">
+              “{existingReview.comment}”
             </p>
-            {existingReview.comment && (
-              <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                “{existingReview.comment}”
-              </p>
-            )}
-          </div>
+          )}
         </div>
       </div>
     );
@@ -357,16 +362,14 @@ function ReviewArea({
 
   if (!expanded) {
     return (
-      <div className="border-t border-gray-100 bg-primary/[0.04] px-5 py-3">
-        <button
-          type="button"
-          onClick={onStart}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 active:scale-[0.98]"
-        >
-          <Star size={14} className="fill-amber-400 text-amber-400" />
-          Beri ulasan
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onStart}
+        className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 active:scale-[0.98]"
+      >
+        <StarIcon filled />
+        Beri ulasan
+      </button>
     );
   }
 
@@ -411,13 +414,9 @@ function ReviewArea({
               onMouseLeave={() => onHoverRating(0)}
               className="transition-transform duration-150 hover:scale-125 active:scale-95"
             >
-              <Star
+              <StarIcon
                 size={30}
-                className={
-                  (hoverRating || rating) >= star
-                    ? "fill-amber-400 text-amber-400"
-                    : "fill-gray-200 text-gray-200"
-                }
+                filled={(hoverRating || rating) >= star}
               />
             </button>
           ))}
@@ -434,10 +433,14 @@ function ReviewArea({
         />
 
         {state && !state.success && (
-          <p className="mt-2 text-sm text-danger animate-fade-in">{state.message}</p>
+          <p className="mt-2 text-sm text-danger animate-fade-in">
+            {state.message}
+          </p>
         )}
         {state && state.success && (
-          <p className="mt-2 text-sm text-success animate-fade-in">{state.message}</p>
+          <p className="mt-2 text-sm text-success animate-fade-in">
+            {state.message}
+          </p>
         )}
       </div>
 
@@ -474,6 +477,18 @@ function ReviewArea({
       </div>,
       document.body,
     )
+  );
+}
+
+function StarIcon({ filled, size = 14 }: { filled: boolean; size?: number }) {
+  return (
+    <Star
+      size={size}
+      aria-hidden
+      className={
+        filled ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"
+      }
+    />
   );
 }
 
@@ -538,85 +553,74 @@ export default function UserTransactions() {
     (acc, o) => acc + Number(o.totalPrice),
     0,
   );
-  const completedCount = orderList.filter((o) => o.status === "completed").length;
-  const awaitingCount = orderList.filter(
-    (o) => (o.paymentStatus ?? "pending") !== "paid",
+  const completedCount = paidOrders.filter(
+    (o) => o.status === "completed",
   ).length;
 
   return (
-    <div className="min-h-screen animate-fade-up">
-      <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
+      <div className="mx-auto max-w-5xl">
         <PageHeader
           icon={History}
           title="Riwayat Transaksi"
-          subtitle="Semua aktivitas pembelian dan transaksi Anda."
+          subtitle="Semua pembayaran yang berhasil."
         />
 
+        <TransactionTabs active="transactions" />
+
         {/* Statistik ringkas */}
-        <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-gray-200/80 bg-white px-5 py-4 sm:grid-cols-4 sm:px-6">
+        <div className="mb-6 flex flex-wrap gap-x-10 gap-y-5">
           <StatTile
-            icon={<ShoppingCart size={17} />}
-            label="Total Transaksi"
-            value={<CountUp value={orderList.length} />}
+            icon={<Wallet size={17} />}
+            label="Total Pengeluaran"
+            value={<CountUp value={totalSpent} prefix="Rp " />}
+            valueClassName="text-primary"
           />
-          <div className="lg:border-l lg:border-gray-100 lg:pl-6">
-            <StatTile
-              icon={<Wallet size={17} />}
-              label="Total Pengeluaran"
-              value={<CountUp value={totalSpent} prefix="Rp " />}
-              valueClassName="text-primary"
-            />
-          </div>
-          <div className="lg:border-l lg:border-gray-100 lg:pl-6">
-            <StatTile
-              icon={<CheckCircle2 size={17} />}
-              label="Selesai"
-              value={<CountUp value={completedCount} />}
-            />
-          </div>
-          <div className="lg:border-l lg:border-gray-100 lg:pl-6">
-            <StatTile
-              icon={<Clock size={17} />}
-              label="Menunggu Pembayaran"
-              value={<CountUp value={awaitingCount} />}
-            />
-          </div>
+          <StatTile
+            icon={<CheckCircle2 size={17} />}
+            label="Selesai"
+            value={<CountUp value={completedCount} />}
+          />
+          <StatTile
+            icon={<Clock size={17} />}
+            label="Total Transaksi"
+            value={<CountUp value={paidOrders.length} />}
+          />
         </div>
 
-        {orderList.length === 0 ? (
+        {paidOrders.length === 0 ? (
           <EmptyState
-            title="Belum Ada Transaksi"
-            message="Pesanan yang Anda buat akan muncul di sini."
+            title="Belum Ada Riwayat Transaksi"
+            message="Transaksi pembayaran yang berhasil akan muncul di sini."
           >
             <Link
               href="/user/home"
               className="mt-5 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark active:scale-[0.98]"
             >
-              Mulai Belanja
+              Cari Komoditas
             </Link>
           </EmptyState>
         ) : (
           <section>
-            {/* Header daftar */}
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+            <div className="mb-2 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-gray-900">
-                  Riwayat Pesanan
+                  Transaksi Berhasil
                 </h2>
                 <p className="mt-0.5 text-sm text-gray-500">
-                  Semua aktivitas pembelian Anda.
+                  Pembayaran Anda yang telah lunas.
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
-                {formatNumber(orderList.length)} transaksi
+                {formatNumber(paidOrders.length)} transaksi
               </span>
             </div>
 
-            <div className="space-y-4">
-              {orderList.map((o, i) => {
+            <div className="border-b border-gray-200">
+              {paidOrders.map((o, i) => {
                 const isExpanded = expandedReview === o.id;
                 return (
-                  <OrderCard
+                  <TransactionRow
                     key={o.id}
                     order={o}
                     index={i}

@@ -122,13 +122,6 @@ export async function createOrder(
     });
 
     await db.insert(notificationsTable).values({
-      userId: commodity.farmerId,
-      title: "Pesanan Baru",
-      message: `Ada pesanan baru ${orderCode} sebesar Rp ${totalPrice.toLocaleString("id-ID")}.`,
-      type: "order",
-    });
-
-    await db.insert(notificationsTable).values({
       userId: buyerId,
       title: "Pesanan Dibuat",
       message: `Pesanan ${orderCode} berhasil dibuat. Silakan selesaikan pembayaran.`,
@@ -577,13 +570,6 @@ export async function updateOrderStatus(
           })
           .where(eq(commoditiesTable.id, order.commodityId));
       }
-    }
-
-    if (status === "completed") {
-      await db
-        .update(paymentsTable)
-        .set({ status: "paid", paidAt: new Date() })
-        .where(eq(paymentsTable.orderId, orderId));
     }
 
     revalidatePath("/user/orders");

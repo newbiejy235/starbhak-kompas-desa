@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   ChevronLeft,
@@ -102,6 +102,7 @@ function OrderDetailSkeleton() {
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { data: order, loading } = useFetch(
     () => getOrderById(Number(id)),
@@ -120,11 +121,24 @@ export default function OrderDetail() {
     );
   }
 
+  // Dev-only display override via ?mock=pending|paid|failed|refunded.
+  // Inactive in production; only affects display, never the database.
+  const mock = searchParams.get("mock");
+  const mockEnabled = process.env.NODE_ENV !== "production";
+  const displayPaymentStatus =
+    mockEnabled &&
+    (mock === "pending" ||
+      mock === "paid" ||
+      mock === "failed" ||
+      mock === "refunded")
+      ? mock
+      : order.paymentStatus;
+
   const currentStep = STATUS_ORDER.indexOf(order.status as (typeof STATUS_ORDER)[number]);
   const cancelled = order.status === "cancelled";
-  const isPaid = order.paymentStatus === "paid";
-  const isFailed = order.paymentStatus === "failed";
-  const isRefunded = order.paymentStatus === "refunded";
+  const isPaid = displayPaymentStatus === "paid";
+  const isFailed = displayPaymentStatus === "failed";
+  const isRefunded = displayPaymentStatus === "refunded";
 
   const orderImage =
     formatImage(order.commodityImage) ??
@@ -144,6 +158,14 @@ export default function OrderDetail() {
         >
           <ChevronLeft size={16} /> Kembali
         </button>
+
+        {mockEnabled && mock && (
+          <div className="mb-6 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm text-purple-800">
+            Dev mode — tampilan pembayaran di-override ke{" "}
+            <span className="font-bold">{mock}</span> (hanya tampilan, DB
+            tidak berubah).
+          </div>
+        )}
 
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>

@@ -28,6 +28,11 @@ export type SalesChartPoint = {
   kg: number;
 };
 
+export type SalesChartResult = {
+  points: SalesChartPoint[];
+  periodLabel: string;
+};
+
 export type TopProduct = {
   rank: number;
   name: string;
@@ -221,19 +226,25 @@ async function computeStats(
 
 export async function getSalesChart(farmerId: number, range: string) {
   const now = new Date();
-  let startDate: Date;
   const periods: { label: string; start: Date; end: Date }[] = [];
 
   if (range === "30d") {
-    startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - 30);
-    for (let i = 0; i < 5; i++) {
-      const s = new Date(startDate);
-      s.setDate(s.getDate() + i * 6);
-      const e = new Date(s);
-      e.setDate(e.getDate() + 5);
-      if (e > now) e.setTime(now.getTime());
-      periods.push({ label: `${s.getDate()}-${Math.min(s.getDate() + 5, now.getDate())}`, start: s, end: e });
+    // 5 sekuens @6 hari, kronologis (tertua di kiri, terbaru di kanan),
+    // berurutan & mencakup tepat 30 hari.
+    const bins = 5;
+    const daysPerBin = 30 / bins;
+    for (let i = 0; i < bins; i++) {
+      const end = new Date(now);
+      end.setDate(end.getDate() - (bins - 1 - i) * daysPerBin);
+      const start = new Date(end);
+      start.setDate(start.getDate() - daysPerBin + 1);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+      periods.push({
+        label: `${start.getDate()}/${start.getMonth() + 1}`,
+        start,
+        end,
+      });
     }
   } else if (range === "3m") {
     for (let i = 2; i >= 0; i--) {
@@ -263,10 +274,23 @@ export async function getSalesChart(farmerId: number, range: string) {
 
   const resultsRows = await Promise.all(queryPromises);
 
-  return periods.map((period, i) => ({
+  const points = periods.map((period, i) => ({
     label: period.label,
-    kg: Number(resultsRows[i][0]?.kg ?? 0)
+    kg: Number(resultsRows[i][0]?.kg ?? 0),
   }));
+
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  const first = periods[0].start;
+  const last = periods[periods.length - 1].end;
+  const sameYear = first.getFullYear() === last.getFullYear();
+  const fromLabel = fmt(first);
+  const toLabel = sameYear
+    ? last.toLocaleDateString("id-ID", { day: "numeric", month: "long" })
+    : fmt(last) + ` ${last.getFullYear()}`;
+  const periodLabel = `${fromLabel} - ${toLabel}`;
+
+  return { points, periodLabel };
 }
 
 export async function getTopProducts(farmerId: number) {

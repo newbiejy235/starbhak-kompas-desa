@@ -109,42 +109,46 @@ export async function applyMidtransStatus(
     return { ok: true, status: 200, already: true };
   }
 
-  await db
-    .update(paymentsTable)
-    .set({
-      status: mappedStatus,
-      method:
-        PAYMENT_TYPE_METHOD[payload.payment_type ?? ""] ?? payment.method,
-      referenceCode: payload.transaction_id
-        ? `MT-${payload.transaction_id}`
-        : payment.referenceCode,
-      paidAt: mappedStatus === "paid" ? new Date() : payment.paidAt,
-    })
-    .where(eq(paymentsTable.id, payment.id));
+  // Jadikan atomic: pembaruan payment + order + notifikasi kelas PAID
+  // dikerjakan dalam SATU transaksi. Jika notifikasi gagal, seluruh
+  // pembaruan ditolak (rollback) sehingga tidak ada kondisi
+  // "payment = paid tapi petani tak tahu" (§12).
+  await db.transaction(async (tx) => {
+    await tx
+      .update(paymentsTable)
+      .set({
+        status: mappedStatus,
+        method:
+          PAYMENT_TYPE_METHOD[payload.payment_type ?? ""] ?? payment.method,
+        referenceCode: payload.transaction_id
+          ? `MT-${payload.transaction_id}`
+          : payment.referenceCode,
+        paidAt: mappedStatus === "paid" ? new Date() : payment.paidAt,
+      })
+      .where(eq(paymentsTable.id, payment.id));
 
-  await db
-    .update(ordersTable)
-    .set({ status: promotedStatus, updatedAt: new Date() })
-    .where(eq(ordersTable.id, order.id));
+    await tx
+      .update(ordersTable)
+      .set({ status: promotedStatus, updatedAt: new Date() })
+      .where(eq(ordersTable.id, order.id));
 
-  if (mappedStatus === "paid") {
-    await db.insert(notificationsTable).values([
-      {
-        userId: order.farmerId,
-        title: "Pembayaran Diterima",
-        message: `Pembayaran untuk pesanan ${order.orderCode} telah diterima sebesar Rp ${Number(
-          payment.amount,
-        ).toLocaleString("id-ID")}.`,
-        type: "payment",
-      },
-      {
-        userId: order.buyerId,
-        title: "Pembayaran Berhasil",
-        message: `Pembayaran pesanan ${order.orderCode} berhasil. Pesanan Anda telah dikonfirmasi.`,
-        type: "payment",
-      },
-    ]);
-  }
+    if (mappedStatus === "paid") {
+      await tx.insert(notificationsTable).values([
+        {
+          userId: order.buyerId,
+          title: "Pembayaran Berhasil",
+          message: `Pembayaran pesanan ${order.orderCode} berhasil. Pesanan Anda telah dikonfirmasi.`,
+          type: "payment",
+        },
+        {
+          userId: order.farmerId,
+          title: "Pesanan Baru",
+          message: `Pesanan ${order.orderCode} telah dibayar oleh pembeli dan menunggu diproses.`,
+          type: "order",
+        },
+      ]);
+    }
+  });
 
   return { ok: true, status: 200 };
 }

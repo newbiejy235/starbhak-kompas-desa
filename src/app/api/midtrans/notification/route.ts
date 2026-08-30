@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     revalidatePath("/user/orders");
     revalidatePath("/user/checkout");
     revalidatePath("/user/transactions");
+    revalidatePath("/user/transactions/failed");
     revalidatePath("/petani/dashboard");
     revalidatePath("/admin/orders");
 

@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { getFarmerDashboard, getSalesChart } from "@/actions/dashboard";
-import type { SalesChartPoint } from "@/actions/dashboard";
+import type { SalesChartResult } from "@/actions/dashboard";
 import { getFarmerBuyers } from "@/actions/buyer";
 import type { FarmerBuyerRow } from "@/lib/types/market";
 import { getClientUser } from "@/lib/auth/client";
@@ -67,7 +67,7 @@ export default function AnalitikPage() {
   const [chartRange, setChartRange] = useState<ChartRange>("30d");
   const [chart, setChart] = useState<{
     range: ChartRange;
-    data: SalesChartPoint[];
+    data: SalesChartResult;
   } | null>(null);
   const chartLoading = chart?.range !== chartRange;
 
@@ -95,7 +95,8 @@ export default function AnalitikPage() {
       })
       .catch((error) => {
         console.error("Gagal memuat grafik:", error);
-        if (isMounted) setChart({ range: chartRange, data: [] });
+        if (isMounted)
+          setChart({ range: chartRange, data: { points: [], periodLabel: "" } });
       });
 
     return () => {
@@ -218,7 +219,8 @@ export default function AnalitikPage() {
       </section>
 
       <SalesChartCard
-        data={chartLoading ? [] : (chart?.data ?? [])}
+        data={chartLoading ? [] : (chart?.data.points ?? [])}
+        periodLabel={chartLoading ? "" : (chart?.data.periodLabel ?? "")}
         loading={chartLoading}
         range={chartRange}
         onRangeChange={setChartRange}

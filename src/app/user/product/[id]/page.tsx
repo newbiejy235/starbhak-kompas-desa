@@ -10,13 +10,14 @@ import {
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
+import { createOrder } from "@/actions/order";
 import ProductCard from "@/components/shared/ProductCard";
 import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
 import Avatar from "@/components/ui/Avatar";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
-import { addToCart, saveCheckoutSnapshot } from "@/lib/cart";
+import { addToCart } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
 import WishlistButton from "@/components/shared/WishlistButton";
 import type {
@@ -45,6 +46,8 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatOpening, setChatOpening] = useState(false);
+  const [buying, setBuying] = useState(false);
+  const [buyError, setBuyError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const { data, loading, error, reload } = useFetch(
@@ -111,14 +114,29 @@ export default function ProductDetail() {
     router.push("/user/cart");
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    addToCart(product.id, quantity);
-    saveCheckoutSnapshot([{ commodityId: product.id, quantity }]);
-    router.push("/user/checkout");
+    if (buying) return;
+    setBuying(true);
+    setBuyError(null);
+    try {
+      const form = new FormData();
+      form.set("commodityId", String(product.id));
+      form.set("quantity", String(quantity));
+      const result = await createOrder(user.id, form);
+      if (result.success && result.orderId) {
+        router.push(`/user/checkout/${result.orderId}`);
+      } else {
+        setBuyError(result.message || "Gagal membuat pesanan. Silakan coba lagi.");
+      }
+    } catch {
+      setBuyError("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setBuying(false);
+    }
   };
 
   const openChat = async () => {
@@ -295,11 +313,21 @@ export default function ProductDetail() {
                     </button>
                     <button
                       onClick={handleBuyNow}
-                      className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift"
+                      disabled={buying}
+                      className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Beli Sekarang
+                      {buying ? (
+                        <span className="inline-flex items-center justify-center gap-2">
+                          <Loader2 size={18} className="animate-spin" /> Membuat Pesanan...
+                        </span>
+                      ) : (
+                        "Beli Sekarang"
+                      )}
                     </button>
                   </div>
+                  {buyError && (
+                    <p className="mt-3 text-xs text-red-500 text-center">{buyError}</p>
+                  )}
                   {!isOwnProduct && (
                     <button
                       onClick={openChat}

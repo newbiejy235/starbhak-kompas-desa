@@ -11,7 +11,7 @@ import type {
   DashboardStats as DashboardStatsData,
   LowStockSummary,
   OrderStatusCounts,
-  SalesChartPoint,
+  SalesChartResult,
 } from "@/actions/dashboard";
 import type { TopProduct, ActivityItem, HarvestScheduleItem } from "@/actions/dashboard";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -56,10 +56,11 @@ export default function PetaniDashboard() {
   const [reloadKey, setReloadKey] = useState(0);
 
   const [chartRange, setChartRange] = useState<ChartRange>("30d");
-  // Grafik menyimpan rentangnya sendiri agar tahu kapan perlu memuat ulang.
-  const [chart, setChart] = useState<{ range: ChartRange; data: SalesChartPoint[] } | null>(
-    null,
-  );
+  // Grafik menyimpan hasilnya sendiri agar tahu kapan perlu memuat ulang.
+  const [chart, setChart] = useState<{
+    range: ChartRange;
+    data: SalesChartResult;
+  } | null>(null);
   const chartLoading = chart?.range !== chartRange;
 
   // Data utama dimuat sekali per user/reload — semua setState hanya di callback async.
@@ -98,7 +99,11 @@ export default function PetaniDashboard() {
       })
       .catch((error) => {
         console.error("Gagal memuat grafik:", error);
-        if (isMounted) setChart({ range: chartRange, data: [] });
+        if (isMounted)
+          setChart({
+            range: chartRange,
+            data: { points: [], periodLabel: "" },
+          });
       });
 
     return () => {
@@ -122,7 +127,8 @@ export default function PetaniDashboard() {
 
   const { stats, topProducts, activities, harvestSchedule, statusCounts, lowStock } =
     dashboard;
-  const salesChart = chartLoading ? [] : (chart?.data ?? []);
+  const salesChart = chartLoading ? [] : (chart?.data.points ?? []);
+  const chartPeriodLabel = chartLoading ? "" : (chart?.data.periodLabel ?? "");
 
   const firstName = (user?.fullName ?? "").trim().split(/\s+/)[0];
 
@@ -162,6 +168,7 @@ export default function PetaniDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_455px] gap-4">
         <SalesChartCard
           data={salesChart}
+          periodLabel={chartPeriodLabel}
           loading={chartLoading}
           range={chartRange}
           onRangeChange={setChartRange}

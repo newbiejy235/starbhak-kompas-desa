@@ -25,7 +25,7 @@ const menuItems: SidebarEntry[] = [
 
   // ── BELANJA ──
   { id: "heading-belanja", label: "Belanja" },
-  { id: "transactions", label: "Riwayat Transaksi", icon: History, href: "/user/transactions" },
+  { id: "transactions", label: "Riwayat Pesanan", icon: History, href: "/user/transactions" },
   { id: "wishlist", label: "Wishlist", icon: Bookmark, href: "/user/wishlist" },
 
   // ── KOMUNIKASI ──

@@ -38,7 +38,7 @@ function loadSnapScript(snapUrl: string): Promise<void> {
       (process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
         process.env.MIDTRANS_CLIENTKEY ??
         process.env.NEXT_PUBLIC_CLIENT) ??
-        "",
+      "",
     );
     script.async = true;
     script.onload = () => resolve();
