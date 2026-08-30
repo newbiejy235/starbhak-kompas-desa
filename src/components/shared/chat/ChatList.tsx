@@ -39,6 +39,8 @@ interface ChatListProps {
   currentUserId: number;
   role: "pembeli" | "petani";
   basePath: string;
+  onSelectRoom?: (roomId: number) => void;
+  selectedRoomId?: number | null;
 }
 
 const MONTHS = [
@@ -63,7 +65,7 @@ function getRelativeTime(date: Date | null): string {
   return d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 }
 
-export default function ChatList({ rooms, currentUserId, role, basePath }: ChatListProps) {
+export default function ChatList({ rooms, role, basePath, onSelectRoom, selectedRoomId }: ChatListProps) {
   const [search, setSearch] = useState("");
   const [filterMonth, setFilterMonth] = useState<string>("");
   const [filterYear, setFilterYear] = useState<string>("");
@@ -209,13 +211,10 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
             const isActive = room.status === "active";
             const isDeal = room.hasDeal === true;
             const timeLabel = getRelativeTime(room.lastMessageAt || room.createdAt);
+            const isSelected = selectedRoomId === room.id;
 
-            return (
-              <Link
-                key={room.id}
-                href={`${basePath}/${room.id}`}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/80 active:bg-gray-100 transition-all border-b border-gray-100 last:border-0 group"
-              >
+            const content = (
+              <>
                 <div className="relative flex-shrink-0">
                   <Avatar src={otherFoto} name={otherName} size="md" />
                   {isActive && (
@@ -245,6 +244,34 @@ export default function ChatList({ rooms, currentUserId, role, basePath }: ChatL
                     {room.lastMessage || "Mulai percakapan..."}
                   </p>
                 </div>
+              </>
+            );
+
+            const itemClass = `flex items-center gap-4 px-5 py-4 text-left transition-all border-b border-gray-100 last:border-0 group ${
+              isSelected
+                ? "bg-[#025246]/5 border-l-2 border-l-[#025246]"
+                : "hover:bg-gray-50/80 active:bg-gray-100"
+            }`;
+
+            if (onSelectRoom) {
+              return (
+                <button
+                  key={room.id}
+                  onClick={() => onSelectRoom(room.id)}
+                  className={`w-full ${itemClass}`}
+                >
+                  {content}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={room.id}
+                href={`${basePath}/${room.id}`}
+                className={itemClass}
+              >
+                {content}
               </Link>
             );
           })

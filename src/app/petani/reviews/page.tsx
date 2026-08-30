@@ -59,7 +59,7 @@ const focusRing =
    ============================================================ */
 function ReviewsSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-7 flex items-center gap-3">
         <Skeleton className="h-10 w-10 rounded-xl" />
@@ -229,7 +229,7 @@ function ReviewToolbar({
   return (
     <section
       aria-label="Pencarian dan pengurutan ulasan"
-      className="flex flex-col gap-2.5 sm:flex-row sm:items-center"
+      className="mb-5 flex flex-col gap-2.5 border-b border-gray-200 pb-4 sm:flex-row sm:items-center"
     >
       <div className="relative flex-1">
         <Search
@@ -390,7 +390,7 @@ export default function PetaniReviews() {
 
   return (
     <div className="min-h-screen bg-[#F8FAF9]">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-0">
+      <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
         {/* ---------- Header ---------- */}
         <header className="mb-7 sm:mb-8">
           <div className="flex items-center gap-3">
@@ -431,7 +431,7 @@ export default function PetaniReviews() {
 
         {/* ---------- Status filter aktif ---------- */}
         {hasActiveFilter && (
-          <div className="mb-4 mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="mb-4 mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
             <p className="text-sm text-gray-500">
               Menampilkan{" "}
               <span className="font-semibold text-gray-800">

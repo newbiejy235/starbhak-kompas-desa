@@ -41,17 +41,14 @@ export default function DashboardStats({
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 divide-x-0 gap-x-6 gap-y-5 rounded-2xl border border-gray-200/80 bg-white px-5 py-4 sm:px-6">
       {cards.map((card, i) => (
         <div
           key={card.label}
-          style={{ animationDelay: `${i * 80}ms` }}
-          className={`bg-white rounded-card border shadow-soft p-5 opacity-0 animate-fade-up transition-all duration-300 ease-smooth hover:-translate-y-1 hover:shadow-lift ${
-            card.highlight ? "border-primary/30" : "border-gray-200/80"
-          }`}
+          className={`min-w-0 ${i > 0 ? "lg:border-l lg:border-gray-100 lg:pl-6" : ""}`}
         >
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${
+            className={`mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg ${
               card.highlight
                 ? "bg-warning/15 text-warning"
                 : "bg-primary/10 text-primary"
@@ -59,10 +56,10 @@ export default function DashboardStats({
           >
             {card.icon}
           </div>
-          <p className="text-2xl font-bold text-neutral-900">
+          <p className="text-2xl font-bold tracking-tight text-neutral-900">
             <CountUp value={card.value} />
           </p>
-          <p className="text-xs text-gray-500 mt-1">{card.label}</p>
+          <p className="mt-0.5 text-xs font-medium text-gray-500">{card.label}</p>
         </div>
       ))}
     </div>
@@ -72,9 +69,9 @@ export default function DashboardStats({
 /** Skeleton yang meniru bentuk DashboardStats. */
 export function DashboardStatsSkeleton() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 rounded-2xl border border-gray-200/80 bg-white px-5 py-4 sm:px-6">
       {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-28 rounded-card" />
+        <Skeleton key={i} className="h-14 rounded-lg" />
       ))}
     </div>
   );

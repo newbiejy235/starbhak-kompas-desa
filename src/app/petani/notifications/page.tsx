@@ -117,7 +117,7 @@ function formatRelativeTime(value: Date | string): string {
    ============================================================ */
 function NotificationsSkeleton() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -139,13 +139,12 @@ function NotificationsSkeleton() {
       </div>
 
       {/* List */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white">
+      <div className="mt-4 divide-y divide-gray-100">
         <Skeleton className="h-9 w-full rounded-none" />
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className={`flex gap-3.5 px-4 py-4 sm:gap-4 sm:px-5 ${i > 0 ? "border-t border-gray-100" : ""
-              }`}
+            className="flex gap-3.5 px-4 py-4 sm:gap-4 sm:px-5"
           >
             <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -325,7 +324,7 @@ export default function PetaniNotifications() {
 
   return (
     <div className="min-h-screen bg-[#F8FAF9]">
-      <div className="mx-auto max-w-4xl animate-fade-up px-4 py-6 sm:px-6 sm:py-8 lg:px-0">
+      <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
         {/* ---------- Header ---------- */}
         <header className="mb-6 sm:mb-7">
           <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
@@ -429,26 +428,24 @@ export default function PetaniNotifications() {
         ) : (
           <section
             aria-label="Daftar notifikasi"
-            className="overflow-hidden rounded-2xl border border-gray-200/70 bg-white"
+            className="divide-y divide-gray-100"
           >
-            <div className="divide-y divide-gray-100">
-              {groupsWithOffset.map((group) => (
-                <div key={group.key}>
-                  <h2 className="border-b border-gray-100 bg-[#FAFBFA] px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 sm:px-5">
-                    {group.key}
-                  </h2>
-                  <div className="divide-y divide-gray-100">
-                    {group.items.map((n, i) => (
-                      <NotificationItem
-                        key={n.id}
-                        notification={n}
-                        index={group.start + i}
-                      />
-                    ))}
-                  </div>
+            {groupsWithOffset.map((group) => (
+              <div key={group.key}>
+                <h2 className="border-b border-gray-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400 sm:px-5">
+                  {group.key}
+                </h2>
+                <div className="divide-y divide-gray-100">
+                  {group.items.map((n, i) => (
+                    <NotificationItem
+                      key={n.id}
+                      notification={n}
+                      index={group.start + i}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </section>
         )}
       </div>

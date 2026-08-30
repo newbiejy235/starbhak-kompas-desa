@@ -71,7 +71,7 @@ export default function ImageUploadField({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="inline-flex items-center gap-1 text-xs text-[#025246] hover:text-[#024036]"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark"
             >
               <ImagePlus size={14} /> Ganti
             </button>
@@ -82,7 +82,7 @@ export default function ImageUploadField({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="w-full h-32 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#025246] hover:text-[#025246] transition-colors disabled:opacity-50"
+          className="w-full h-32 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-primary hover:text-primary transition-colors duration-200 disabled:opacity-50"
         >
           {uploading ? (
             <Loader2 size={24} className="animate-spin" />

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MapPin, Star, Package } from "lucide-react";
 import { formatRupiah, formatWeight } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
+import WishlistButton from "@/components/shared/WishlistButton";
 import { LOW_STOCK_THRESHOLD } from "@/constants/commodities";
 
 export interface ProductCardData {
@@ -24,23 +25,12 @@ export interface ProductCardData {
 
 interface ProductCardProps {
   data?: ProductCardData | null;
+  userId?: number | null;
 }
 
-const categoryGradient: Record<string, string> = {
-  "Padi & Serealia": "from-amber-400 to-yellow-600",
-  Sayuran: "from-green-400 to-emerald-600",
-  "Buah-buahan": "from-rose-400 to-pink-600",
-  Palawija: "from-orange-400 to-amber-600",
-  Hortikultura: "from-lime-400 to-green-600",
-};
-
-export default function ProductCard({ data }: ProductCardProps) {
+export default function ProductCard({ data, userId }: ProductCardProps) {
   if (!data) return null;
   const img = formatImage(data.image) ?? formatImage(data.images?.[0] ?? null);
-  const gradient =
-    categoryGradient[data.categoryName ?? ""] || "from-primary to-primary-dark";
-  const initial = data.name?.charAt(0)?.toUpperCase() || "P";
-
   const stock = Number(data.stock);
   const outOfStock = stock <= 0;
   const lowStock = stock > 0 && stock <= LOW_STOCK_THRESHOLD;
@@ -63,10 +53,14 @@ export default function ProductCard({ data }: ProductCardProps) {
             className="object-cover transition-transform duration-700 ease-smooth group-hover:scale-[1.04]"
           />
         ) : (
-          <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${gradient}`}>
-            <span className="text-6xl font-black text-white/90">{initial}</span>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
+            <Package size={32} strokeWidth={1.5} />
+            <span className="text-[11px] font-medium">Tidak ada gambar</span>
           </div>
         )}
+        <div className="absolute top-2 right-2 z-10">
+          <WishlistButton commodityId={data.id} userId={userId ?? null} size="sm" />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -95,7 +89,7 @@ export default function ProductCard({ data }: ProductCardProps) {
           <span className="text-xs text-gray-400">/ {data.unit}</span>
         </div>
 
-        <div className="mt-auto" />
+<div className="mt-auto" />
 
         <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5">
           <span

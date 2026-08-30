@@ -92,7 +92,7 @@ function getRemainingDays(endDate: Date, now: Date): number {
 /* ---------------------- SKELETON ---------------------- */
 function TargetSkeleton() {
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="w-full space-y-6 p-4 sm:p-6 lg:px-8">
       <div className="flex items-center gap-3">
         <Skeleton className="h-11 w-11 shrink-0 rounded-2xl" />
         <div className="space-y-1.5">
@@ -102,10 +102,10 @@ function TargetSkeleton() {
       </div>
       <Skeleton className="h-56 rounded-card" />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Skeleton className="h-20 rounded-xl" />
-        <Skeleton className="h-20 rounded-xl" />
-        <Skeleton className="h-20 rounded-xl" />
-        <Skeleton className="h-20 rounded-xl" />
+        <Skeleton className="h-[64px] rounded-xl" />
+        <Skeleton className="h-[64px] rounded-xl" />
+        <Skeleton className="h-[64px] rounded-xl" />
+        <Skeleton className="h-[64px] rounded-xl" />
       </div>
       <Skeleton className="h-16 rounded-xl" />
     </div>
@@ -199,7 +199,7 @@ export default function TargetPenjualanPage() {
   const visualPercent = Math.min(percent, 100);
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
       <PageHeader
         icon={Target}
         title="Target Penjualan"
@@ -341,7 +341,7 @@ export default function TargetPenjualanPage() {
           </section>
 
           {/* ---- SUPPORTING STATISTICS ---- */}
-          <section className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatCard
               label="Target"
               value={formatRupiah(targetAmount)}
@@ -368,7 +368,7 @@ export default function TargetPenjualanPage() {
           </section>
 
           {/* ---- STATUS + PERIOD ---- */}
-          <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Status card */}
             <StatusCard
               percent={percent}
@@ -379,7 +379,7 @@ export default function TargetPenjualanPage() {
             />
 
             {/* Period card */}
-            <div className="rounded-xl border border-gray-200/80 bg-white px-5 py-4 shadow-soft">
+            <div className="border-b border-gray-200 px-1 py-4 sm:px-2">
               <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
                 Periode Target
               </p>
@@ -531,12 +531,12 @@ function StatCard({
   valueColor?: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-      <div className="mb-1 flex items-center gap-1.5">
-        {icon}
-        <p className="text-xs text-gray-500">{label}</p>
+    <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        {icon && <span className="shrink-0">{icon}</span>}
       </div>
-      <p className={`text-base font-bold ${valueColor} sm:text-lg`}>{value}</p>
+      <p className={`mt-1 text-lg font-black ${valueColor} sm:text-xl`}>{value}</p>
     </div>
   );
 }
@@ -555,7 +555,7 @@ function StatusCard({
   const StatusIcon = status.icon;
 
   return (
-    <div className="rounded-xl border border-gray-200/80 bg-white px-5 py-4 shadow-soft">
+    <div className="border-b border-gray-200 px-1 py-4 sm:px-2">
       <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
         Status Target
       </p>

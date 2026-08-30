@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { getFarmerDashboard, getSalesChart } from "@/actions/dashboard";
-import type { SalesChartPoint } from "@/actions/dashboard";
+import type { SalesChartResult } from "@/actions/dashboard";
 import { getFarmerBuyers } from "@/actions/buyer";
 import type { FarmerBuyerRow } from "@/lib/types/market";
 import { getClientUser } from "@/lib/auth/client";
@@ -50,12 +50,12 @@ function SummaryCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-      <p className="flex items-center gap-1 text-xs text-gray-500">
-        {icon}
-        {label}
-      </p>
-      <div className="mt-0.5">{children}</div>
+    <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <span className="shrink-0 text-gray-500">{icon}</span>
+      </div>
+      <div className="mt-1">{children}</div>
     </div>
   );
 }
@@ -67,7 +67,7 @@ export default function AnalitikPage() {
   const [chartRange, setChartRange] = useState<ChartRange>("30d");
   const [chart, setChart] = useState<{
     range: ChartRange;
-    data: SalesChartPoint[];
+    data: SalesChartResult;
   } | null>(null);
   const chartLoading = chart?.range !== chartRange;
 
@@ -95,7 +95,8 @@ export default function AnalitikPage() {
       })
       .catch((error) => {
         console.error("Gagal memuat grafik:", error);
-        if (isMounted) setChart({ range: chartRange, data: [] });
+        if (isMounted)
+          setChart({ range: chartRange, data: { points: [], periodLabel: "" } });
       });
 
     return () => {
@@ -113,7 +114,7 @@ export default function AnalitikPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+      <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
         <PageHeader
           icon={ChartColumn}
           title="Analitik"
@@ -135,7 +136,7 @@ export default function AnalitikPage() {
 
   if (!hasSales && topProducts.length === 0) {
     return (
-      <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+      <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
         <PageHeader
           icon={ChartColumn}
           title="Analitik"
@@ -162,7 +163,7 @@ export default function AnalitikPage() {
       : null;
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up space-y-5 p-4 sm:p-6 lg:p-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up space-y-5">
       <PageHeader
         icon={ChartColumn}
         title="Analitik"
@@ -170,7 +171,7 @@ export default function AnalitikPage() {
       />
 
       {/* Ringkasan performa */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
         <SummaryCard label="Pendapatan Bulan Ini" icon={<TrendingUp size={12} />}>
           <p className="text-lg font-black text-primary">
             {formatRupiah(stats.revenueThisMonth)}
@@ -218,7 +219,8 @@ export default function AnalitikPage() {
       </section>
 
       <SalesChartCard
-        data={chartLoading ? [] : (chart?.data ?? [])}
+        data={chartLoading ? [] : (chart?.data.points ?? [])}
+        periodLabel={chartLoading ? "" : (chart?.data.periodLabel ?? "")}
         loading={chartLoading}
         range={chartRange}
         onRangeChange={setChartRange}

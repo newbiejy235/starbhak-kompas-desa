@@ -30,6 +30,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "src/script/tes-db.ts"
-  ],
+, "src/app/api/tokenizer/route.ts"  ],
   "exclude": ["node_modules"]
 }

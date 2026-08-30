@@ -64,7 +64,7 @@ export default function ChatItem({
       href={href}
       className={`group flex items-center gap-3 px-4 py-3.5 transition-colors duration-200 sm:px-5 ${
         isActive
-          ? "border-l-2 border-[#025246] bg-[#F5FAF8]"
+          ? "border-l-2 border-primary bg-[#F5FAF8]"
           : "border-l-2 border-transparent hover:bg-gray-50"
       }`}
     >
@@ -79,7 +79,7 @@ export default function ChatItem({
             className="h-11 w-11 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#025246]/10 text-sm font-semibold text-[#025246]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
             {getInitials(room.otherName)}
           </div>
         )}
@@ -97,7 +97,7 @@ export default function ChatItem({
           >
             {room.otherName}
           </p>
-          <span className={`shrink-0 text-xs ${hasUnread ? "font-bold text-[#025246]" : "text-gray-400"}`}>
+          <span className={`shrink-0 text-xs ${hasUnread ? "font-bold text-primary" : "text-gray-400"}`}>
             {formatChatTime(room.lastMessageAt)}
           </span>
         </div>
@@ -110,7 +110,7 @@ export default function ChatItem({
           <div className="flex shrink-0 items-center gap-1.5">
             {hasUnread && (
               <span
-                className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#025246] px-2 text-[11px] font-bold text-white shadow-sm"
+                className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-[11px] font-bold text-white shadow-sm"
                 aria-label={`${room.unreadCount} pesan belum dibaca`}
               >
                 {room.unreadCount > 99 ? "99+" : room.unreadCount}
@@ -132,9 +132,9 @@ export default function ChatItem({
           }
           aria-pressed={isPinned}
           title={isPinned ? "Lepas Sematan" : "Sematkan"}
-          className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#025246] ${
+          className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
             isPinned
-              ? "bg-[#025246]/10 text-[#025246] opacity-100"
+              ? "bg-primary/10 text-primary opacity-100"
               : "text-gray-400 opacity-0 hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100 focus-visible:opacity-100"
           }`}
         >

@@ -50,17 +50,6 @@ export default function DashboardShell({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ── Click-outside to close profile menu ── */
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [menuOpen]);
 
   /* ── Helpers ── */
   const logout = () => {
@@ -110,7 +99,6 @@ export default function DashboardShell({
     );
   }
 
-  /* ── Main render ── */
   return (
     <div className="min-h-screen bg-[#F6F6F6]">
       {sidebar}
@@ -122,27 +110,21 @@ export default function DashboardShell({
           : "bg-transparent backdrop-blur-none"
           }`}
       >
-        <div className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8">
-          {/* ── Left side ── */}
-          <div className="flex min-w-0 items-center gap-3">
-            <p className="text-sm font-semibold text-neutral-900 lg:hidden pl-12">
-              KompasDesa
-            </p>
-            <p className="hidden lg:block text-sm font-semibold text-neutral-500 w-100">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-2 sm:h-14 sm:flex-nowrap sm:gap-y-0 sm:px-6 sm:py-0 lg:px-8">
+
+          <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+            <p className="hidden lg:block text-sm font-semibold text-neutral-500 w-56 shrink-0">
               {headerLabel}
             </p>
-            {headerLeft}
+            <div className="hidden min-w-0 flex-1 sm:block">{headerLeft}</div>
           </div>
 
-          {/* ── Right side: action buttons + profile dropdown ── */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-shrink-0 items-center gap-2.5">
             {headerRight}
 
-            {/* Profile section — always present */}
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
-                onClick={() => setMenuOpen((o) => !o)}
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 className={`flex items-center gap-2 rounded-full p-0.5 pr-1.5 transition-colors duration-150 hover:bg-white/80 active:scale-95 ${focusRing}`}
@@ -155,12 +137,6 @@ export default function DashboardShell({
                 <span className="hidden sm:block max-w-[140px] truncate text-sm font-semibold text-neutral-900">
                   {user.fullName}
                 </span>
-                <ChevronDown
-                  size={15}
-                  aria-hidden
-                  className={`text-gray-400 transition-transform duration-200 ${menuOpen ? "rotate-180" : ""
-                    }`}
-                />
               </button>
 
               {menuOpen && (
@@ -205,11 +181,17 @@ export default function DashboardShell({
               )}
             </div>
           </div>
+
+          {headerLeft && (
+            <div className="order-last w-full min-w-0 sm:hidden">
+              {headerLeft}
+            </div>
+          )}
         </div>
       </header>
 
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <main className="flex-1 sm:p-6 lg:p-8">{children}</main>
+        <main className="w-full flex-1 px-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

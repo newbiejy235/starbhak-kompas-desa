@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Search, ShoppingCart, Bell } from "lucide-react";
+import { Search, ShoppingCart, Bell, Bookmark } from "lucide-react";
 
 import { getUnreadNotificationCount } from "@/actions/notification";
+import { getWishlistCount } from "@/actions/wishlist";
 import { useAuth, useFetch } from "@/lib/hooks";
 
 import SearchRecommendationDropdown from "@/components/userpage/SearchRecommendationDropdown";
@@ -88,7 +89,7 @@ export function HeaderSearch() {
     <form
       onSubmit={submitSearch}
       role="search"
-      className="hidden flex-1 mx-4 sm:relative sm:block lg:mx-8"
+      className="relative min-w-0 flex-1 mx-2 sm:mx-4 lg:mx-8 py-3"
     >
       <Search
         size={16}
@@ -106,7 +107,6 @@ export function HeaderSearch() {
         aria-label="Cari komoditas atau petani"
         className={`h-9 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 ${focusRing}`}
       />
-
       <SearchRecommendationDropdown
         query={search}
         isOpen={dropdownOpen}
@@ -120,6 +120,7 @@ export function HeaderSearch() {
 
 /* ============================================================
    Tombol aksi sisi kanan (hanya aksi spesifik pembeli):
+   - Wishlist
    - Keranjang
    - Notifikasi
    Akses akun/profil berada pada dropdown profil di DashboardShell.
@@ -137,18 +138,45 @@ export function HeaderActions() {
     [user?.id, pathname],
   );
 
+  const { data: wishlistCount } = useFetch(
+    () =>
+      user
+        ? getWishlistCount(user.id)
+        : Promise.resolve(0),
+    [user?.id, pathname],
+  );
+
   const unread = Number(unreadCount ?? 0);
+  const wishlistQty = Number(wishlistCount ?? 0);
 
   return (
     <div className="flex flex-shrink-0 items-center gap-1">
+      {/* Wishlist */}
+      <Link
+        href="/user/wishlist"
+        aria-label="Wishlist"
+        aria-current={pathname.startsWith("/user/wishlist") ? "page" : undefined}
+        className={`${iconBtn} ${pathname.startsWith("/user/wishlist") ? "bg-primary/10 text-primary" : ""
+          }`}
+      >
+        <Bookmark size={19} />
+        {wishlistQty > 0 && (
+          <span
+            aria-hidden
+            className="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white"
+          >
+            {wishlistQty > 99 ? "99+" : wishlistQty}
+          </span>
+        )}
+      </Link>
+
       {/* Keranjang */}
       <Link
         href="/user/cart"
         aria-label="Keranjang belanja"
         aria-current={pathname.startsWith("/user/cart") ? "page" : undefined}
-        className={`${iconBtn} ${
-          pathname.startsWith("/user/cart") ? "bg-primary/10 text-primary" : ""
-        }`}
+        className={`${iconBtn} ${pathname.startsWith("/user/cart") ? "bg-primary/10 text-primary" : ""
+          }`}
       >
         <ShoppingCart size={19} />
       </Link>
@@ -162,11 +190,10 @@ export function HeaderActions() {
         aria-current={
           pathname.startsWith("/user/notifications") ? "page" : undefined
         }
-        className={`${iconBtn} ${
-          pathname.startsWith("/user/notifications")
-            ? "bg-primary/10 text-primary"
-            : ""
-        }`}
+        className={`${iconBtn} ${pathname.startsWith("/user/notifications")
+          ? "bg-primary/10 text-primary"
+          : ""
+          }`}
       >
         <Bell size={19} />
 

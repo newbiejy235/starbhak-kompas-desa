@@ -19,14 +19,24 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function EditSkeleton() {
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      <Skeleton className="h-8 w-48" />
-      <div className="bg-white rounded-card border border-gray-200/80 p-6 sm:p-8 space-y-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-xl" />
-        ))}
-        <Skeleton className="h-14 w-full" />
+    <div className="w-full space-y-5 px-4 py-5 sm:px-6 lg:px-8">
+      <Skeleton className="h-4 w-20" />
+      <Skeleton className="h-8 w-52" />
+      <div className="border-b border-gray-100 pb-5">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="mt-5 h-16 rounded-xl" />
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
+      </div>
+      <Skeleton className="h-16 rounded-xl" />
+      <Skeleton className="h-14 w-full" />
     </div>
   );
 }
@@ -106,106 +116,120 @@ export default function EditCommodity() {
     "w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-up">
+    <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
       <button
         onClick={() => router.back()}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-6"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary active:scale-95 transition-all mb-4"
       >
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Komoditas</h1>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          Edit Komoditas
+        </h1>
+      </header>
 
-      <form action={formAction} className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 sm:p-8 space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Nama Komoditas *</label>
-          <input name="name" required defaultValue={commodity.name} className={inputCls} />
+      <form action={formAction} className="space-y-5">
+        <div className="border-b border-gray-100 pb-5">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Nama Komoditas *</label>
+            <input name="name" required defaultValue={commodity.name} className={inputCls} />
+          </div>
+
+          <div className="mt-5">
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Deskripsi</label>
+            <textarea name="description" rows={3} defaultValue={commodity.description ?? ""} className={inputCls} />
+          </div>
+        </div>
+
+        <div className="border-b border-gray-100 pb-5">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Kategori *</label>
+              <select name="categoryId" className={inputCls} defaultValue={commodity.categoryId}>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.icon} {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Kualitas</label>
+              <select name="quality" className={inputCls} defaultValue={commodity.quality}>
+                <option value="Premium">Premium</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-gray-100 pb-5">
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga (Rp) *</label>
+              <input type="number" name="price" required min="1" defaultValue={Number(commodity.price) || ""} className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Stok *</label>
+              <input type="number" name="stock" required min="1" defaultValue={Number(commodity.stock) || ""} className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Satuan</label>
+              <select name="unit" className={inputCls} defaultValue={commodity.unit}>
+                <option value="kg">kg</option>
+                <option value="ton">ton</option>
+                <option value="karung">karung</option>
+                <option value="kuintal">kuintal</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-4 grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Minimum Nego (Rp)</label>
+              <input type="number" name="minPrice" min="0" defaultValue={commodity.minPrice ?? ""} className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Maksimum Nego (Rp)</label>
+              <input type="number" name="maxPrice" min="0" defaultValue={commodity.maxPrice ?? ""} className={inputCls} />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-gray-100 pb-5">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Lokasi *</label>
+              <input name="location" required defaultValue={commodity.location} className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Estimasi Panen</label>
+              <input type="date" name="harvestEstimate" defaultValue={fmtDate} className={inputCls} />
+            </div>
+          </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1.5">Deskripsi</label>
-          <textarea name="description" rows={3} defaultValue={commodity.description ?? ""} className={inputCls} />
+          <MediaUploadField
+            defaultImages={
+              commodity.image
+                ? [commodity.image, ...(commodity.images ?? [])].filter(
+                    (url, i, arr) => url && arr.indexOf(url) === i,
+                  )
+                : commodity.images?.length
+                  ? commodity.images
+                  : undefined
+            }
+            defaultVideoUrl={commodity.videoUrl ?? undefined}
+            onChange={handleMediaChange}
+            onUploadStateChange={handleMediaUploadStateChange}
+            onValidationChange={handleMediaValidationChange}
+          />
         </div>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Kategori *</label>
-            <select name="categoryId" className={inputCls} defaultValue={commodity.categoryId}>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.icon} {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Kualitas</label>
-            <select name="quality" className={inputCls} defaultValue={commodity.quality}>
-              <option value="Premium">Premium</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga (Rp) *</label>
-            <input type="number" name="price" required min="1" defaultValue={Number(commodity.price) || ""} className={inputCls} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Stok *</label>
-            <input type="number" name="stock" required min="1" defaultValue={Number(commodity.stock) || ""} className={inputCls} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Satuan</label>
-            <select name="unit" className={inputCls} defaultValue={commodity.unit}>
-              <option value="kg">kg</option>
-              <option value="ton">ton</option>
-              <option value="karung">karung</option>
-              <option value="kuintal">kuintal</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Minimum Nego (Rp)</label>
-            <input type="number" name="minPrice" min="0" defaultValue={commodity.minPrice ?? ""} className={inputCls} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Maksimum Nego (Rp)</label>
-            <input type="number" name="maxPrice" min="0" defaultValue={commodity.maxPrice ?? ""} className={inputCls} />
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Lokasi *</label>
-            <input name="location" required defaultValue={commodity.location} className={inputCls} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1.5">Estimasi Panen</label>
-            <input type="date" name="harvestEstimate" defaultValue={fmtDate} className={inputCls} />
-          </div>
-        </div>
-
-        <MediaUploadField
-          defaultImages={
-            commodity.image
-              ? [commodity.image, ...(commodity.images ?? [])].filter(
-                  (url, i, arr) => url && arr.indexOf(url) === i,
-                )
-              : commodity.images?.length
-                ? commodity.images
-                : undefined
-          }
-          defaultVideoUrl={commodity.videoUrl ?? undefined}
-          onChange={handleMediaChange}
-          onUploadStateChange={handleMediaUploadStateChange}
-          onValidationChange={handleMediaValidationChange}
-        />
 
         <input
           type="hidden"
@@ -222,13 +246,17 @@ export default function EditCommodity() {
           <p className="text-sm text-danger animate-shake">{state.message}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={isPending || mediaUploading || (!commodity.image && !isValidPhotos)}
-          className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isPending ? "Menyimpan..." : "Simpan Perubahan"}
-        </button>
+        <div className="sticky bottom-0 -mx-4 border-t border-gray-200 bg-[#F6F6F6]/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <button
+              type="submit"
+              disabled={isPending || mediaUploading || (!commodity.image && !isValidPhotos)}
+              className="w-full rounded-xl bg-primary px-8 py-3.5 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
+            >
+              {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   );

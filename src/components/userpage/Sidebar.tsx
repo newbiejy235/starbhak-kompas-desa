@@ -10,6 +10,7 @@ import {
   Bell,
   CircleUser,
   BookOpen,
+  Bookmark,
   CircleQuestionMark,
 } from "lucide-react";
 import DashboardSidebar, {
@@ -17,23 +18,27 @@ import DashboardSidebar, {
 } from "@/components/shared/DashboardSidebar";
 
 const menuItems: SidebarEntry[] = [
-  { id: "section-utama", label: "Utama" },
+  // ── UTAMA ──
+  { id: "heading-utama", label: "Utama" },
   { id: "home", label: "Beranda", icon: LayoutDashboard, href: "/user/home" },
-  { id: "chat", label: "Pesan", icon: MessageCircle, href: "/user/chat" },
-  { id: "cart", label: "Keranjang", icon: ShoppingCart, href: "/user/cart" },
-
-  { id: "section-belanja", label: "Belanja" },
   { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },
-  { id: "transactions", label: "Riwayat Transaksi", icon: History, href: "/user/transactions" },
+
+  // ── BELANJA ──
+  { id: "heading-belanja", label: "Belanja" },
+  { id: "transactions", label: "Riwayat Pesanan", icon: History, href: "/user/transactions" },
+  { id: "wishlist", label: "Wishlist", icon: Bookmark, href: "/user/wishlist" },
+
+  // ── KOMUNIKASI ──
+  { id: "heading-komunikasi", label: "Komunikasi" },
+  { id: "chat", label: "Pesan", icon: MessageCircle, href: "/user/chat" },
   { id: "reviews", label: "Ulasan Saya", icon: Star, href: "/user/reviews" },
-
-  { id: "section-preferensi", label: "Preferensi" },
   { id: "notifications", label: "Notifikasi", icon: Bell, href: "/user/notifications" },
-  { id: "profile", label: "Profil", icon: CircleUser, href: "/user/profile" },
 
-  { id: "section-bantuan", label: "Bantuan" },
+  // ── LAINNYA ──
+  { id: "heading-lainnya", label: "Lainnya" },
   { id: "guide", label: "Panduan", icon: BookOpen, href: "/user/panduan" },
   { id: "help", label: "Bantuan", icon: CircleQuestionMark, href: "/user/bantuan" },
+  { id: "profile", label: "Profil", icon: CircleUser, href: "/user/profile" },
 ];
 
 export default function UserSidebar() {

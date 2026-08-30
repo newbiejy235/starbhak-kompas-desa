@@ -33,8 +33,8 @@ import type { getAuthUser } from "@/lib/auth/auth.service";
 import type { getCategoryStats } from "@/actions/category";
 import type {
   getHarvestCalendar,
-  getHarvestRecords,
 } from "@/actions/harvest";
+import type { getFarmerNotes } from "@/actions/notes";
 import type {
   getPriceCommodities,
   getPriceHistory,
@@ -103,8 +103,7 @@ export type NotificationRow =
 
 export type HarvestScheduleRow =
   Awaited<ReturnType<typeof getHarvestCalendar>>[number];
-export type HarvestRecordRow =
-  Awaited<ReturnType<typeof getHarvestRecords>>[number];
+export type FarmerNoteRow = Awaited<ReturnType<typeof getFarmerNotes>>[number];
 export type PriceCommodityOption =
   Awaited<ReturnType<typeof getPriceCommodities>>[number];
 export type PriceHistoryData = NonNullable<

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useActionState } from "react";
-import { Star, Send, ArrowLeft } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Star, Send, X } from "lucide-react";
 import { getUserOrders } from "@/actions/order";
 import { createReview } from "@/actions/review";
 import { formatRupiah, formatDateTime } from "@/lib/format";
@@ -38,6 +39,15 @@ function ReviewsContent() {
   const [comment, setComment] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
 
+  useEffect(() => {
+    if (selectedOrder === null) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [selectedOrder]);
+
   const { data: orders, loading, reload } = useFetch(
     () =>
       user ? getUserOrders(user.id) : Promise.resolve([] as BuyerOrder[]),
@@ -63,126 +73,137 @@ function ReviewsContent() {
   if (loading) return <ReviewsSkeleton />;
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-up">
+    <div className="max-w-5xl mx-auto animate-fade-up">
       <PageHeader
         icon={Star}
         title="Ulasan"
         subtitle="Berikan penilaian untuk pesanan yang sudah selesai."
       />
 
-      {selectedOrder ? (
-        <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-8 max-w-xl mx-auto animate-scale-in">
-          <button
-            onClick={() => setSelectedOrder(null)}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary transition-colors mb-4"
-          >
-            <ArrowLeft size={16} /> Kembali
-          </button>
-          <h2 className="text-xl font-bold text-gray-900 text-center mb-2">Beri Ulasan</h2>
-          <p className="text-sm text-gray-500 text-center mb-6">
-            Bagaimana kualitas produk dan layanan petani?
-          </p>
-
-          <form action={formAction} className="flex flex-col items-center gap-4">
-            <input type="hidden" name="orderId" value={selectedOrder} />
-
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  aria-label={`Beri ${star} bintang`}
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="transition-transform duration-150 hover:scale-125 active:scale-95"
-                >
-                  <Star
-                    size={36}
-                    className={
-                      (hoverRating || rating) >= star
-                        ? "text-amber-400 fill-amber-400 drop-shadow-[0_2px_6px_rgba(251,191,36,0.5)]"
-                        : "text-gray-300"
-                    }
-                  />
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              name="comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Tulis ulasan Anda di sini..."
-              className="w-full rounded-2xl border border-gray-300 px-5 py-4 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
-              rows={4}
-            />
-
-            {state && !state.success && (
-              <p className="text-sm text-danger w-full text-center animate-fade-in">{state.message}</p>
-            )}
-
-            <div className="flex gap-3 w-full">
-              <button
-                type="button"
-                onClick={() => setSelectedOrder(null)}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:scale-[0.98] transition-all"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="flex-1 rounded-2xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-50 inline-flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-              >
-                <Send size={16} /> {isPending ? "Mengirim..." : "Kirim Ulasan"}
-              </button>
-            </div>
-          </form>
-        </div>
+      {completedOrders.length === 0 ? (
+        <EmptyState
+          title="Belum Ada Pesanan Selesai"
+          message="Anda dapat memberi ulasan setelah pesanan selesai."
+        />
       ) : (
-        <>
-          {completedOrders.length === 0 ? (
-            <EmptyState
-              title="Belum Ada Pesanan Selesai"
-              message="Anda dapat memberi ulasan setelah pesanan selesai."
-            />
-          ) : (
-            <div className="space-y-4">
-              {completedOrders.map((o, i) => (
-                <div
-                  key={o.id}
-                  className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5 flex items-center justify-between gap-4 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth animate-fade-up"
-                  style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
-                >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-black text-lg flex-shrink-0">
-                      {o.commodityName?.charAt(0)?.toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
-                      <p className="text-xs text-gray-500">
-                        {o.orderCode} · {formatDateTime(o.createdAt)} · {formatRupiah(o.totalPrice)}
-                      </p>
-                      <p className="text-xs text-gray-400">Petani: {o.farmerName}</p>
-                    </div>
-                  </div>
+        <div className="space-y-4">
+          {completedOrders.map((o, i) => (
+            <div
+              key={o.id}
+              className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5 flex items-center justify-between gap-4 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth animate-fade-up"
+              style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-black text-lg flex-shrink-0">
+                  {o.commodityName?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
+                  <p className="text-xs text-gray-500">
+                    {o.orderCode} · {formatDateTime(o.createdAt)} · {formatRupiah(o.totalPrice)}
+                  </p>
+                  <p className="text-xs text-gray-400">Petani: {o.farmerName}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedOrder(o.id);
+                  setRating(5);
+                  setComment("");
+                }}
+                className="flex-shrink-0 inline-flex items-center gap-2 rounded-xl bg-primary/10 text-primary px-5 py-3 text-sm font-bold hover:bg-primary hover:text-white active:scale-95 transition-all duration-200"
+              >
+                <Star size={16} /> Beri Ulasan
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Overlay ulasan — tingkat viewport */}
+      {selectedOrder !== null &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] w-screen max-w-none overflow-y-auto bg-black/50 p-3 backdrop-blur-sm animate-fade-in sm:p-6">
+            <div
+              className="mx-auto w-full max-w-lg animate-slide-down"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-lift">
+                <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                  <p className="text-base font-bold text-gray-900">Beri Ulasan</p>
                   <button
-                    onClick={() => {
-                      setSelectedOrder(o.id);
-                      setRating(5);
-                      setComment("");
-                    }}
-                    className="flex-shrink-0 inline-flex items-center gap-2 rounded-xl bg-primary/10 text-primary px-5 py-3 text-sm font-bold hover:bg-primary hover:text-white active:scale-95 transition-all duration-200"
+                    type="button"
+                    onClick={() => setSelectedOrder(null)}
+                    aria-label="Tutup form ulasan"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                   >
-                    <Star size={16} /> Beri Ulasan
+                    <X size={18} />
                   </button>
                 </div>
-              ))}
+
+                <form action={formAction} className="flex flex-col gap-4 px-6 py-5">
+                  <input type="hidden" name="orderId" value={selectedOrder} />
+
+                  <div className="flex justify-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        aria-label={`Beri ${star} bintang`}
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="transition-transform duration-150 hover:scale-125 active:scale-95"
+                      >
+                        <Star
+                          size={36}
+                          className={
+                            (hoverRating || rating) >= star
+                              ? "text-amber-400 fill-amber-400 drop-shadow-[0_2px_6px_rgba(251,191,36,0.5)]"
+                              : "text-gray-300"
+                          }
+                        />
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    name="comment"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Tulis ulasan Anda di sini..."
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm transition hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    rows={4}
+                    autoFocus
+                  />
+
+                  {state && !state.success && (
+                    <p className="text-sm text-danger w-full text-center animate-fade-in">{state.message}</p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrder(null)}
+                      className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:scale-[0.98] transition-all"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isPending}
+                      className="flex-1 rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-50 inline-flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                    >
+                      <Send size={16} /> {isPending ? "Mengirim..." : "Kirim Ulasan"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-          )}
-        </>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

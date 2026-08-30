@@ -11,7 +11,7 @@ export default function TopCommoditiesCard({
   if (products.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 transition-all duration-300 ease-smooth hover:shadow-lift">
+    <div className="rounded-2xl border border-gray-200/80 bg-white p-6">
       <h2 className="text-base font-bold text-neutral-900 mb-1">
         Komoditas Terlaris
       </h2>

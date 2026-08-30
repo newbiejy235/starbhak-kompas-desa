@@ -1,15 +1,14 @@
 import { UserRound } from "lucide-react";
 import type { ProfileData } from "./types";
 
-const cardCls =
-  "bg-white rounded-2xl border border-gray-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden";
+const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
 
 export default function TentangSayaCard({ profile }: { profile: ProfileData }) {
   return (
     <div className={cardCls}>
       <div className="p-5 sm:p-6">
-        <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <UserRound size={16} className="text-[#025246]" />
+        <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 pb-3 mb-4 border-b border-gray-100">
+          <UserRound size={16} className="text-primary" />
           Tentang Saya
         </h2>
         {profile.bio ? (

@@ -67,7 +67,7 @@ export default function RiwayatHargaPage() {
   if (loadingOptions) return <PriceSkeleton />;
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
       <PageHeader
         icon={TrendingUp}
         title="Riwayat Harga"
@@ -84,7 +84,7 @@ export default function RiwayatHargaPage() {
       ) : (
         <>
           {/* Pemilih komoditas */}
-          <section className="mb-5 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
+          <section className="mb-5 border-b border-gray-200 pb-4">
             <label htmlFor="price-commodity" className="sr-only">
               Pilih komoditas
             </label>
@@ -114,21 +114,29 @@ export default function RiwayatHargaPage() {
           ) : (
             <>
               {/* Statistik harga */}
-              <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <article className="rounded-card border border-gray-200/80 bg-white px-4 py-3.5 shadow-soft">
-                  <p className="text-xs text-gray-500">Harga Saat Ini</p>
+              <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-xs font-medium text-gray-500">
+                      Harga Saat Ini
+                    </p>
+                  </div>
                   <p className="mt-1 text-xl font-black text-gray-900">
                     {formatRupiah(history.currentPrice)}
                     <span className="text-xs font-medium text-gray-400">
                       /{history.unit}
                     </span>
                   </p>
-                </article>
-                <article className="rounded-card border border-gray-200/80 bg-white px-4 py-3.5 shadow-soft">
-                  <p className="text-xs text-gray-500">Perubahan</p>
+                </div>
+                <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-xs font-medium text-gray-500">
+                      Perubahan
+                    </p>
+                  </div>
                   <p
                     className={`mt-1 flex items-center gap-1 text-xl font-black ${
-                      trendUp ? "text-emerald-600" : "text-red-500"
+                      trendUp ? "text-success" : "text-danger"
                     }`}
                   >
                     {trendUp ? (
@@ -139,14 +147,18 @@ export default function RiwayatHargaPage() {
                     {Math.abs(history.changePercent)}%
                   </p>
                   <p className="text-[11px] text-gray-400">vs bulan sebelumnya</p>
-                </article>
-                <article className="rounded-card border border-gray-200/80 bg-white px-4 py-3.5 shadow-soft">
-                  <p className="text-xs text-gray-500">Bulan Tercatat</p>
+                </div>
+                <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-xs font-medium text-gray-500">
+                      Bulan Tercatat
+                    </p>
+                  </div>
                   <p className="mt-1 text-xl font-black text-gray-900">
                     {history.points.length}
                   </p>
                   <p className="text-[11px] text-gray-400">6 bulan terakhir</p>
-                </article>
+                </div>
               </section>
 
               {/* Grafik */}

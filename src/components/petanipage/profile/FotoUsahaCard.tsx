@@ -8,8 +8,7 @@ import { addFarmImage, removeFarmImage } from "@/actions/profile";
 import { formatImage } from "@/components/shared/States";
 import type { ProfileData } from "./types";
 
-const cardCls =
-  "bg-white rounded-2xl border border-gray-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden";
+const cardCls = "rounded-2xl border border-gray-200/80 bg-white";
 
 export default function FotoUsahaCard({
   profile,
@@ -75,9 +74,9 @@ export default function FotoUsahaCard({
   return (
     <div className={cardCls}>
       <div className="p-5 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-gray-100">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <ImageIcon size={16} className="text-[#025246]" />
+            <ImageIcon size={16} className="text-primary" />
             Foto Usaha
             {profile.farmImages.length > 0 && (
               <span className="text-xs font-normal text-gray-400">
@@ -98,7 +97,7 @@ export default function FotoUsahaCard({
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-colors ${
               uploadingFarm
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-[#025246] text-white hover:bg-[#024036]"
+                : "bg-primary text-white hover:bg-primary-dark"
             }`}
           >
             {uploadingFarm ? (
@@ -112,8 +111,8 @@ export default function FotoUsahaCard({
 
         {profile.farmImages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="w-14 h-14 bg-[#025246]/5 rounded-full flex items-center justify-center mb-3">
-              <ImageIcon className="w-6 h-6 text-[#025246]/40" />
+            <div className="w-14 h-14 bg-primary/5 rounded-full flex items-center justify-center mb-3">
+              <ImageIcon className="w-6 h-6 text-primary/40" />
             </div>
             <p className="text-sm font-medium text-gray-600">Belum Ada Foto Usaha</p>
             <p className="text-xs text-gray-400 mt-1 max-w-[260px]">
