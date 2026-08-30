@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Star, Package, Store } from "lucide-react";
-import { formatRupiah } from "@/lib/format";
 import type { FarmerSearchResult } from "@/lib/types/market";
 
 interface FarmerStoreCardProps {
@@ -12,7 +11,6 @@ interface FarmerStoreCardProps {
 
 export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
   const avgRating = farmer.avgRating ? Number(farmer.avgRating) : null;
-  const avgPrice = farmer.avgPrice ? Number(farmer.avgPrice) : null;
 
   return (
     <Link
@@ -26,7 +24,7 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
       </div>
 
       <div className="px-5 pb-5">
-        {/* Avatar Section (Overlapping the banner cleanly) */}
+        {/* Avatar Section */}
         <div className="-mt-8 mb-3 flex items-end justify-between">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-primary/5 shadow-md">
             {farmer.fotoProfile ? (
@@ -47,7 +45,7 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
           <Store size={16} className="text-primary/40 mb-1" />
         </div>
 
-        {/* Store Name & Location (Stacked safely below avatar) */}
+        {/* Store Name & Location */}
         <div className="space-y-1">
           <h3 className="line-clamp-1 text-[15px] font-bold text-gray-900 group-hover:text-primary transition-colors">
             {farmer.fullName}
@@ -69,7 +67,9 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
             </span>{" "}
             Produk
           </div>
-          {avgRating !== null && avgRating > 0 && (
+          
+          {/* Kondisi Rating */}
+          {avgRating !== null && avgRating > 0 ? (
             <div className="flex items-center gap-1 text-amber-500">
               <Star size={13} fill="currentColor" />
               <span className="font-semibold">{avgRating.toFixed(1)}</span>
@@ -77,14 +77,11 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
                 <span className="text-gray-400">({farmer.reviewCount})</span>
               )}
             </div>
-          )}
-          {avgPrice !== null && avgPrice > 0 && (
-            <span className="text-gray-500 w-full sm:w-auto">
-              Rata-rata{" "}
-              <span className="font-semibold text-primary">
-                {formatRupiah(avgPrice)}
-              </span>
-            </span>
+          ) : (
+            <div className="flex items-center gap-1 text-gray-400">
+              <Star size={13} />
+              <span>Belum ada rating</span>
+            </div>
           )}
         </div>
 

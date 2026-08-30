@@ -46,14 +46,14 @@ function SearchSkeleton() {
     <div className="space-y-8 animate-fade-up">
       <div className="space-y-3">
         <Skeleton className="h-5 w-40" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="overflow-hidden rounded-card border border-gray-200/80 bg-white"
+              className="overflow-hidden rounded-lg sm:rounded-card border border-gray-200/80 bg-white"
             >
-              <Skeleton className="aspect-[4/3] rounded-none" />
-              <div className="space-y-3 p-5">
+              <Skeleton className="aspect-square sm:aspect-[4/3] rounded-none" />
+              <div className="space-y-2 sm:space-y-3 p-2 sm:p-5">
                 <Skeleton className="h-3 w-24" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-6 w-28 mt-2" />
@@ -244,7 +244,7 @@ function SearchContent() {
   }
 
   return (
-    <div className="animate-fade-up max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <div className="animate-fade-up max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-8">
       {/* Top Bar Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
         <div>
@@ -315,7 +315,7 @@ function SearchContent() {
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 {productList.map((item, i) => (
                   <div
                     key={item.id}
