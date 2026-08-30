@@ -21,7 +21,7 @@ const slides: Slide[] = [
     cta: "Lihat Promo",
     ctaHref: "#katalog",
     icon: Tag,
-    gradient: "from-[#025246] via-emerald-700 to-teal-600",
+    gradient: "from-primary via-emerald-700 to-secondary",
   },
   {
     id: 2,
@@ -30,7 +30,7 @@ const slides: Slide[] = [
     cta: "Jelajahi Sekarang",
     ctaHref: "#katalog",
     icon: TrendingUp,
-    gradient: "from-emerald-800 via-teal-700 to-cyan-700",
+    gradient: "from-primary-dark via-emerald-800 to-cyan-800",
   },
   {
     id: 3,
@@ -39,7 +39,7 @@ const slides: Slide[] = [
     cta: "Mulai Belanja",
     ctaHref: "#katalog",
     icon: Sprout,
-    gradient: "from-[#013a32] via-[#025246] to-emerald-700",
+    gradient: "from-primary-dark via-primary to-emerald-700",
   },
 ];
 
@@ -89,7 +89,7 @@ export default function HeroCarousel() {
             </p>
             <a
               href={slide.ctaHref}
-              className="inline-block bg-white text-[#025246] px-6 py-3 rounded-xl text-sm font-bold hover:bg-emerald-50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm"
+              className="inline-block bg-white text-primary px-6 py-3 rounded-xl text-sm font-bold hover:bg-emerald-50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm"
             >
               {slide.cta}
             </a>

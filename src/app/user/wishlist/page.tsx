@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin, Trash2, MessageCircle, Check } from "lucide-react";
+import { MapPin, Trash2, MessageCircle, Check, Bookmark } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 import { getClientUser } from "@/lib/auth/client";
 import { getUserWishlist, removeFromWishlist } from "@/actions/wishlist";
 import { formatRupiah, formatNumber } from "@/lib/format";
@@ -65,8 +66,11 @@ export default function UserWishlistPage() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Wishlist Saya</h1>
-      <p className="text-sm text-gray-500 mb-6">Komoditas yang Anda tandai untuk dibeli atau dinegosiasi.</p>
+      <PageHeader
+        icon={Bookmark}
+        title="Wishlist Saya"
+        subtitle="Komoditas yang Anda tandai untuk dibeli atau dinegosiasi."
+      />
 
       {list.length === 0 ? (
         <EmptyState
@@ -93,7 +97,7 @@ export default function UserWishlistPage() {
                 <div className="p-4 flex items-center gap-4">
                   <Link
                     href={`/user/product/${item.commodityId}`}
-                    className="w-16 h-16 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#025246] to-[#047857] text-white flex items-center justify-center text-2xl font-black group-hover:scale-105"
+                    className="w-16 h-16 rounded-xl flex-shrink-0 bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-2xl font-black group-hover:scale-105"
                   >
                     {item.commodityName?.charAt(0)?.toUpperCase()}
                   </Link>
@@ -102,14 +106,14 @@ export default function UserWishlistPage() {
                     href={`/user/product/${item.commodityId}`}
                     className="flex-1 min-w-0 group"
                   >
-                    <p className="font-bold text-gray-900 truncate group-hover:text-[#025246] transition-colors">
+                    <p className="font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
                       {item.commodityName}
                     </p>
                     <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                      <MapPin size={11} className="text-[#025246]" />
+                      <MapPin size={11} className="text-primary" />
                       {item.commodityLocation}
                     </p>
-                    <p className="text-lg font-extrabold text-[#025246] mt-1">
+                    <p className="text-lg font-extrabold text-primary mt-1">
                       {hasRange
                         ? `${formatRupiah(item.commodityMinPrice)} - ${formatRupiah(item.commodityMaxPrice)}`
                         : formatRupiah(item.commodityPrice)}
@@ -123,7 +127,7 @@ export default function UserWishlistPage() {
                     <button
                       onClick={() => handleNego(item.commodityId)}
                       disabled={outOfStock}
-                      className="px-3.5 py-2 bg-[#00AA5B] text-white text-xs font-bold rounded-lg hover:bg-[#009A4F] disabled:opacity-40 flex items-center gap-1.5 shadow-sm"
+                      className="px-3.5 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark disabled:opacity-40 flex items-center gap-1.5 shadow-sm"
                     >
                       <MessageCircle size={14} /> {outOfStock ? "Habis" : "Lihat & Nego"}
                     </button>

@@ -12,7 +12,9 @@ import {
   Star,
   Send,
   ChevronUp,
+  History,
 } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 import { getUserOrders } from "@/actions/order";
 import { getReviewsByBuyer, createReview } from "@/actions/review";
 import { getClientUser } from "@/lib/auth/client";
@@ -119,10 +121,11 @@ export default function UserTransactions() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Riwayat Transaksi</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Semua pesanan Anda. Berikan ulasan untuk pesanan yang sudah selesai.
-      </p>
+      <PageHeader
+        icon={History}
+        title="Riwayat Transaksi"
+        subtitle="Semua pesanan Anda. Berikan ulasan untuk pesanan yang sudah selesai."
+      />
 
       <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 mb-6">
         <p className="text-sm text-gray-500">Total Pengeluaran</p>

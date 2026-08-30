@@ -71,8 +71,8 @@ export default function UserChatPage() {
         {/* Header */}
         <div className="shrink-0 px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#025246] to-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
-              <MessageCircle size={20} className="text-white" />
+            <div className="w-10 h-10 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-sm">
+              <MessageCircle size={20} strokeWidth={2.25} />
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">Pesan</h1>
@@ -115,8 +115,8 @@ export default function UserChatPage() {
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#025246]/10 to-emerald-500/10 rounded-3xl flex items-center justify-center mb-5">
-              <MessageCircle size={36} className="text-[#025246]/40" />
+            <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-5">
+              <MessageCircle size={36} className="text-primary/40" />
             </div>
             <h3 className="text-lg font-bold text-gray-400 mb-2">
               Pilih Percakapan

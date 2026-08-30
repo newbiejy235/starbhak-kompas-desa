@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   Undo2,
 } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 import { formatRupiah, formatWeight, toKg } from "@/lib/format";
 import { getCommoditiesByIds } from "@/actions/commodity";
 import {
@@ -158,21 +159,15 @@ export default function CartPage() {
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-success text-white rounded-xl flex items-center justify-center shadow-sm">
-          <ShoppingBag size={20} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Keranjang Belanja
-          </h1>
-          <p className="text-sm text-gray-500">
-            {totalKg > 0
-              ? `${formatWeight(totalKg, "kg")} komoditas di keranjang`
-              : "Belum ada komoditas di keranjang"}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={ShoppingBag}
+        title="Keranjang Belanja"
+        subtitle={
+          totalKg > 0
+            ? `${formatWeight(totalKg, "kg")} komoditas di keranjang`
+            : "Belum ada komoditas di keranjang"
+        }
+      />
 
       {items.length === 0 ? (
         <EmptyState

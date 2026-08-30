@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 import { getUserOrders } from "@/actions/order";
 import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime } from "@/lib/format";
@@ -47,8 +49,11 @@ export default function UserOrders() {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Pesanan Saya</h1>
-      <p className="text-sm text-gray-500 mb-6">Pantau status pesanan yang sedang berjalan.</p>
+      <PageHeader
+        icon={ShoppingBag}
+        title="Pesanan Saya"
+        subtitle="Pantau status pesanan yang sedang berjalan."
+      />
 
       {orderList.length === 0 ? (
         <EmptyState
