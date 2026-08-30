@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Loader2,
   Package,
+  RotateCcw,
 } from "lucide-react";
 import { getOrderById } from "@/actions/order";
 import {
@@ -53,7 +54,7 @@ type PayState = "idle" | "preparing" | "pending" | "error";
 
 function PaymentSkeleton() {
   return (
-    <div className="mx-auto max-w-3xl animate-fade-up">
+    <div className="mx-auto max-w-2xl animate-fade-up">
       <Skeleton className="mb-6 h-4 w-24" />
       <Skeleton className="mb-2 h-7 w-64" />
       <Skeleton className="mb-8 h-4 w-80" />
@@ -108,7 +109,7 @@ export default function OrderPayment() {
 
   if (!order) {
     return (
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-2xl">
         <div className="rounded-2xl border border-gray-200/80 bg-white p-12 text-center">
           <p className="text-gray-500">Pesanan tidak ditemukan.</p>
           <Link
@@ -128,6 +129,7 @@ export default function OrderPayment() {
 
   const isPaid = order.paymentStatus === "paid";
   const isFailed = order.paymentStatus === "failed";
+  const isRefunded = order.paymentStatus === "refunded";
 
   const payNow = async () => {
     if (!user) {
@@ -184,7 +186,7 @@ export default function OrderPayment() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-up">
+    <div className="mx-auto max-w-2xl animate-fade-up">
       <button
         onClick={() => router.back()}
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary mb-6"
@@ -214,6 +216,26 @@ export default function OrderPayment() {
             {order.paymentMethod
               ? `Dibayar via ${PAYMENT_METHOD_LABEL[order.paymentMethod] ?? order.paymentMethod}`
               : ""}
+          </p>
+          <Link
+            href={`/user/checkout/${order.id}`}
+            className="mt-6 inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark"
+          >
+            Lihat Detail Pesanan
+          </Link>
+        </div>
+      ) : isRefunded ? (
+        <div className="rounded-2xl border border-gray-200/80 bg-white p-8 shadow-sm flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+            <RotateCcw className="text-gray-500" size={32} />
+          </div>
+          <h2 className="text-lg font-bold text-gray-900">
+            Pembayaran Dikembalikan
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 max-w-sm">
+            Dana untuk pesanan{" "}
+            <span className="font-semibold text-gray-900">{order.orderCode}</span>{" "}
+            telah dikembalikan.
           </p>
           <Link
             href={`/user/checkout/${order.id}`}
