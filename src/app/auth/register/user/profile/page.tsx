@@ -260,11 +260,11 @@ export default function ProfilPembeli() {
               <StepProgress current={2} />
             </div>
 
-            <RegisterStepMeta current={2} label="Profil Pembeli" />
+            <RegisterStepMeta current={2} label="Profile Pembeli" />
 
             <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
-                Profil Pembeli
+                Profile Pembeli
               </h2>
               <p className="text-xs lg:text-sm text-neutral-500 font-medium">
                 Bantu kami menampilkan hasil panen dan perkiraan ongkir terdekat.

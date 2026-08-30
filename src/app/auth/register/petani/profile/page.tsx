@@ -19,7 +19,7 @@ import {
 import { saveRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
-const slideshowImages = ["/images/login/ImageLogin.png", "/assets/bg-login-3.jpg"];
+const slideshowImages = ["/images/login/ImageLogin.png", "/images/login/ImagePetani.png"];
 
 export default function ProfilPetani() {
   const router = useRouter();
@@ -237,7 +237,7 @@ export default function ProfilPetani() {
                 <Leaf size={92} strokeWidth={1.1} className="text-emerald-200 drop-shadow-[0_0_30px_rgba(110,231,183,0.25)]" />
               </div>
               <div className="absolute bottom-4 left-0 right-0 text-center">
-                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-emerald-100/50">Profil Petani</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-emerald-100/50">Profile Petani</span>
               </div>
             </div>
 
@@ -319,7 +319,7 @@ export default function ProfilPetani() {
               <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" /> Informasi usaha
               </div>
-              <h2 className="text-[38px] font-extrabold leading-[1.05] tracking-tight text-neutral-950">Profil Petani</h2>
+              <h2 className="text-[38px] font-extrabold leading-[1.05] tracking-tight text-neutral-950">Profile Petani</h2>
               <p className="mt-3 max-w-[390px] text-sm leading-6 text-neutral-500">
                 Bantu pembeli mengenal komoditas, lokasi, dan kapasitas hasil panenmu.
               </p>
@@ -359,12 +359,12 @@ export default function ProfilPetani() {
                 <Sparkles size={11} /> Selangkah lagi
               </div>
               <h1 className="text-2xl font-extrabold leading-tight text-white">
-                Lengkapi profil<br /><span className="text-emerald-300">pertanianmu.</span>
+                Lengkapi profile<br /><span className="text-emerald-300">pertanianmu.</span>
               </h1>
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-[9px] font-medium uppercase tracking-wider text-white/40">Profil Petani</p>
+                <p className="text-[9px] font-medium uppercase tracking-wider text-white/40">Profile Petani</p>
                 <p className="mt-1 text-xs font-bold text-white/80">Informasi usaha</p>
               </div>
               <div className="flex gap-1.5">
@@ -379,7 +379,7 @@ export default function ProfilPetani() {
         <main className="flex-1 px-5 pb-8 pt-8">
           <div className="mx-auto w-full max-w-[520px]">
             <div className="mb-7">
-              <h2 className="text-3xl font-extrabold tracking-tight text-neutral-950">Profil Petani</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight text-neutral-950">Profie Petani</h2>
               <p className="mt-2 text-sm leading-6 text-neutral-500">Lengkapi informasi tentang usaha pertanianmu.</p>
             </div>
 

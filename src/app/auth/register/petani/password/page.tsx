@@ -18,7 +18,7 @@ import { initialState } from "@/lib/types/auth";
 import { getRegisterDraft, clearRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
-const slideshowImages = ["/images/login/ImageLogin.png", "/assets/bg-login-3.jpg"];
+const slideshowImages = ["/images/login/ImageLogin.png", "/images/auth/Desa.jpg", "/images/auth/Sawah.jpg"];
 
 export default function RegisterPetaniPassword() {
   const router = useRouter();
@@ -191,7 +191,7 @@ export default function RegisterPetaniPassword() {
       <div className="hidden lg:flex min-h-[100dvh] w-full">
         <section className="relative min-h-[100dvh] w-[50%] lg:w-[52%] xl:w-[55%] overflow-hidden bg-[#063b30]">
           {slideshowImages.map((src, index) => (
-            <div key={src + index} className={`absolute inset-0 transition-all duration-[1800ms] ease-out ${currentSlide === index ? "scale-100 opacity-100" : "scale-[1.08] opacity-0"}`}>
+            <div key={src + index} className={`absolute inset-0 transition-all duration-[1800ms] ease-out ${currentSlide === index ? "scale-100 opacity-120" : "scale-[1.08] opacity-30"}`}>
               <Image src={src} alt="" fill priority={index === 0} className="object-cover" />
             </div>
           ))}
