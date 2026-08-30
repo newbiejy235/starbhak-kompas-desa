@@ -11,9 +11,11 @@ import {
 } from "@/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { getAuthUser } from "@/lib/auth/auth.service";
+import { getAuthUser, verifyAuth } from "@/lib/auth/auth.service";
 import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/types/auth";
+import { core } from "@/lib/midtrans";
+import { applyMidtransStatus } from "@/lib/midtrans-sync";
 
 const buyerUser = alias(usersTable, "buyer_user");
 const farmerUser = alias(usersTable, "farmer_user");
@@ -623,4 +625,55 @@ export async function getAllOrders() {
     .orderBy(desc(ordersTable.createdAt));
 
   return result;
+}
+
+export async function syncPaymentStatus(
+  orderId: number,
+): Promise<ActionState> {
+  const auth = await verifyAuth();
+  if (!auth) {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const [order] = await db
+    .select({ id: ordersTable.id, orderCode: ordersTable.orderCode, buyerId: ordersTable.buyerId })
+    .from(ordersTable)
+    .where(eq(ordersTable.id, orderId));
+
+  if (!order) {
+    return { success: false, message: "Pesanan tidak ditemukan" };
+  }
+  if (order.buyerId !== auth.userId) {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  try {
+    const status = await core.transaction.status(order.orderCode);
+    const result = await applyMidtransStatus({
+      order_id: status.order_id as string | undefined,
+      transaction_status: status.transaction_status as string | undefined,
+      fraud_status: status.fraud_status as string | undefined,
+      payment_type: status.payment_type as string | undefined,
+      transaction_id: status.transaction_id as string | undefined,
+      gross_amount: status.gross_amount as string | number | undefined,
+    });
+
+    if (!result.ok) {
+      return { success: false, message: result.error };
+    }
+
+    if (result.already) {
+      return { success: true, message: "Status pembayaran sudah terbaru" };
+    }
+
+    revalidatePath("/user/orders");
+    revalidatePath("/user/checkout");
+    revalidatePath("/user/transactions");
+    revalidatePath("/petani/dashboard");
+
+    return { success: true, message: "Status pembayaran diperbarui" };
+  } catch (error) {
+    console.error("MIDTRANS STATUS SYNC ERROR:", error);
+    return { success: false, message: "Gagal menyinkronkan status pembayaran" };
+  }
 }

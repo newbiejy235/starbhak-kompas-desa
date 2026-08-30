@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +14,7 @@ import {
   Package,
   RotateCcw,
 } from "lucide-react";
-import { getOrderById } from "@/actions/order";
+import { getOrderById, syncPaymentStatus } from "@/actions/order";
 import {
   formatRupiah,
   formatWeight,
@@ -36,6 +36,7 @@ function loadSnapScript(snapUrl: string): Promise<void> {
     script.setAttribute(
       "data-client-key",
       (process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
+        process.env.MIDTRANS_CLIENTKEY ??
         process.env.NEXT_PUBLIC_CLIENT) ??
         "",
     );
@@ -105,6 +106,35 @@ export default function OrderPayment() {
     [id],
   );
 
+  const [syncing, setSyncing] = useState(false);
+  const syncedRef = useRef(false);
+
+  const sync = async () => {
+    if (!order || syncing) return;
+    setSyncing(true);
+    try {
+      await syncPaymentStatus(order.id);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSyncing(false);
+      reload();
+    }
+  };
+
+  useEffect(() => {
+    if (
+      order &&
+      order.paymentStatus !== "paid" &&
+      order.paymentStatus !== "refunded" &&
+      !syncedRef.current
+    ) {
+      syncedRef.current = true;
+      sync();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.id, order?.paymentStatus]);
+
   if (loading) return <PaymentSkeleton />;
 
   if (!order) {
@@ -156,20 +186,20 @@ export default function OrderPayment() {
       window.snap?.pay(data.token, {
         onSuccess: () => {
           setPayState("idle");
-          reload();
+          sync();
         },
         onPending: () => {
           setPayState("pending");
-          reload();
+          sync();
         },
         onError: () => {
           setPayState("error");
           setPayError("Terjadi kesalahan saat memproses pembayaran.");
-          reload();
+          sync();
         },
         onClose: () => {
           setPayState("idle");
-          reload();
+          sync();
         },
       });
     } catch (e) {
@@ -182,7 +212,7 @@ export default function OrderPayment() {
   const checkStatus = () => {
     setPayState("idle");
     setPayError(null);
-    reload();
+    sync();
   };
 
   return (
