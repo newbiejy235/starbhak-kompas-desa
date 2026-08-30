@@ -10,10 +10,17 @@ import {
   AtSign,
   Phone,
   Mail,
-  Loader2
+  Loader2,
+  Users,
+  Wheat,
+  MapPin
 } from "lucide-react";
 import { saveRegisterDraft } from "@/lib/register";
 import StepProgress from "@/components/auth/StepProgress";
+import RegisterStepMeta from "@/components/auth/RegisterStepMeta";
+import BrandStoryPanel from "@/components/auth/BrandStoryPanel";
+import MobileBrandBanner from "@/components/auth/MobileBrandBanner";
+import { animateStepExit, prefersReducedMotion } from "@/lib/authTransition";
 import Image from "next/image";
 
 const slideshowImages = [
@@ -33,6 +40,7 @@ export default function RegisterUser() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,7 +50,23 @@ export default function RegisterUser() {
   }, []);
 
   useEffect(() => {
+    const reduced = prefersReducedMotion();
+
     const ctx = gsap.context(() => {
+      if (reduced) {
+        gsap.set(
+          [
+            ".bg-curve-container",
+            ".header-item",
+            ".left-anim-item",
+            ".right-anim-item",
+            ".footer-anim",
+          ],
+          { opacity: 1, x: 0, y: 0, scaleX: 1, rotateX: 0 }
+        );
+        return;
+      }
+
       const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
       tl.fromTo(".bg-curve-container",
@@ -72,6 +96,18 @@ export default function RegisterUser() {
           delay: i * 0.3,
         });
       });
+
+      const storyCards = document.querySelectorAll(".story-float-card");
+      storyCards.forEach((card, i) => {
+        gsap.to(card, {
+          y: "random(-6, 6)",
+          duration: "random(3, 4.5)",
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.4,
+        });
+      });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -85,11 +121,15 @@ export default function RegisterUser() {
       });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    if (!reduced) {
+      window.addEventListener("mousemove", handleMouseMove);
+    }
 
     return () => {
       ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      if (!reduced) {
+        window.removeEventListener("mousemove", handleMouseMove);
+      }
     };
   }, []);
 
@@ -97,7 +137,10 @@ export default function RegisterUser() {
     e.preventDefault();
     setLoading(true);
     saveRegisterDraft({ fullName, username, noTelp: phone, email });
-    router.push("/auth/register/user/profile");
+
+    animateStepExit(rightColRef.current, "forward", () => {
+      router.push("/auth/register/user/profile");
+    });
   };
 
   return (
@@ -161,26 +204,32 @@ export default function RegisterUser() {
         </div>
       </header>
 
+      <MobileBrandBanner title="Mulai" highlight="Bergabung Bersama Kami" />
+
       <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-stretch lg:items-center w-full max-w-[1600px] mx-auto py-2 lg:py-0">
 
-        <div className="flex lg:w-[45%] flex-col justify-center px-6 py-6 lg:py-0 lg:px-12 xl:px-16 text-center lg:text-left relative z-40">
-          <div className="relative z-10 w-full max-w-[380px] mx-auto lg:mx-0">
-            <h1 className="left-anim-item text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-3 lg:mb-4 text-neutral-900 lg:text-white">
-              Mulai <br className="hidden lg:block" />
-              <span className="text-emerald-600 lg:text-emerald-400">Bergabung Bersama Kami</span>
-            </h1>
-            <p className="left-anim-item text-xs sm:text-sm lg:text-base text-neutral-600 lg:text-emerald-100/80 leading-relaxed font-medium">
-              Bergabunglah untuk terhubung langsung dengan petani lokal dan dapatkan komoditas berkualitas dengan harga terbaik.
-            </p>
-          </div>
+        <div className="hidden lg:flex lg:w-[45%] flex-col justify-center px-6 py-6 lg:py-0 lg:px-12 xl:px-16 relative z-40">
+          <BrandStoryPanel
+            kicker="Ekosistem Pertanian Digital"
+            title="Mulai"
+            highlight="Bergabung Bersama Kami"
+            description="Bergabunglah untuk terhubung langsung dengan petani lokal dan dapatkan komoditas berkualitas dengan harga terbaik."
+            stats={[
+              { icon: Users, value: "5.000+", label: "Petani aktif di seluruh Indonesia" },
+              { icon: Wheat, value: "40+", label: "Jenis komoditas segar setiap hari" },
+              { icon: MapPin, value: "120+", label: "Kota & kabupaten terjangkau" },
+            ]}
+          />
         </div>
 
         <div className="w-full lg:w-[50%] flex flex-col justify-center items-center lg:items-start px-6 pb-10 lg:py-0 lg:pl-24 xl:pl-32 relative z-40 lg:ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+          <div ref={rightColRef} className="w-full max-w-[380px] xl:max-w-[420px]">
 
             <div className="right-anim-item mb-3 flex justify-center lg:justify-start">
               <StepProgress current={1} />
             </div>
+
+            <RegisterStepMeta current={1} label="Informasi Akun" />
 
             <div className="right-anim-item mb-5 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
@@ -289,6 +338,13 @@ export default function RegisterUser() {
                   )}
                 </button>
               </div>
+
+              <p className="right-anim-item text-center text-[13px] text-neutral-500 font-medium mt-1">
+                Sudah punya akun?{" "}
+                <Link href="/auth/login" className="text-emerald-700 font-bold hover:text-emerald-800 transition-colors">
+                  Masuk
+                </Link>
+              </p>
             </form>
           </div>
         </div>

@@ -9,12 +9,19 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Loader2
+  Loader2,
+  ShieldCheck,
+  Sparkles,
+  Handshake
 } from "lucide-react";
 import { registerAction } from "@/actions/auth";
 import { initialState } from "@/lib/types/auth";
 import { getRegisterDraft, clearRegisterDraft } from "@/lib/register";
 import StepProgress from "@/components/auth/StepProgress";
+import RegisterStepMeta from "@/components/auth/RegisterStepMeta";
+import BrandStoryPanel from "@/components/auth/BrandStoryPanel";
+import MobileBrandBanner from "@/components/auth/MobileBrandBanner";
+import { animateStepExit, prefersReducedMotion } from "@/lib/authTransition";
 import Image from "next/image";
 
 const slideshowImages = [
@@ -34,9 +41,12 @@ export default function RegisterUserPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [customError, setCustomError] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isBackNavigating, setIsBackNavigating] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
+  const errorBoxRef = useRef<HTMLDivElement>(null);
 
   const getPasswordStrength = (pass: string) => {
     if (!pass) return { level: 0, text: "Masukkan kata sandi", color: "bg-neutral-200", textColor: "text-neutral-400" };
@@ -61,7 +71,23 @@ export default function RegisterUserPassword() {
   }, []);
 
   useEffect(() => {
+    const reduced = prefersReducedMotion();
+
     const ctx = gsap.context(() => {
+      if (reduced) {
+        gsap.set(
+          [
+            ".bg-curve-container",
+            ".header-item",
+            ".left-anim-item",
+            ".right-anim-item",
+            ".footer-anim",
+          ],
+          { opacity: 1, x: 0, y: 0, scaleX: 1, rotateX: 0 }
+        );
+        return;
+      }
+
       const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
       tl.fromTo(".bg-curve-container",
@@ -91,6 +117,18 @@ export default function RegisterUserPassword() {
           delay: i * 0.3,
         });
       });
+
+      const storyCards = document.querySelectorAll(".story-float-card");
+      storyCards.forEach((card, i) => {
+        gsap.to(card, {
+          y: "random(-6, 6)",
+          duration: "random(3, 4.5)",
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.4,
+        });
+      });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -104,13 +142,28 @@ export default function RegisterUserPassword() {
       });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    if (!reduced) {
+      window.addEventListener("mousemove", handleMouseMove);
+    }
 
     return () => {
       ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      if (!reduced) {
+        window.removeEventListener("mousemove", handleMouseMove);
+      }
     };
   }, []);
+
+  // Micro-interaction: shake ringan saat muncul error, tanpa mengubah logic error itu sendiri.
+  useEffect(() => {
+    if ((customError || state.message) && errorBoxRef.current && !prefersReducedMotion()) {
+      gsap.fromTo(
+        errorBoxRef.current,
+        { x: -6 },
+        { x: 0, duration: 0.4, ease: "elastic.out(1, 0.4)" }
+      );
+    }
+  }, [customError, state.message]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -134,13 +187,24 @@ export default function RegisterUserPassword() {
 
     setIsPending(true);
     const result = await registerAction(state, formData);
-    setIsPending(false);
     setState(result);
 
     if (result.success) {
       clearRegisterDraft();
-      router.push("/auth/login");
+      animateStepExit(rightColRef.current, "forward", () => {
+        router.push("/auth/login");
+      });
+      return;
     }
+
+    setIsPending(false);
+  };
+
+  const handleBack = () => {
+    setIsBackNavigating(true);
+    animateStepExit(rightColRef.current, "back", () => {
+      router.back();
+    });
   };
 
   return (
@@ -208,29 +272,35 @@ export default function RegisterUserPassword() {
         </div>
       </header>
 
+      <MobileBrandBanner title="Keamanan" highlight="Akun Anda" />
+
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
 
         {/* LEFT PANEL */}
-        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
-          <div className="relative z-10 w-full max-w-[380px]">
-            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Keamanan <br />
-              <span className="text-emerald-400">Akun Anda</span>
-            </h1>
-            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Buat kata sandi yang aman untuk mengamankan akun dan transaksi hasil panenmu bersama KompasDesa.
-            </p>
-          </div>
+        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 relative z-40">
+          <BrandStoryPanel
+            kicker="Ekosistem Pertanian Digital"
+            title="Keamanan"
+            highlight="Akun Anda"
+            description="Buat kata sandi yang aman untuk mengamankan akun dan transaksi hasil panenmu bersama KompasDesa."
+            stats={[
+              { icon: ShieldCheck, value: "Terenkripsi", label: "Data & transaksi terlindungi" },
+              { icon: Sparkles, value: "1 langkah lagi", label: "Akun siap digunakan" },
+              { icon: Handshake, value: "Terpercaya", label: "Dipercaya petani & pembeli" },
+            ]}
+          />
         </div>
 
         {/* RIGHT PANEL - Form Password */}
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+          <div ref={rightColRef} className="w-full max-w-[380px] xl:max-w-[420px]">
 
             <div className="right-anim-item mb-3">
               <StepProgress current={3} />
             </div>
+
+            <RegisterStepMeta current={3} label="Keamanan Akun" />
 
             <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
@@ -244,7 +314,9 @@ export default function RegisterUserPassword() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {(state.message || customError) && (
                 <div
+                  ref={errorBoxRef}
                   role="alert"
+                  aria-live="polite"
                   className="right-anim-item text-center text-[13px] font-semibold rounded-xl px-4 py-3 border bg-red-50 text-red-600 border-red-200"
                 >
                   {customError || state.message}
@@ -349,14 +421,15 @@ export default function RegisterUserPassword() {
               <div className="right-anim-item flex gap-3 mt-2">
                 <button
                   type="button"
-                  onClick={() => router.back()}
-                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97]"
+                  onClick={handleBack}
+                  disabled={isPending || isBackNavigating}
+                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-70"
                 >
                   Kembali
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || isBackNavigating}
                   className="group flex w-1/2 items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                 >
                   {isPending ? (

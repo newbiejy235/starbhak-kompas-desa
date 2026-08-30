@@ -9,10 +9,17 @@ import {
   Search,
   MapPin,
   Package,
-  Loader2
+  Loader2,
+  ShoppingBasket,
+  Truck,
+  BadgeCheck
 } from "lucide-react";
 import { saveRegisterDraft } from "@/lib/register";
 import StepProgress from "@/components/auth/StepProgress";
+import RegisterStepMeta from "@/components/auth/RegisterStepMeta";
+import BrandStoryPanel from "@/components/auth/BrandStoryPanel";
+import MobileBrandBanner from "@/components/auth/MobileBrandBanner";
+import { animateStepExit, prefersReducedMotion } from "@/lib/authTransition";
 import { daftarKota } from "@/constants/dataKota";
 import Image from "next/image";
 
@@ -30,9 +37,11 @@ export default function ProfilPembeli() {
   const [estimasi, setEstimasi] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
 
   const filteredKota = daftarKota.filter((kota) =>
     kota.toLowerCase().includes(lokasi.toLowerCase())
@@ -46,7 +55,23 @@ export default function ProfilPembeli() {
   }, []);
 
   useEffect(() => {
+    const reduced = prefersReducedMotion();
+
     const ctx = gsap.context(() => {
+      if (reduced) {
+        gsap.set(
+          [
+            ".bg-curve-container",
+            ".header-item",
+            ".left-anim-item",
+            ".right-anim-item",
+            ".footer-anim",
+          ],
+          { opacity: 1, x: 0, y: 0, scaleX: 1, rotateX: 0 }
+        );
+        return;
+      }
+
       const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
       tl.fromTo(".bg-curve-container",
@@ -76,6 +101,18 @@ export default function ProfilPembeli() {
           delay: i * 0.3,
         });
       });
+
+      const storyCards = document.querySelectorAll(".story-float-card");
+      storyCards.forEach((card, i) => {
+        gsap.to(card, {
+          y: "random(-6, 6)",
+          duration: "random(3, 4.5)",
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.4,
+        });
+      });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -89,16 +126,21 @@ export default function ProfilPembeli() {
       });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    if (!reduced) {
+      window.addEventListener("mousemove", handleMouseMove);
+    }
 
     return () => {
       ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      if (!reduced) {
+        window.removeEventListener("mousemove", handleMouseMove);
+      }
     };
   }, []);
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsNavigating(true);
 
     saveRegisterDraft({
       komoditas,
@@ -106,17 +148,23 @@ export default function ProfilPembeli() {
       estimasi,
     });
 
-    router.push("/auth/register/user/password");
+    animateStepExit(rightColRef.current, "forward", () => {
+      router.push("/auth/register/user/password");
+    });
   };
 
   const handleBack = () => {
+    setIsNavigating(true);
+
     saveRegisterDraft({
       komoditas,
       lokasi,
       estimasi,
     });
 
-    router.back();
+    animateStepExit(rightColRef.current, "back", () => {
+      router.back();
+    });
   };
 
   return (
@@ -184,29 +232,35 @@ export default function ProfilPembeli() {
         </div>
       </header>
 
+      <MobileBrandBanner title="Profil" highlight="Pembeli Anda" />
+
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
 
         {/* LEFT PANEL */}
-        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
-          <div className="relative z-10 w-full max-w-[380px]">
-            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Profil <br />
-              <span className="text-emerald-400">Pembeli Anda</span>
-            </h1>
-            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Bantu kami menampilkan hasil panen dan perkiraan ongkir terdekat untuk Anda.
-            </p>
-          </div>
+        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 relative z-40">
+          <BrandStoryPanel
+            kicker="Ekosistem Pertanian Digital"
+            title="Profil"
+            highlight="Pembeli Anda"
+            description="Bantu kami menampilkan hasil panen dan perkiraan ongkir terdekat untuk Anda."
+            stats={[
+              { icon: ShoppingBasket, value: "40+", label: "Komoditas segar siap dipesan" },
+              { icon: Truck, value: "Real-time", label: "Negosiasi langsung dengan petani" },
+              { icon: BadgeCheck, value: "Terverifikasi", label: "Petani mitra terpercaya" },
+            ]}
+          />
         </div>
 
         {/* RIGHT PANEL - Form Profile */}
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+          <div ref={rightColRef} className="w-full max-w-[380px] xl:max-w-[420px]">
 
             <div className="right-anim-item mb-3">
               <StepProgress current={2} />
             </div>
+
+            <RegisterStepMeta current={2} label="Profil Pembeli" />
 
             <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
@@ -239,7 +293,8 @@ export default function ProfilPembeli() {
                 </div>
               </div>
 
-              <div className="right-anim-item flex flex-col gap-1.5 relative">
+              {/* Added dynamic z-index to lift this field container above subsequent elements when dropdown is active */}
+              <div className={`right-anim-item flex flex-col gap-1.5 relative ${showDropdown ? 'z-50' : 'z-10'}`}>
                 <label htmlFor="lokasi" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Lokasi (Domisili Pengiriman)
                 </label>
@@ -256,14 +311,7 @@ export default function ProfilPembeli() {
                       setShowDropdown(true);
                     }}
                     onFocus={() => {
-                      if (lokasi) {
-                        setShowDropdown(true);
-                      }
-                    }}
-                    onBlur={() => {
-                      setTimeout(() => {
-                        setShowDropdown(false);
-                      }, 200);
+                      setShowDropdown(true);
                     }}
                     placeholder="Ketik nama kota/kabupaten..."
                     className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
@@ -272,26 +320,32 @@ export default function ProfilPembeli() {
                   />
                 </div>
 
-                {showDropdown && lokasi && filteredKota.length > 0 && (
-                  <ul className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border-2 border-neutral-200 rounded-2xl shadow-lg">
-                    {filteredKota.map((kota) => (
-                      <li
-                        key={kota}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setLokasi(kota);
-                          setShowDropdown(false);
-                        }}
-                        className="px-4 py-2.5 text-sm text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer transition-colors duration-150 border-b border-neutral-100 last:border-0"
-                      >
-                        {kota}
+                {showDropdown && (
+                  <ul className="absolute z-50 top-[calc(100%+6px)] left-0 right-0 max-h-52 overflow-y-auto bg-white border-2 border-neutral-200 rounded-2xl shadow-2xl divide-y divide-neutral-100 focus:outline-none">
+                    {filteredKota.length > 0 ? (
+                      filteredKota.map((kota) => (
+                        <li
+                          key={kota}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setLokasi(kota);
+                            setShowDropdown(false);
+                          }}
+                          className="px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-emerald-50 hover:text-emerald-800 cursor-pointer transition-colors"
+                        >
+                          {kota}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="px-4 py-3 text-sm text-neutral-400 text-center select-none">
+                        Kota tidak ditemukan
                       </li>
-                    ))}
+                    )}
                   </ul>
                 )}
               </div>
 
-              <div className="right-anim-item flex flex-col gap-1.5">
+              <div className="right-anim-item flex flex-col gap-1.5 relative z-0">
                 <label htmlFor="estimasi" className="text-[13px] font-bold text-neutral-700 ml-1">
                   Estimasi Kebutuhan
                 </label>
@@ -326,15 +380,21 @@ export default function ProfilPembeli() {
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97]"
+                  disabled={isNavigating}
+                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-70"
                 >
                   Kembali
                 </button>
                 <button
                   type="submit"
+                  disabled={isNavigating}
                   className="group flex w-1/2 items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                 >
-                  <span>Berikutnya</span>
+                  {isNavigating ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <span>Berikutnya</span>
+                  )}
                 </button>
               </div>
             </form>
