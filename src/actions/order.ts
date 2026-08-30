@@ -41,7 +41,8 @@ export async function createOrder(
   const quantity = Number(data.get("quantity"));
   const deliveryMethod = (data.get("deliveryMethod") as string) || "pickup";
   const deliveryAddress = (data.get("deliveryAddress") as string)?.trim() || "";
-  const paymentMethod = (data.get("paymentMethod") as string) || "bank_transfer";
+  const paymentMethod =
+    (data.get("paymentMethod") as string) || "bank_transfer";
   const notes = (data.get("notes") as string)?.trim() || "";
 
   if (!commodityId || !quantity || quantity <= 0) {
@@ -102,7 +103,9 @@ export async function createOrder(
       .set({
         stock: String(Number(commodity.stock) - quantity),
         status:
-          Number(commodity.stock) - quantity <= 0 ? "sold_out" : commodity.status,
+          Number(commodity.stock) - quantity <= 0
+            ? "sold_out"
+            : commodity.status,
       })
       .where(eq(commoditiesTable.id, commodityId));
 
@@ -144,6 +147,103 @@ export async function createOrder(
     console.error(error);
     return { success: false, message: "Gagal membuat pesanan" };
   }
+}
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+export interface CreateOrderFromOfferParams {
+  offerId: number;
+  buyerId: number;
+  farmerId: number;
+  commodityId: number;
+  quantity: number;
+  unitPrice: number;
+}
+
+export async function createOrderFromAcceptedOffer(
+  tx: Tx,
+  params: CreateOrderFromOfferParams,
+) {
+  const [existingOrder] = await tx
+    .select({ id: ordersTable.id, orderCode: ordersTable.orderCode })
+    .from(ordersTable)
+    .where(eq(ordersTable.negotiationId, params.offerId));
+
+  if (existingOrder) {
+    return { id: existingOrder.id, orderCode: existingOrder.orderCode, created: false };
+  }
+
+  const [commodity] = await tx
+    .select()
+    .from(commoditiesTable)
+    .where(eq(commoditiesTable.id, params.commodityId));
+
+  if (!commodity) throw new Error("Komoditas tidak ditemukan");
+  if (Number(commodity.stock) < params.quantity) {
+    throw new Error(`Stok ${commodity.name} tidak mencukupi`);
+  }
+
+  const quantity = params.quantity;
+  const unitPrice = params.unitPrice;
+  const subtotal = unitPrice * quantity;
+  const serviceFee = Math.round(subtotal * 0.025 * 100) / 100;
+  const deliveryFee = 0;
+  const totalPrice = subtotal + serviceFee + deliveryFee;
+  const orderCode = generateOrderCode();
+
+  const [order] = await tx
+    .insert(ordersTable)
+    .values({
+      orderCode,
+      buyerId: params.buyerId,
+      farmerId: params.farmerId,
+      commodityId: params.commodityId,
+      negotiationId: params.offerId,
+      quantity: String(quantity),
+      unitPrice: String(unitPrice),
+      subtotal: String(subtotal),
+      serviceFee: String(serviceFee),
+      deliveryFee: String(deliveryFee),
+      totalPrice: String(totalPrice),
+      deliveryMethod: "pickup",
+      status: "pending",
+    })
+    .returning({ id: ordersTable.id, orderCode: ordersTable.orderCode });
+
+  await tx
+    .update(commoditiesTable)
+    .set({
+      stock: String(Number(commodity.stock) - quantity),
+      status:
+        Number(commodity.stock) - quantity <= 0 ? "sold_out" : commodity.status,
+    })
+    .where(eq(commoditiesTable.id, commodity.id));
+
+  await tx.insert(paymentsTable).values({
+    orderId: order.id,
+    buyerId: params.buyerId,
+    method: "bank_transfer",
+    amount: String(totalPrice),
+    fee: String(serviceFee),
+    status: "pending",
+    referenceCode: `PY-${orderCode.slice(3)}`,
+  });
+
+  await tx.insert(notificationsTable).values({
+    userId: params.farmerId,
+    title: "Pesanan Baru dari Negosiasi",
+    message: `Pesanan ${orderCode} sebesar Rp ${totalPrice.toLocaleString("id-ID")} dari hasil negosiasi.`,
+    type: "order",
+  });
+
+  await tx.insert(notificationsTable).values({
+    userId: params.buyerId,
+    title: "Pesanan Dibuat",
+    message: `Pesanan ${orderCode} berhasil dibuat dari negosiasi. Silakan selesaikan pembayaran.`,
+    type: "order",
+  });
+
+  return { id: order.id, orderCode, created: true };
 }
 
 type OrderItem = {
@@ -288,7 +388,7 @@ export async function createOrders(
 }
 
 export async function getUserOrders(buyerId: number) {
-  return db
+  const rows = await db
     .select({
       id: ordersTable.id,
       orderCode: ordersTable.orderCode,
@@ -312,12 +412,17 @@ export async function getUserOrders(buyerId: number) {
       paymentMethod: paymentsTable.method,
     })
     .from(ordersTable)
-    .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .innerJoin(
+      commoditiesTable,
+      eq(commoditiesTable.id, ordersTable.commodityId),
+    )
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(usersTable, eq(usersTable.id, ordersTable.farmerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
-    .where(eq(ordersTable.buyerId, buyerId))
-    .orderBy(desc(ordersTable.createdAt));
+.where(eq(ordersTable.buyerId, buyerId))
+      .orderBy(desc(ordersTable.createdAt));
+
+  return rows;
 }
 
 export async function getFarmerOrders(farmerId: number) {
@@ -346,7 +451,10 @@ export async function getFarmerOrders(farmerId: number) {
       paymentMethod: paymentsTable.method,
     })
     .from(ordersTable)
-    .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .innerJoin(
+      commoditiesTable,
+      eq(commoditiesTable.id, ordersTable.commodityId),
+    )
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(usersTable, eq(usersTable.id, ordersTable.buyerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
@@ -386,7 +494,10 @@ export async function getOrderById(orderId: number) {
       paymentPaidAt: paymentsTable.paidAt,
     })
     .from(ordersTable)
-    .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .innerJoin(
+      commoditiesTable,
+      eq(commoditiesTable.id, ordersTable.commodityId),
+    )
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
     .innerJoin(buyerUser, eq(buyerUser.id, ordersTable.buyerId))
     .innerJoin(farmerUser, eq(farmerUser.id, ordersTable.farmerId))
@@ -445,7 +556,8 @@ export async function updateOrderStatus(
     await db.insert(notificationsTable).values({
       userId: order.buyerId,
       title: `Status Pesanan ${order.orderCode}`,
-      message: statusMessage[status] || `Status pesanan berubah menjadi ${status}.`,
+      message:
+        statusMessage[status] || `Status pesanan berubah menjadi ${status}.`,
       type: "order",
     });
 
@@ -483,48 +595,8 @@ export async function updateOrderStatus(
   }
 }
 
-export async function markOrderPaid(
-  orderId: number,
-  buyerId: number,
-): Promise<ActionState> {
-  const buyer = await getAuthUser(buyerId);
-  if (!buyer || buyer.role !== "pembeli") {
-    return { success: false, message: "Unauthorized" };
-  }
-
-  try {
-    const [order] = await db
-      .select()
-      .from(ordersTable)
-      .where(eq(ordersTable.id, orderId));
-    if (!order || order.buyerId !== buyerId) {
-      return { success: false, message: "Pesanan tidak ditemukan" };
-    }
-
-    await db
-      .update(paymentsTable)
-      .set({ status: "paid", paidAt: new Date() })
-      .where(eq(paymentsTable.orderId, orderId));
-
-    await db.insert(notificationsTable).values({
-      userId: order.farmerId,
-      title: "Pembayaran Diterima",
-      message: `Pembayaran untuk pesanan ${order.orderCode} telah diterima.`,
-      type: "payment",
-    });
-
-    revalidatePath("/user/checkout");
-    revalidatePath("/user/orders");
-    revalidatePath("/petani/dashboard");
-    return { success: true, message: "Pembayaran berhasil dikonfirmasi" };
-  } catch (error) {
-    console.error(error);
-    return { success: false, message: "Gagal mengonfirmasi pembayaran" };
-  }
-}
-
 export async function getAllOrders() {
-  return db
+  const result = await db
     .select({
       id: ordersTable.id,
       orderCode: ordersTable.orderCode,
@@ -541,9 +613,14 @@ export async function getAllOrders() {
       paymentMethod: paymentsTable.method,
     })
     .from(ordersTable)
-    .innerJoin(commoditiesTable, eq(commoditiesTable.id, ordersTable.commodityId))
+    .innerJoin(
+      commoditiesTable,
+      eq(commoditiesTable.id, ordersTable.commodityId),
+    )
     .innerJoin(buyerUser, eq(buyerUser.id, ordersTable.buyerId))
     .innerJoin(farmerUser, eq(farmerUser.id, ordersTable.farmerId))
     .leftJoin(paymentsTable, eq(paymentsTable.orderId, ordersTable.id))
     .orderBy(desc(ordersTable.createdAt));
+
+  return result;
 }

@@ -1,110 +1,99 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { ShoppingBag, Star } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 import { getUserOrders } from "@/actions/order";
+import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah, formatDateTime } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
-import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { useAuth, useFetch } from "@/lib/hooks";
+import { useFetch } from "@/lib/hooks";
 import type { BuyerOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function OrdersSkeleton() {
   return (
-    <div className="mx-auto max-w-4xl animate-fade-up">
-      <div className="mb-6 space-y-2">
-        <Skeleton className="h-7 w-44" />
-        <Skeleton className="h-3.5 w-64" />
-      </div>
-      <div className="space-y-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-card border border-gray-200/80 bg-white">
-            <Skeleton className="h-14 rounded-none bg-gray-100" />
-            <div className="flex items-center gap-4 px-5 py-4">
-              <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-56" />
-                <Skeleton className="h-3 w-32" />
-              </div>
-              <Skeleton className="h-5 w-20 shrink-0" />
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="max-w-4xl mx-auto space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-64 mb-6" />
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="h-32 rounded-card" />
+      ))}
     </div>
   );
 }
 
 export default function UserOrders() {
-  const { user } = useAuth();
+  const user = getClientUser();
 
-  const { data: orders, loading } = useFetch(
+  const { data: orders, loading, reload } = useFetch(
     () =>
       user ? getUserOrders(user.id) : Promise.resolve([] as BuyerOrder[]),
     [user?.id],
   );
 
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     reload();
+  //   }, 5000);
+  //   return () => clearInterval(timer);
+  // }, [reload]);
+
   if (loading) return <OrdersSkeleton />;
 
-  const orderList = orders ?? [];
+  const orderList = (orders ?? []).filter(
+    (o) => o.status !== "completed" && o.status !== "cancelled",
+  );
 
   return (
-    <div className="mx-auto max-w-4xl animate-fade-up">
+    <div className="max-w-4xl mx-auto animate-fade-up">
       <PageHeader
         icon={ShoppingBag}
         title="Pesanan Saya"
-        subtitle="Pantau status pesanan dan pembayaran Anda."
+        subtitle="Pantau status pesanan yang sedang berjalan."
       />
 
       {orderList.length === 0 ? (
         <EmptyState
-          title="Belum Ada Pesanan"
-          message="Pesanan Anda akan muncul di sini setelah berbelanja."
+          title="Belum Ada Pesanan Aktif"
+          message="Anda belum memiliki pesanan yang sedang berjalan. Yuk mulai belanja komoditas segar!"
         />
       ) : (
         <div className="space-y-4">
           {orderList.map((o, i) => (
             <div
               key={o.id}
-              className="overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift animate-fade-up"
+              className="bg-white rounded-card border border-gray-200/80 shadow-soft hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth overflow-hidden animate-fade-up"
               style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
             >
-              {/* Strip kepala kartu — sama dengan kartu pesanan petani */}
-              <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-5 py-3">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <div>
-                  <p className="text-sm font-bold text-gray-800">{o.orderCode}</p>
                   <p className="text-xs text-gray-500">{formatDateTime(o.createdAt)}</p>
+                  <p className="text-sm font-bold text-gray-800">{o.orderCode}</p>
                 </div>
                 <StatusBadge status={o.status} />
               </div>
 
               <Link
                 href={`/user/checkout/${o.id}`}
-                className="group flex items-center gap-4 px-5 py-4 transition-colors duration-150 hover:bg-primary/[0.03]"
+                className="px-5 py-4 flex items-center gap-4 hover:bg-primary/[0.03] transition-colors group"
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary-dark text-lg font-bold text-white">
+                <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center text-2xl font-black group-hover:scale-105 transition-transform duration-300">
                   {o.commodityName?.charAt(0)?.toUpperCase()}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-gray-900">{o.commodityName}</p>
-                  <p className="mt-0.5 truncate text-xs text-gray-500">
-                    {Number(o.quantity)} × {formatRupiah(o.unitPrice)} · {o.farmerName}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
+                  <p className="text-xs text-gray-500">
+                    {Number(o.quantity)} ├ù {formatRupiah(o.unitPrice)} ┬╖ {o.farmerName}
                   </p>
-                  <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className="shrink-0 text-[11px] text-gray-400">Pembayaran</span>
-                    <StatusBadge status={o.paymentStatus ?? "pending"} />
-                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                    Pembayaran: <StatusBadge status={o.paymentStatus ?? "pending"} />
+                  </p>
                 </div>
-                <div className="shrink-0 text-right">
-                  <p className="text-base font-bold text-primary">{formatRupiah(o.totalPrice)}</p>
-                  {o.status === "completed" && (
-                    <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:underline">
-                      <Star size={12} aria-hidden /> Beri Ulasan
-                    </span>
-                  )}
+                <div className="text-right flex-shrink-0">
+                  <p className="font-extrabold text-primary">{formatRupiah(o.totalPrice)}</p>
                 </div>
               </Link>
             </div>

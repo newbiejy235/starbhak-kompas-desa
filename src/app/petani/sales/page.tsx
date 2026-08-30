@@ -137,7 +137,7 @@ export default function PetaniSales() {
   const upTrend = (stats?.percentChange ?? 0) >= 0;
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
       {/* Header */}
       <header className="mb-6">
         <div className="flex items-center gap-3">
@@ -209,34 +209,49 @@ export default function PetaniSales() {
 
       {/* Mini stats */}
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="text-xs text-gray-500">Transaksi Lunas</p>
-          <p className="mt-0.5 text-xl font-black text-gray-900">{totals.count}</p>
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-xs font-medium text-gray-500">
+              Transaksi Lunas
+            </p>
+          </div>
+          <p className="mt-1 text-xl font-black text-gray-900">{totals.count}</p>
         </div>
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="flex items-center gap-1 text-xs text-gray-500">
-            <ShoppingBag size={12} /> Komoditas Terjual
-          </p>
-          <p className="mt-0.5 text-xl font-black text-gray-900">
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-xs font-medium text-gray-500">
+              Komoditas Terjual
+            </p>
+            <ShoppingBag size={15} className="text-gray-900" />
+          </div>
+          <p className="mt-1 text-xl font-black text-gray-900">
             {formatNumber(totals.items)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="text-xs text-gray-500">Rata-rata / Transaksi</p>
-          <p className="mt-0.5 text-base font-black text-gray-900">
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-xs font-medium text-gray-500">
+              Rata-rata / Transaksi
+            </p>
+          </div>
+          <p className="mt-1 text-base font-black text-gray-900">
             {formatRupiah(totals.avg)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-soft">
-          <p className="text-xs text-gray-500">Selesai Bulan Ini</p>
-          <p className="mt-0.5 text-xl font-black text-gray-900">
+        <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-xs font-medium text-gray-500">
+              Selesai Bulan Ini
+            </p>
+          </div>
+          <p className="mt-1 text-xl font-black text-gray-900">
             {stats?.completedOrdersThisMonth ?? 0}
           </p>
         </div>
       </section>
 
       {/* Filter bar */}
-      <section className="mb-5 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
+      <section className="mb-5 border-b border-gray-200 pb-4">
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative flex-1">
             <Search
@@ -313,13 +328,13 @@ export default function PetaniSales() {
                   </p>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="divide-y divide-gray-100">
                   {list.map((o, i) => {
                     const img = formatImage(o.commodityImage) ?? formatImage(o.commodityImages?.[0] ?? null);
                     return (
                       <article
                         key={o.id}
-                        className="group rounded-card border border-gray-200/80 bg-white p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 hover:shadow-lift"
+                        className="group py-4 transition-colors hover:bg-gray-50/70 animate-fade-up"
                         style={{
                           animationDelay: `${Math.min(i * 50, 300)}ms`,
                           animationFillMode: "backwards",

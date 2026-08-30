@@ -6,10 +6,11 @@
    Token lain (radius, shadow, easing, durasi) sesuai PRD.
    ============================================================ */
    
-
+html {
+  scroll-behavior: smooth;
+}
 
 @theme {
-  /* Warna */
   --color-primary: #025246;
   --color-primary-dark: #013a32;
   --color-secondary: #06b6d4;

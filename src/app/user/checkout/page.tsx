@@ -14,6 +14,7 @@ import {
   type CheckoutSnapshotItem,
 } from "@/lib/cart";
 import { formatRupiah, formatWeight } from "@/lib/format";
+import PageHeader from "@/components/shared/PageHeader";
 import { EmptyState, formatImage } from "@/components/shared/States";
 import type { ActionState } from "@/lib/types/auth";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -149,9 +150,11 @@ function CheckoutContent() {
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Checkout ({checkoutItems.length} produk)
-      </h1>
+      <PageHeader
+        icon={CreditCard}
+        title={`Checkout (${checkoutItems.length} produk)`}
+        subtitle="Selesaikan pemesanan dan pilih metode pembayaran."
+      />
 
       <form action={formAction} className="grid lg:grid-cols-5 gap-6">
         <input type="hidden" name="deliveryMethod" value={deliveryMethod} />

@@ -91,6 +91,7 @@ export async function createReview(
 
     revalidatePath("/user/orders");
     revalidatePath("/user/reviews");
+    revalidatePath("/user/transactions");
     return { success: true, message: "Ulasan berhasil dikirim" };
   } catch (error) {
     console.error(error);
@@ -130,6 +131,25 @@ export async function getReviewsForCommodity(commodityId: number) {
     .from(reviewsTable)
     .innerJoin(usersTable, eq(usersTable.id, reviewsTable.buyerId))
     .where(eq(reviewsTable.commodityId, commodityId))
+    .orderBy(desc(reviewsTable.createdAt));
+}
+
+export async function getReviewsByBuyer(buyerId: number) {
+  return db
+    .select({
+      id: reviewsTable.id,
+      orderId: reviewsTable.orderId,
+      rating: reviewsTable.rating,
+      comment: reviewsTable.comment,
+      createdAt: reviewsTable.createdAt,
+      commodityName: commoditiesTable.name,
+    })
+    .from(reviewsTable)
+    .innerJoin(
+      commoditiesTable,
+      eq(commoditiesTable.id, reviewsTable.commodityId),
+    )
+    .where(eq(reviewsTable.buyerId, buyerId))
     .orderBy(desc(reviewsTable.createdAt));
 }
 

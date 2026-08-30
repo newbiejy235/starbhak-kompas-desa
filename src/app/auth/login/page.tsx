@@ -55,16 +55,16 @@ export default function Login() {
         { scaleX: 0, transformOrigin: "left center" },
         { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
       )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-        "-=0.9"
-      )
-      .fromTo(".footer-anim",
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 },
-        "-=0.5"
-      );
+        .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+          { opacity: 0, y: 30, rotateX: -10 },
+          { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+          "-=0.9"
+        )
+        .fromTo(".footer-anim",
+          { opacity: 0, y: 10 },
+          { opacity: 1, duration: 0.8 },
+          "-=0.5"
+        );
 
       const orbs = document.querySelectorAll(".ambient-orb");
       orbs.forEach((orb, i) => {
@@ -118,8 +118,7 @@ export default function Login() {
           return (
             <div
               key={src + index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isActive
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${isActive
                   ? "opacity-100 scale-100 blur-0"
                   : "opacity-30 scale-105 blur-md"
               }`}
@@ -184,11 +183,10 @@ export default function Login() {
               {state.message && (
                 <div
                   role="alert"
-                  className={`right-anim-item text-[13px] font-medium rounded-xl px-4 py-3 border ${
-                    state.success
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-red-50 text-red-600 border-red-200"
-                  }`}
+                  className={`right-anim-item text-[13px] font-medium rounded-xl px-4 py-3 border ${state.success
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-red-50 text-red-600 border-red-200"
+                    }`}
                 >
                   {state.message}
                 </div>

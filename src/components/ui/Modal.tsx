@@ -52,7 +52,7 @@ export default function Modal({ open, onClose, title, children, className = "" }
       />
       {/* Panel scale + fade in/out (PRD 8.11 & 9.2) */}
       <div
-        className={`relative w-full max-w-lg bg-white rounded-card shadow-lift p-6 ${closing ? "animate-scale-out" : "animate-scale-in"} ${className}`}
+        className={`relative w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-card shadow-lift p-6 ${closing ? "animate-scale-out" : "animate-scale-in"} ${className}`}
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-neutral-900">{title}</h2>

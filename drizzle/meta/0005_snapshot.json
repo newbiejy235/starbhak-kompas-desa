@@ -1,5 +1,5 @@
 {
-  "id": "6de34a3d-7fe5-44f7-a116-9684b97d88c1",
+  "id": "b4d4e68b-1309-4a3a-b9c8-f062cce39f7c",
   "prevId": "14aade02-54b7-497f-b890-7e466d7ff448",
   "version": "7",
   "dialect": "postgresql",
@@ -49,6 +49,214 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cart_items_table": {
+      "name": "cart_items_table",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "cart_items_table_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "cartId": {
+          "name": "cartId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "productId": {
+          "name": "productId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "agreedPrice": {
+          "name": "agreedPrice",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "cart_items_cart_idx": {
+          "name": "cart_items_cart_idx",
+          "columns": [
+            {
+              "expression": "cartId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cart_items_product_idx": {
+          "name": "cart_items_product_idx",
+          "columns": [
+            {
+              "expression": "productId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cart_items_table_cartId_carts_table_id_fk": {
+          "name": "cart_items_table_cartId_carts_table_id_fk",
+          "tableFrom": "cart_items_table",
+          "tableTo": "carts_table",
+          "columnsFrom": [
+            "cartId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "cart_items_table_productId_commodities_table_id_fk": {
+          "name": "cart_items_table_productId_commodities_table_id_fk",
+          "tableFrom": "cart_items_table",
+          "tableTo": "commodities_table",
+          "columnsFrom": [
+            "productId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cart_items_cart_product_key": {
+          "name": "cart_items_cart_product_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "cartId",
+            "productId"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.carts_table": {
+      "name": "carts_table",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "carts_table_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "carts_table_userId_users_table_id_fk": {
+          "name": "carts_table_userId_users_table_id_fk",
+          "tableFrom": "carts_table",
+          "tableTo": "users_table",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "carts_table_userId_unique": {
+          "name": "carts_table_userId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "userId"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1030,8 +1238,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.harvest_records_table": {
-      "name": "harvest_records_table",
+    "public.invoice": {
+      "name": "invoice",
       "schema": "",
       "columns": {
         "id": {
@@ -1041,7 +1249,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "harvest_records_table_id_seq",
+            "name": "invoice_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -1051,115 +1259,26 @@
             "cycle": false
           }
         },
-        "farmerId": {
-          "name": "farmerId",
+        "productId": {
+          "name": "productId",
           "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "commodityId": {
-          "name": "commodityId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "harvestDate": {
-          "name": "harvestDate",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "quantity": {
-          "name": "quantity",
-          "type": "numeric(12, 2)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "unit": {
-          "name": "unit",
-          "type": "varchar(30)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'kg'"
-        },
-        "quality": {
-          "name": "quality",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'A'"
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
-      "indexes": {
-        "harvest_records_farmer_idx": {
-          "name": "harvest_records_farmer_idx",
-          "columns": [
-            {
-              "expression": "farmerId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "harvest_records_commodity_idx": {
-          "name": "harvest_records_commodity_idx",
-          "columns": [
-            {
-              "expression": "commodityId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "harvest_records_table_farmerId_users_table_id_fk": {
-          "name": "harvest_records_table_farmerId_users_table_id_fk",
-          "tableFrom": "harvest_records_table",
-          "tableTo": "users_table",
-          "columnsFrom": [
-            "farmerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "harvest_records_table_commodityId_commodities_table_id_fk": {
-          "name": "harvest_records_table_commodityId_commodities_table_id_fk",
-          "tableFrom": "harvest_records_table",
+        "invoice_productId_commodities_table_id_fk": {
+          "name": "invoice_productId_commodities_table_id_fk",
+          "tableFrom": "invoice",
           "tableTo": "commodities_table",
           "columnsFrom": [
-            "commodityId"
+            "productId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -1979,112 +2098,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.sales_targets_table": {
-      "name": "sales_targets_table",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "identity": {
-            "type": "always",
-            "name": "sales_targets_table_id_seq",
-            "schema": "public",
-            "increment": "1",
-            "startWith": "1",
-            "minValue": "1",
-            "maxValue": "2147483647",
-            "cache": "1",
-            "cycle": false
-          }
-        },
-        "farmerId": {
-          "name": "farmerId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "targetAmount": {
-          "name": "targetAmount",
-          "type": "numeric(14, 2)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "startDate": {
-          "name": "startDate",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "endDate": {
-          "name": "endDate",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "sales_target_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "sales_targets_farmer_idx": {
-          "name": "sales_targets_farmer_idx",
-          "columns": [
-            {
-              "expression": "farmerId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "sales_targets_table_farmerId_users_table_id_fk": {
-          "name": "sales_targets_table_farmerId_users_table_id_fk",
-          "tableFrom": "sales_targets_table",
-          "tableTo": "users_table",
-          "columnsFrom": [
-            "farmerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.users_table": {
       "name": "users_table",
       "schema": "",
@@ -2401,15 +2414,6 @@
         "paid",
         "failed",
         "refunded"
-      ]
-    },
-    "public.sales_target_status": {
-      "name": "sales_target_status",
-      "schema": "public",
-      "values": [
-        "active",
-        "completed",
-        "cancelled"
       ]
     },
     "public.user_role": {

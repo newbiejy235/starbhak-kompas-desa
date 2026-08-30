@@ -58,7 +58,7 @@ export default function PembeliPage() {
   if (loading) return <BuyerSkeleton />;
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
       <PageHeader
         icon={Users}
         title="Pembeli"
@@ -66,7 +66,7 @@ export default function PembeliPage() {
       />
 
       {/* Pencarian */}
-      <section className="mb-5 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
+      <section className="mb-5 border-b border-gray-200 pb-4">
         <div className="relative">
           <Search
             size={16}
@@ -100,11 +100,11 @@ export default function PembeliPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="divide-y divide-gray-100">
           {filtered.map((b, i) => (
             <article
               key={b.buyerId}
-              className="flex items-start gap-3.5 rounded-card border border-gray-200/80 bg-white p-4 shadow-soft transition-all duration-300 ease-smooth animate-fade-up hover:-translate-y-0.5 hover:shadow-lift"
+              className="group flex items-start gap-3.5 py-4 transition-colors hover:bg-gray-50/70 animate-fade-up"
               style={{
                 animationDelay: `${Math.min(i * 40, 240)}ms`,
                 animationFillMode: "backwards",

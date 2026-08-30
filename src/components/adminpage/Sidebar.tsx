@@ -9,6 +9,7 @@ import {
   ReceiptText,
   Star,
   CircleUser,
+  Inbox,
 } from "lucide-react";
 import DashboardSidebar, { type SidebarItem } from "@/components/shared/DashboardSidebar";
 
@@ -21,6 +22,7 @@ const menuItems: SidebarItem[] = [
   { id: "fees", label: "Fee Transaksi", icon: Percent, href: "/admin/fees" },
   { id: "transactions", label: "Transaksi", icon: ReceiptText, href: "/admin/transactions" },
   { id: "reviews", label: "Ulasan", icon: Star, href: "/admin/reviews" },
+  { id: "messages", label: "Pesan Masuk", icon: Inbox, href: "/admin/messages" },
   { id: "profile", label: "Profil", icon: CircleUser, href: "/admin/profile" },
 ];
 

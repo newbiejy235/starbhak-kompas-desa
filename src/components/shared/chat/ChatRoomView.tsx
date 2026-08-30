@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import {
   Send,
@@ -9,7 +9,6 @@ import {
   Check,
   CheckCheck,
   X,
-  ShoppingCart,
   MapPin,
   Tag,
   Handshake,
@@ -22,9 +21,9 @@ import {
   AlertTriangle,
   Reply,
 } from "lucide-react";
-import { formatRupiah, formatWeight } from "@/lib/format";
+import { formatRupiah, formatNumber } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
-import Avatar from "@/components/ui/Avatar";
+import type { SendChatMessageResult } from "@/lib/chat-shared";
 
 interface ChatRoomData {
   id: number;
@@ -39,7 +38,6 @@ interface ChatRoomData {
   commodityStock: string;
   commodityUnit: string;
   commodityImage: string | null;
-  commodityImages: string[] | null;
   commodityDescription: string | null;
   commodityStatus: string;
   buyerName: string;
@@ -47,14 +45,6 @@ interface ChatRoomData {
   farmerName: string;
   farmerFoto: string | null;
   farmerAddress: string | null;
-  pendingOffer: {
-    id: number;
-    price: string;
-    quantity: string;
-    unit: string;
-    status: string;
-    createdAt: Date;
-  } | null;
 }
 
 interface ChatMessageData {
@@ -79,11 +69,19 @@ interface ChatRoomViewProps {
   messages: ChatMessageData[];
   currentUserId: number;
   currentRole: "pembeli" | "petani";
-  onSendMessage: (content: string, type?: string, offerPrice?: number, offerQuantity?: number, replyToId?: number) => Promise<void>;
-  onAddToCart: (price: number, quantity: number) => void;
+  onSendMessage: (content: string, type?: string, offerPrice?: number, offerQuantity?: number, replyToId?: number) => Promise<SendChatMessageResult | null>;
+  onOrderCreated?: (orderId: number) => void;
   onBack: () => void;
   onEditMessage?: (messageId: number, newContent: string) => Promise<{ success: boolean; error?: string }>;
   onDeleteMessage?: (messageId: number) => Promise<{ success: boolean; error?: string }>;
+  negotiationStatus?: {
+    offerId: number;
+    status: string;
+    price: string;
+    quantity: string;
+    orderId: number | null;
+  } | null;
+  onRefreshNegotiation?: () => Promise<void>;
 }
 
 function formatTime(date: Date) {
@@ -108,232 +106,68 @@ function shouldShowDate(messages: ChatMessageData[], index: number) {
   return prev.toDateString() !== curr.toDateString();
 }
 
-interface MessageBubbleProps {
-  msg: ChatMessageData;
-  isMe: boolean;
-  currentUserId: number;
-  commodityUnit: string;
-  allMessages: ChatMessageData[];
-  editingMsgId: number | null;
-  editContent: string;
-  setEditContent: (v: string) => void;
-  setEditingMsg: (m: ChatMessageData | null) => void;
-  handleSaveEdit: () => void;
-  onEditMessage?: (messageId: number, newContent: string) => Promise<{ success: boolean; error?: string }>;
-  onDeleteMessage?: (messageId: number) => Promise<{ success: boolean; error?: string }>;
-  handleContextMenu: (e: React.MouseEvent, msg: ChatMessageData) => void;
-}
-
-const MessageBubble = memo(function MessageBubble({
-  msg,
-  isMe,
-  currentUserId,
-  commodityUnit,
-  allMessages,
-  editingMsgId,
-  editContent,
-  setEditContent,
-  setEditingMsg,
-  handleSaveEdit,
-  onEditMessage,
-  onDeleteMessage,
-  handleContextMenu,
-}: MessageBubbleProps) {
-  const isSystem = msg.type === "system";
-  const isOffer = msg.type === "offer" || msg.type === "counter_offer";
-  const isAccept = msg.type === "accept";
-  const isReject = msg.type === "reject";
-  const isEditing = editingMsgId === msg.id;
-  const canInteract = isMe && !isSystem && !msg.isDeleted && onEditMessage;
-  const canReply = !isSystem && !msg.isDeleted;
-
-  if (isSystem) {
-    return (
-      <div className="flex justify-center my-2">
-        <span className="text-[11px] text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
-          {msg.content}
-        </span>
-      </div>
-    );
-  }
-
-  const replyMsg = msg.replyToId && msg.replyToId > 0
-    ? allMessages.find((m) => m.id === msg.replyToId)
-    : undefined;
-
-  return (
-    <div
-      className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2 group`}
-      onContextMenu={(e) => (canInteract || canReply) && handleContextMenu(e, msg)}
-    >
-      <div className={`flex items-end gap-2 max-w-[80%] ${isMe ? "flex-row-reverse" : ""}`}>
-        {!isMe && (
-          <Avatar src={msg.senderFoto} name={msg.senderName} size="xs" className="mb-5" />
-        )}
-        <div className={`max-w-full`}>
-          {!isMe && (
-            <p className="text-[11px] font-semibold text-primary mb-0.5 ml-3">{msg.senderName}</p>
-          )}
-          <div
-            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${isMe
-              ? "bg-primary text-white rounded-2xl rounded-br-sm"
-              : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
-              } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
-          >
-            {replyMsg && !msg.isDeleted && (
-              <div
-                className={`mb-2 pl-2 border-l-2 ${isMe ? "border-white/40 bg-white/10" : "border-primary bg-gray-50"
-                  } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
-                onClick={() => {
-                  const el = document.getElementById(`msg-${replyMsg.id}`);
-                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  el?.classList.add("ring-2", "ring-success", "ring-offset-1");
-                  setTimeout(() => el?.classList.remove("ring-2", "ring-success", "ring-offset-1"), 1500);
-                }}
-              >
-                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-primary"}`}>
-                  {replyMsg.senderId === currentUserId ? "Anda" : replyMsg.senderName}
-                </p>
-                <p className={`text-[11px] truncate ${isMe ? "text-white/70" : "text-gray-500"} max-w-[200px]`}>
-                  {replyMsg.isDeleted ? "Pesan telah dihapus" : replyMsg.content}
-                </p>
-              </div>
-            )}
-
-            {isOffer && (
-              <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
-                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-primary"}`}>
-                  <Tag size={12} />
-                  {msg.type === "counter_offer" ? "Counter" : "Penawaran"}
-                </div>
-                {msg.offerPrice && (
-                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-primary"}`}>
-                    {formatRupiah(msg.offerPrice)}
-                    <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                      {" "}per {commodityUnit}
-                    </span>
-                    {msg.offerQuantity && (
-                      <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
-                        {" "}&bull; {formatWeight(msg.offerQuantity, commodityUnit)}
-                      </span>
-                    )}
-                  </p>
-                )}
-              </div>
-            )}
-            {isAccept && (
-              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-green-300" : "text-green-600"}`}>
-                <Check size={14} /> Deal disetujui
-              </div>
-            )}
-            {isReject && (
-              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-red-300" : "text-red-500"}`}>
-                <X size={14} /> Penawaran ditolak
-              </div>
-            )}
-
-            {isEditing ? (
-              <div className="min-w-[200px]">
-                <input
-                  id="edit-input"
-                  type="text"
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSaveEdit();
-                    if (e.key === "Escape") { setEditingMsg(null); setEditContent(""); }
-                  }}
-                  autoFocus
-                  className="w-full bg-white/20 text-white placeholder-white/50 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-white/40"
-                  placeholder="Edit pesan..."
-                />
-                <div className="flex gap-1.5 mt-1.5">
-                  <button onClick={handleSaveEdit} className="text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md transition-colors">
-                    Simpan
-                  </button>
-                  <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md transition-colors">
-                    Batal
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="whitespace-pre-line">{msg.content}</p>
-                {msg.isEdited && !msg.isDeleted && (
-                  <span className={`text-[9px] italic ${isMe ? "text-white/40" : "text-gray-400"}`}>diedit</span>
-                )}
-                <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
-                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                  {isMe && (
-                    msg.id < 0 ? (
-                      <Loader2 size={11} className="animate-spin" />
-                    ) : msg.isRead ? (
-                      <CheckCheck size={13} className="text-[#53BDEB]" />
-                    ) : (
-                      <CheckCheck size={13} />
-                    )
-                  )}
-                </div>
-              </>
-            )}
-
-            {(canInteract || canReply) && !isEditing && (
-              <button
-                id={`msg-${msg.id}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleContextMenu(e as unknown as React.MouseEvent, msg);
-                }}
-                className={`absolute top-1/2 -translate-y-1/2 ${isMe ? "-left-8" : "-right-8"} opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-black/5`}
-              >
-                <MoreVertical size={14} className="text-gray-400" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
 export default function ChatRoomView({
   room,
   messages,
   currentUserId,
   currentRole,
   onSendMessage,
-  onAddToCart,
+  onOrderCreated,
   onBack,
   onEditMessage,
   onDeleteMessage,
+  negotiationStatus,
+  onRefreshNegotiation,
 }: ChatRoomViewProps) {
   const [input, setInput] = useState("");
   const [showOfferForm, setShowOfferForm] = useState(false);
   const [offerPrice, setOfferPrice] = useState("");
   const [offerQty, setOfferQty] = useState("1");
+  const [confirmDeal, setConfirmDeal] = useState<{ price: string; quantity: string } | null>(null);
   const [submittingDeal, setSubmittingDeal] = useState(false);
+  const [acceptedOrderId, setAcceptedOrderId] = useState<number | null>(null);
   const [showProductInfo, setShowProductInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Context menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msg: ChatMessageData } | null>(null);
   const [editingMsg, setEditingMsg] = useState<ChatMessageData | null>(null);
   const [editContent, setEditContent] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<ChatMessageData | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMessageData | null>(null);
 
-  const img = formatImage(room.commodityImage) ?? formatImage(room.commodityImages?.[0] ?? null);
+  const img = formatImage(room.commodityImage);
   const minPrice = room.commodityMinPrice ? Number(room.commodityMinPrice) : null;
   const maxPrice = room.commodityMaxPrice ? Number(room.commodityMaxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
   const stock = Number(room.commodityStock);
   const isFarmer = currentRole === "petani";
 
-  const pendingOffer = room.pendingOffer;
-  const hasPendingOffer = pendingOffer !== null;
-  const isPendingBuyer = hasPendingOffer && pendingOffer.status === "pending" && currentUserId === room.buyerId;
-  const isPendingFarmer = hasPendingOffer && pendingOffer.status === "pending" && currentUserId === room.farmerId;
+  const latestPendingOffer = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.type === "offer") {
+        const next = messages[i + 1];
+        const responded =
+          next && (next.type === "accept" || next.type === "reject");
+        if (responded) return null;
+        return msg;
+      }
+    }
+    return null;
+  }, [messages]);
 
   const latestAcceptedOffer = useMemo(() => {
+    if (
+      negotiationStatus?.status === "accepted" &&
+      negotiationStatus.price &&
+      negotiationStatus.quantity
+    ) {
+      return {
+        offerPrice: negotiationStatus.price,
+        offerQuantity: negotiationStatus.quantity,
+      };
+    }
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i];
       if (msg.type === "accept") {
@@ -343,9 +177,12 @@ export default function ChatRoomView({
       }
     }
     return null;
-  }, [messages]);
+  }, [negotiationStatus, messages]);
 
-  const hasAcceptedDeal = useMemo(() => messages.some((m) => m.type === "accept"), [messages]);
+  const hasAcceptedDeal = useMemo(() => {
+    if (negotiationStatus && negotiationStatus.status === "accepted") return true;
+    return messages.some((m) => m.type === "accept");
+  }, [messages, negotiationStatus]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -419,42 +256,76 @@ export default function ChatRoomView({
     setInput("");
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
-    await onSendMessage(text, "text", undefined, undefined, replyId);
+    const result = await onSendMessage(text, "text", undefined, undefined, replyId);
+    if (!result?.success) {
+      alert(result?.error ?? "Pesan gagal dikirim, coba lagi.");
+    }
   };
 
   const handleSendOffer = async () => {
     const price = parseFloat(offerPrice);
     const qty = parseFloat(offerQty);
     if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
-    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)}`;
+
+    if (minPrice !== null && price < minPrice) {
+      alert(`Harga tidak boleh di bawah harga minimum ${formatRupiah(minPrice)}.\nSilakan masukkan harga yang sesuai.`);
+      return;
+    }
+    if (maxPrice !== null && price > maxPrice) {
+      alert(`Harga tidak boleh di atas harga maksimum ${formatRupiah(maxPrice)}.\nSilakan masukkan harga yang sesuai.`);
+      return;
+    }
+
+    const offerText = `Penawaran: ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit}`;
     const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
     setReplyTo(null);
-    await onSendMessage(offerText, "offer", price, qty, replyId);
+    const result = await onSendMessage(offerText, "offer", price, qty, replyId);
+    if (!result?.success) {
+      alert(result?.error ?? "Penawaran gagal dikirim, coba lagi.");
+    }
     setShowOfferForm(false);
     setOfferPrice("");
     setOfferQty("1");
   };
 
-  const handleAcceptOffer = async () => {
-    if (!pendingOffer || submittingDeal) return;
+  const handleConfirmDeal = async () => {
+    if (!confirmDeal || submittingDeal) return;
+    const price = parseFloat(confirmDeal.price);
+    const qty = parseFloat(confirmDeal.quantity);
+    if (isNaN(price) || price <= 0 || isNaN(qty) || qty <= 0) return;
+
     setSubmittingDeal(true);
     try {
-      const price = Number(pendingOffer.price);
-      const qty = Number(pendingOffer.quantity);
-      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatWeight(qty, room.commodityUnit)} = ${formatRupiah(price * qty)}`;
-      await onSendMessage(acceptText, "accept", price, qty);
+      const replyId = replyTo?.id && replyTo.id > 0 ? replyTo.id : undefined;
+      setReplyTo(null);
+
+      const acceptText = `Deal! ${formatRupiah(price)} / ${room.commodityUnit} x ${formatNumber(qty)} ${room.commodityUnit} = ${formatRupiah(price * qty)}`;
+
+      const result = await onSendMessage(acceptText, "accept", price, qty, replyId);
+      if (result?.success) {
+        if (result.orderId) {
+          setAcceptedOrderId(result.orderId);
+          onOrderCreated?.(result.orderId);
+        }
+        if (onRefreshNegotiation) {
+          await onRefreshNegotiation();
+        }
+      } else {
+        alert(result?.error ?? "Gagal menyetujui penawaran, coba lagi.");
+      }
+      setConfirmDeal(null);
     } finally {
       setSubmittingDeal(false);
     }
   };
 
-  const handleRejectOffer = async () => {
-    if (!pendingOffer || submittingDeal) return;
-    setSubmittingDeal(true);
-    try {
-      await onSendMessage("Penawaran ditolak", "reject");
-    } finally {
-      setSubmittingDeal(false);
+  const handleReject = async () => {
+    const target = latestPendingOffer;
+    if (!target) return;
+    const report = `Penawaran ditolak`;
+    const result = await onSendMessage(report, "reject", Number(target.offerPrice), Number(target.offerQuantity));
+    if (!result?.success) {
+      alert(result?.error ?? "Gagal menolak penawaran, coba lagi.");
     }
   };
 
@@ -463,19 +334,168 @@ export default function ChatRoomView({
     return messages.find((m) => m.id === replyToId);
   };
 
+  const renderMessage = (msg: ChatMessageData, isMe: boolean) => {
+    const isSystem = msg.type === "system";
+    const isOffer = msg.type === "offer";
+    const isAccept = msg.type === "accept";
+    const isReject = msg.type === "reject";
+    const isEditing = editingMsg?.id === msg.id;
+    const canInteract = isMe && !isSystem && !msg.isDeleted && onEditMessage;
+    const canReply = !isSystem && !msg.isDeleted;
+
+    if (isSystem) {
+      return (
+        <div className="flex justify-center my-2">
+          <span className="text-[11px] text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+            {msg.content}
+          </span>
+        </div>
+      );
+    }
+
+    const replyMsg = getReplyMessage(msg.replyToId);
+
+    return (
+      <div
+        className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2 group`}
+        onContextMenu={(e) => (canInteract || canReply) && handleContextMenu(e, msg)}
+      >
+        <div className={`max-w-[78%]`}>
+          {!isMe && (
+            <p className="text-[11px] font-semibold text-[#025246] mb-0.5 ml-3">{msg.senderName}</p>
+          )}
+          <div
+            className={`relative px-3.5 py-2.5 text-[13px] leading-relaxed ${
+              isMe
+                ? "bg-[#025246] text-white rounded-2xl rounded-br-sm"
+                : "bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm"
+            } ${msg.isDeleted ? "opacity-60 italic" : ""}`}
+          >
+            {/* Reply quote */}
+            {replyMsg && !msg.isDeleted && (
+              <div
+                className={`mb-2 pl-2 border-l-2 ${
+                  isMe ? "border-white/40 bg-white/10" : "border-[#025246] bg-gray-50"
+                } rounded-r-md py-1 px-2 cursor-pointer hover:opacity-80 transition-opacity`}
+                onClick={() => {
+                  const el = document.getElementById(`msg-${replyMsg.id}`);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  el?.classList.add("ring-2", "ring-[#00AA5B]", "ring-offset-1");
+                  setTimeout(() => el?.classList.remove("ring-2", "ring-[#00AA5B]", "ring-offset-1"), 1500);
+                }}
+              >
+                <p className={`text-[10px] font-bold ${isMe ? "text-white/80" : "text-[#025246]"}`}>
+                  {replyMsg.senderId === currentUserId ? "Anda" : replyMsg.senderName}
+                </p>
+                <p className={`text-[11px] truncate ${isMe ? "text-white/70" : "text-gray-500"} max-w-[200px]`}>
+                  {replyMsg.isDeleted ? "Pesan telah dihapus" : replyMsg.content}
+                </p>
+              </div>
+            )}
+
+            {isOffer && (
+              <div className={`mb-2 p-2.5 rounded-xl ${isMe ? "bg-white/15" : "bg-gray-50 border border-gray-100"}`}>
+                <div className={`flex items-center gap-1.5 text-xs font-bold ${isMe ? "text-white/90" : "text-[#025246]"}`}>
+                  <Tag size={12} />
+                  Penawaran
+                </div>
+                {msg.offerPrice && (
+                  <p className={`text-sm font-bold mt-1 ${isMe ? "text-white" : "text-[#025246]"}`}>
+                    {formatRupiah(msg.offerPrice)}
+                    <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
+                      {" "}per {room.commodityUnit}
+                    </span>
+                    {msg.offerQuantity && (
+                      <span className={`text-[11px] font-normal ${isMe ? "text-white/60" : "text-gray-500"}`}>
+                        {" "}&bull; {formatNumber(msg.offerQuantity)} {room.commodityUnit}
+                      </span>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+            {isAccept && (
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-green-300" : "text-green-600"}`}>
+                <Check size={14} /> Deal disetujui
+              </div>
+            )}
+            {isReject && (
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isMe ? "text-red-300" : "text-red-500"}`}>
+                <X size={14} /> Penawaran ditolak
+              </div>
+            )}
+
+            {isEditing ? (
+              <div className="min-w-[200px]">
+                <input
+                  id="edit-input"
+                  type="text"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveEdit();
+                    if (e.key === "Escape") { setEditingMsg(null); setEditContent(""); }
+                  }}
+                  autoFocus
+                  className="w-full bg-white/20 text-white placeholder-white/50 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-white/40"
+                  placeholder="Edit pesan..."
+                />
+                <div className="flex gap-1.5 mt-1.5">
+                  <button onClick={handleSaveEdit} className="text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-md transition-colors">
+                    Simpan
+                  </button>
+                  <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-[10px] font-bold bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md transition-colors">
+                    Batal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="whitespace-pre-line">{msg.content}</p>
+                {msg.isEdited && !msg.isDeleted && (
+                  <span className={`text-[9px] italic ${isMe ? "text-white/40" : "text-gray-400"}`}>diedit</span>
+                )}
+                <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? "text-white/50" : "text-gray-400"}`}>
+                  <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
+                  {isMe && (
+                    msg.id < 0 ? (
+                      <Loader2 size={11} className="animate-spin" />
+                    ) : msg.isRead ? (
+                      <CheckCheck size={13} className="text-[#53BDEB]" />
+                    ) : (
+                      <CheckCheck size={13} />
+                    )
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Edit/Delete button on hover */}
+            {(canInteract || canReply) && !isEditing && (
+              <button
+                id={`msg-${msg.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleContextMenu(e as unknown as React.MouseEvent, msg);
+                }}
+                className={`absolute top-1/2 -translate-y-1/2 ${isMe ? "-left-8" : "-right-8"} opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-black/5`}
+              >
+                <MoreVertical size={14} className="text-gray-400" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-[100dvh] lg:h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-primary text-white shrink-0 shadow-md">
+      <div className="flex items-center gap-3 px-4 py-3 bg-[#025246] text-white shrink-0 shadow-md">
         <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition-colors">
           <ArrowLeft size={20} />
         </button>
-        <Avatar
-          src={isFarmer ? room.buyerFoto : room.farmerFoto}
-          name={isFarmer ? room.buyerName : room.farmerName}
-          size="sm"
-          className="ring-2 ring-white/20"
-        />
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-bold truncate">
             {isFarmer ? room.buyerName : room.farmerName}
@@ -492,9 +512,9 @@ export default function ChatRoomView({
       {/* Product Info Toggle */}
       <button
         onClick={() => setShowProductInfo(!showProductInfo)}
-        className="flex items-center justify-center gap-2 py-2.5 bg-white border-b border-gray-200 text-primary text-xs font-semibold shrink-0 hover:bg-gray-50 transition-colors"
+        className="flex items-center justify-center gap-2 py-2.5 bg-white border-b border-gray-200 text-[#025246] text-xs font-semibold shrink-0 hover:bg-gray-50 transition-colors"
       >
-        <div className="w-5 h-5 bg-primary rounded flex items-center justify-center">
+        <div className="w-5 h-5 bg-[#025246] rounded flex items-center justify-center">
           <Package size={12} className="text-white" />
         </div>
         {room.commodityName}
@@ -509,17 +529,17 @@ export default function ChatRoomView({
           <div className="flex gap-3">
             <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative border border-gray-200">
               {img ? (
-                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" />
+                <Image src={img} alt={room.commodityName} fill sizes="64px" className="object-cover" unoptimized />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-[#025246] to-[#047857] flex items-center justify-center">
                   <Package size={20} className="text-white" />
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatWeight(room.commodityStock, room.commodityUnit)}</span></p>
+              <p className="text-xs text-gray-500">Stok: <span className="font-semibold text-gray-700">{formatNumber(room.commodityStock)}</span> {room.commodityUnit}</p>
               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                <MapPin size={10} className="text-primary" /> {room.farmerAddress || "Lokasi tidak diketahui"}
+                <MapPin size={10} className="text-[#025246]" /> {room.farmerAddress || "Lokasi tidak diketahui"}
               </p>
             </div>
           </div>
@@ -527,43 +547,48 @@ export default function ChatRoomView({
       )}
 
       {/* Pending Offer Banner */}
-      {hasPendingOffer && (
+      {latestPendingOffer && (
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-4 py-3 shrink-0">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+            <div className={`flex items-center gap-2.5 ${isFarmer ? "" : "flex-col items-start"}`}>
+              <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
                 <Handshake size={16} className="text-amber-600" />
               </div>
               <div>
                 <p className="text-[11px] text-amber-600 font-medium">
-                  {isPendingFarmer ? "Penawaran dari pembeli" : "Penawaran Anda"}
+                  {isFarmer ? `Penawaran dari ${latestPendingOffer.senderName}` : "Penawaran Anda"}
                 </p>
-                <p className="text-sm font-extrabold text-primary">
-                  {formatRupiah(pendingOffer.price)}
-                  {pendingOffer.quantity && (
+                <p className="text-sm font-extrabold text-[#025246]">
+                  {formatRupiah(latestPendingOffer.offerPrice)}
+                  {latestPendingOffer.offerQuantity && (
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatWeight(pendingOffer.quantity, pendingOffer.unit)}
+                      {" "}x {formatNumber(latestPendingOffer.offerQuantity)} {room.commodityUnit}
                     </span>
                   )}
                 </p>
-                {isPendingBuyer && (
-                  <p className="text-[11px] text-gray-500 mt-0.5">Menunggu respon petani...</p>
+                {latestPendingOffer.offerPrice && latestPendingOffer.offerQuantity && (
+                  <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                    Total: {formatRupiah(Number(latestPendingOffer.offerPrice) * Number(latestPendingOffer.offerQuantity))}
+                  </p>
+                )}
+                {!isFarmer && (
+                  <p className="text-[11px] text-blue-600 font-medium mt-0.5">
+                    Menunggu persetujuan petani...
+                  </p>
                 )}
               </div>
             </div>
-            {isPendingFarmer && (
+            {isFarmer && (
               <div className="flex gap-1.5 shrink-0">
                 <button
-                  onClick={handleAcceptOffer}
-                  disabled={submittingDeal}
-                  className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-dark shadow-sm disabled:opacity-40"
+                  onClick={() => setConfirmDeal({ price: latestPendingOffer.offerPrice ?? "", quantity: latestPendingOffer.offerQuantity ?? "1" })}
+                  className="px-3 py-1.5 bg-[#025246] text-white text-xs font-bold rounded-lg hover:bg-[#024036] shadow-sm"
                 >
-                  {submittingDeal ? "Proses..." : "Terima"}
+                  Setuju
                 </button>
                 <button
-                  onClick={handleRejectOffer}
-                  disabled={submittingDeal}
-                  className="px-3 py-1.5 bg-white border border-red-200 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 disabled:opacity-40"
+                  onClick={handleReject}
+                  className="px-3 py-1.5 bg-white border border-red-200 text-red-500 text-xs font-bold rounded-lg hover:bg-red-50"
                 >
                   Tolak
                 </button>
@@ -574,7 +599,7 @@ export default function ChatRoomView({
       )}
 
       {/* Deal Banner */}
-      {hasAcceptedDeal && !hasPendingOffer && (
+      {hasAcceptedDeal && !latestPendingOffer && (
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-4 py-3 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -584,10 +609,10 @@ export default function ChatRoomView({
               <div>
                 <p className="text-[11px] text-green-600 font-medium">Deal Tercapai!</p>
                 {latestAcceptedOffer && (
-                  <p className="text-sm font-extrabold text-primary">
+                  <p className="text-sm font-extrabold text-[#025246]">
                     {formatRupiah(latestAcceptedOffer.offerPrice)}
                     <span className="text-[11px] font-normal text-gray-500">
-                      {" "}x {formatWeight(latestAcceptedOffer.offerQuantity, room.commodityUnit)} = {" "}
+                      {" "}x {formatNumber(latestAcceptedOffer.offerQuantity)} {room.commodityUnit} = {" "}
                       {formatRupiah(Number(latestAcceptedOffer.offerPrice) * Number(latestAcceptedOffer.offerQuantity))}
                     </span>
                   </p>
@@ -596,10 +621,10 @@ export default function ChatRoomView({
             </div>
             {!isFarmer && latestAcceptedOffer?.offerPrice && latestAcceptedOffer?.offerQuantity && (
               <button
-                onClick={() => onAddToCart(Number(latestAcceptedOffer.offerPrice), Number(latestAcceptedOffer.offerQuantity))}
-                className="px-3 py-1.5 bg-success text-white text-xs font-bold rounded-lg hover:bg-success/90 flex items-center gap-1.5 shadow-sm shrink-0"
+                onClick={() => onOrderCreated?.(negotiationStatus?.orderId ?? acceptedOrderId ?? 0)}
+                className="px-3 py-1.5 bg-[#00AA5B] text-white text-xs font-bold rounded-lg hover:bg-[#009A4F] flex items-center gap-1.5 shadow-sm shrink-0"
               >
-                <ShoppingCart size={14} /> Keranjang
+                <Package size={14} /> Lanjut Bayar
               </button>
             )}
           </div>
@@ -620,21 +645,7 @@ export default function ChatRoomView({
                   </span>
                 </div>
               )}
-              <MessageBubble
-                msg={msg}
-                isMe={isMe}
-                currentUserId={currentUserId}
-                commodityUnit={room.commodityUnit}
-                allMessages={messages}
-                editingMsgId={editingMsg?.id ?? null}
-                editContent={editContent}
-                setEditContent={setEditContent}
-                setEditingMsg={setEditingMsg}
-                handleSaveEdit={handleSaveEdit}
-                onEditMessage={onEditMessage}
-                onDeleteMessage={onDeleteMessage}
-                handleContextMenu={handleContextMenu}
-              />
+              {renderMessage(msg, isMe)}
             </div>
           );
         })}
@@ -645,9 +656,9 @@ export default function ChatRoomView({
       <div className="shrink-0 bg-white border-t border-gray-200 px-3 py-3">
         {/* Reply preview */}
         {replyTo && (
-          <div className="bg-gray-50 rounded-xl p-2.5 mb-2 border-l-2 border-primary flex items-start justify-between gap-2">
+          <div className="bg-gray-50 rounded-xl p-2.5 mb-2 border-l-2 border-[#025246] flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold text-primary">
+              <p className="text-[10px] font-bold text-[#025246]">
                 Membalas {replyTo.senderId === currentUserId ? "Anda" : replyTo.senderName}
               </p>
               <p className="text-[11px] text-gray-500 truncate">
@@ -663,10 +674,12 @@ export default function ChatRoomView({
           </div>
         )}
 
-        {showOfferForm && (
+        {showOfferForm && !isFarmer && (
           <div className="bg-gray-50 rounded-xl p-3 mb-2.5 border border-gray-200">
             <div className="flex items-center justify-between mb-2.5">
-              <h4 className="text-xs font-bold text-gray-800">Ajukan Penawaran</h4>
+              <h4 className="text-xs font-bold text-gray-800">
+                Ajukan Penawaran
+              </h4>
               <button onClick={() => setShowOfferForm(false)} className="p-1 hover:bg-gray-200 rounded-lg transition-colors">
                 <X size={14} className="text-gray-400" />
               </button>
@@ -682,7 +695,7 @@ export default function ChatRoomView({
                 value={offerPrice}
                 onChange={(e) => setOfferPrice(e.target.value)}
                 placeholder="Harga"
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
               />
               <input
                 type="number"
@@ -691,18 +704,18 @@ export default function ChatRoomView({
                 min="1"
                 max={stock}
                 placeholder={`Qty (${room.commodityUnit})`}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs focus:outline-none focus:border-[#025246] focus:ring-1 focus:ring-[#025246]/20"
               />
             </div>
             {offerPrice && offerQty && (
-              <p className="text-xs font-bold text-primary mb-2">
+              <p className="text-xs font-bold text-[#025246] mb-2">
                 Total: {formatRupiah(parseFloat(offerPrice) * parseFloat(offerQty || "1"))}
               </p>
             )}
             <button
               onClick={handleSendOffer}
-              disabled={!offerPrice || parseFloat(offerPrice) <= 0 || hasPendingOffer}
-              className="w-full bg-primary text-white text-xs font-bold py-2 rounded-lg hover:bg-primary-dark disabled:opacity-40 transition-colors"
+              disabled={!offerPrice || parseFloat(offerPrice) <= 0 || !offerQty || parseFloat(offerQty) <= 0}
+              className="w-full bg-[#025246] text-white text-xs font-bold py-2 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
             >
               Kirim Penawaran
             </button>
@@ -710,10 +723,10 @@ export default function ChatRoomView({
         )}
 
         <div className="flex items-center gap-2">
-          {!showOfferForm && hasPriceRange && !hasPendingOffer && (
+          {!showOfferForm && !isFarmer && (
             <button
               onClick={() => { setOfferPrice(""); setOfferQty("1"); setShowOfferForm(true); }}
-              className="px-3 py-2.5 bg-success text-white text-xs font-bold rounded-xl hover:bg-success/90 flex items-center gap-1.5 shrink-0 shadow-sm"
+              className="px-3 py-2.5 bg-[#00AA5B] text-white text-xs font-bold rounded-xl hover:bg-[#009A4F] flex items-center gap-1.5 shrink-0 shadow-sm"
             >
               <Tag size={14} /> Nego
             </button>
@@ -726,13 +739,13 @@ export default function ChatRoomView({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ketik pesan..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary/20 transition-all"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-[#025246] focus:bg-white focus:ring-1 focus:ring-[#025246]/20 transition-all"
             />
           </div>
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-dark disabled:opacity-40 shrink-0 shadow-sm transition-colors"
+            className="w-10 h-10 bg-[#025246] text-white rounded-xl flex items-center justify-center hover:bg-[#024036] disabled:opacity-40 shrink-0 shadow-sm transition-colors"
           >
             <Send size={16} />
           </button>
@@ -751,7 +764,7 @@ export default function ChatRoomView({
               onClick={handleReply}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <Reply size={15} className="text-primary" />
+              <Reply size={15} className="text-[#025246]" />
               Balas Pesan
             </button>
           )}
@@ -760,7 +773,7 @@ export default function ChatRoomView({
               onClick={handleEdit}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <Pencil size={15} className="text-primary" />
+              <Pencil size={15} className="text-[#025246]" />
               Edit Pesan
             </button>
           )}
@@ -809,10 +822,58 @@ export default function ChatRoomView({
         </div>
       )}
 
+      {/* Deal Confirm Modal */}
+      {confirmDeal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmDeal(null)} />
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            <div className="bg-[#025246] px-5 py-4 text-white">
+              <h3 className="font-bold text-sm">Konfirmasi Deal</h3>
+              <p className="text-[11px] text-white/60 mt-0.5">Pastikan harga dan jumlah sudah sesuai</p>
+            </div>
+            <div className="p-5 space-y-3">
+              <div>
+                <label className="block text-[11px] text-gray-500 mb-1 font-medium">Harga per {room.commodityUnit}</label>
+                <p className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-bold text-gray-800">
+                  {formatRupiah(confirmDeal.price)}
+                </p>
+              </div>
+              <div>
+                <label className="block text-[11px] text-gray-500 mb-1 font-medium">Jumlah ({room.commodityUnit})</label>
+                <p className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-bold text-gray-800">
+                  {formatNumber(confirmDeal.quantity)} {room.commodityUnit}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 flex justify-between items-center border border-gray-100">
+                <span className="text-[11px] text-gray-500 font-medium">Total</span>
+                <span className="text-sm font-extrabold text-[#025246]">
+                  {formatRupiah((parseFloat(confirmDeal.price) || 0) * (parseFloat(confirmDeal.quantity) || 0))}
+                </span>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleConfirmDeal}
+                  disabled={submittingDeal || parseFloat(confirmDeal.price) <= 0 || parseFloat(confirmDeal.quantity) <= 0}
+                  className="flex-1 bg-[#025246] text-white text-xs font-bold py-2.5 rounded-lg hover:bg-[#024036] disabled:opacity-40 transition-colors"
+                >
+                  {submittingDeal ? "Proses..." : "Setujui Deal"}
+                </button>
+                <button
+                  onClick={() => setConfirmDeal(null)}
+                  className="px-4 py-2.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+// Helper to determine if a message can be replied to (used in context menu render)
 function canReplyFor(msg: ChatMessageData): boolean {
   return msg.type !== "system" && !msg.isDeleted;
 }

@@ -27,7 +27,7 @@ export default function SalesChartCard({
   const maxKg = Math.max(...data.map((p) => p.kg), 1);
 
   return (
-    <div className="bg-white rounded-card border border-gray-200/80 shadow-soft p-6 transition-all duration-300 ease-smooth hover:shadow-lift">
+    <div className="rounded-2xl border border-gray-200/80 bg-white p-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
           <h2 className="text-lg font-bold text-neutral-900">Grafik Penjualan</h2>

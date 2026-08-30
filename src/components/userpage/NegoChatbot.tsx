@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, ShoppingCart, Check, MessageCircle } from "lucide-react";
+import { X, Send, Check, MessageCircle } from "lucide-react";
 import { formatRupiah } from "@/lib/format";
 
 interface NegoChatbotProps {
@@ -23,7 +23,6 @@ interface ChatMessage {
 }
 
 export default function NegoChatbot({
-  productId,
   productName,
   minPrice,
   maxPrice,
@@ -31,6 +30,7 @@ export default function NegoChatbot({
   farmerName,
   onClose,
   onDeal,
+  ...rest
 }: NegoChatbotProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
@@ -42,7 +42,6 @@ export default function NegoChatbot({
   ]);
   const [input, setInput] = useState("");
   const [phase, setPhase] = useState<"intro" | "waiting_offer" | "counter" | "deal" | "rejected">("waiting_offer");
-  const [lastOffer, setLastOffer] = useState<number | null>(null);
   const [counterOffer, setCounterOffer] = useState<number | null>(null);
   const [dealPrice, setDealPrice] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -85,13 +84,11 @@ export default function NegoChatbot({
       return;
     }
 
-    setLastOffer(offer);
-
     if (offer >= minPrice && offer <= maxPrice) {
       setTimeout(() => {
         addMessage(
           "BOT",
-          `Setuju! Harga ${formatRupiah(offer)} / ${unit} sudah sesuai range. Mari konfirmasi untuk melanjutkan ke keranjang belanja.`
+          `Setuju! Harga ${formatRupiah(offer)} / ${unit} sudah sesuai range. Mari konfirmasi untuk melanjutkan ke pesanan.`
         );
         setDealPrice(offer);
         setPhase("deal");
@@ -126,7 +123,7 @@ export default function NegoChatbot({
       setTimeout(() => {
         addMessage(
           "BOT",
-          `Deal! Harga ${formatRupiah(counterOffer)} / ${unit} sudah disepakati. Silakan konfirmasi untuk menambahkan ke keranjang.`
+          `Deal! Harga ${formatRupiah(counterOffer)} / ${unit} sudah disepakati. Silakan konfirmasi untuk melanjutkan ke pesanan.`
         );
         setPhase("deal");
       }, 500);
@@ -216,8 +213,8 @@ export default function NegoChatbot({
                 onClick={handleConfirmDeal}
                 className="flex items-center gap-2 px-6 py-3 bg-success text-white text-sm font-bold rounded-xl hover:bg-success/90 transition-colors shadow-lg"
               >
-                <ShoppingCart size={18} />
-                Masukkan ke Keranjang - {formatRupiah(dealPrice)}
+                <Check size={18} />
+                Konfirmasi Harga - {formatRupiah(dealPrice)}
               </button>
             </div>
           )}

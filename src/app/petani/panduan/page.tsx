@@ -24,7 +24,7 @@ export default function PanduanPage() {
   }, [query]);
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-up p-4 sm:p-6 lg:p-0">
+    <div className="w-full animate-fade-up px-4 py-5 sm:px-6 lg:px-8">
       <PageHeader
         icon={BookOpen}
         title="Panduan"
@@ -32,8 +32,8 @@ export default function PanduanPage() {
       />
 
       {/* Pencarian */}
-      <section className="mb-5 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
-        <div className="relative">
+      <section className="mb-5 border-b border-gray-200 pb-4">
+        <div className="relative max-w-xl">
           <Search
             size={16}
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"

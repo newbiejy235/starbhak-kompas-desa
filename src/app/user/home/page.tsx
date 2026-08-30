@@ -2,8 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import type { SearchPublicFarmer } from "@/lib/types/market";
 import {
   X,
@@ -15,6 +13,7 @@ import {
   Package,
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
+import HeroCarousel from "@/components/userpage/HeroCarousel";
 import FarmerCard from "@/components/kompasdesa/FarmerCard";
 import { EmptyState } from "@/components/shared/States";
 import {
@@ -25,6 +24,7 @@ import {
   searchPublicFarmers,
 } from "@/actions/farmer";
 import { useFetch } from "@/lib/hooks";
+import { getClientUser } from "@/lib/auth/client";
 import { formatRupiah } from "@/lib/format";
 
 import type { PublicCommodity } from "@/lib/types/market";
@@ -313,6 +313,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
+  const userId = getClientUser()?.id ?? null;
   const catParam = searchParams.get("category");
   const tabParam = (searchParams.get("tab") as Tab) || "komoditas";
 
@@ -459,7 +460,7 @@ function HomeContent() {
   }
   if (farmerFilters.minPrice !== undefined || farmerFilters.maxPrice !== undefined) {
     const minL = farmerFilters.minPrice ? formatRupiah(farmerFilters.minPrice) : "Rp0";
-    const maxL = farmerFilters.maxPrice ? formatRupiah(farmerFilters.maxPrice) : "∞";
+    const maxL = farmerFilters.maxPrice ? formatRupiah(farmerFilters.maxPrice) : "Γê₧";
     activeFarmerFilters.push({
       key: "price",
       label: `${minL} - ${maxL}`,
@@ -491,25 +492,9 @@ function HomeContent() {
   return (
     <div className="animate-fade-up">
       {/* Hero */}
-      {/* <section className="relative mb-7 overflow-hidden rounded-card bg-gradient-to-r from-primary to-primary-dark p-6 text-white shadow-soft sm:p-8">
-        <div className="relative z-10 max-w-xl">
-          <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl lg:text-3xl">
-            Panen Segar Langsung dari Petani Lokal
-          </h1>
-          <p className="mt-2 mb-5 max-w-md text-sm text-white/80">
-            Kualitas terbaik dengan harga transparan. Dukung petani Indonesia!
-          </p>
-          <Link
-            href="#katalog"
-            className={`inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-primary shadow-sm transition-colors duration-150 hover:bg-emerald-50 active:scale-[0.98] ${focusRing}`}
-          >
-            Jelajahi Katalog
-          </Link>
-        </div>
-        <div className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 opacity-15 md:block">
-          <Image src="/images/user/HeaderImageUser.svg" alt="" width={160} height={160} />
-        </div>
-      </section> */}
+      <div className="mb-7">
+        <HeroCarousel />
+      </div>
 
       {/* Tab switcher */}
       <div className="mb-6 flex gap-2">
@@ -617,6 +602,7 @@ function HomeContent() {
                         ...item,
                         images: item.image ? [item.image] : [],
                       }}
+                      userId={userId}
                     />
                   </div>
                 ))}

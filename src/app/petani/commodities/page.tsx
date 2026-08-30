@@ -68,26 +68,22 @@ function CommoditiesSkeleton() {
         <Skeleton className="h-10 w-40 rounded-xl" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-x-6 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-card border border-gray-200/80 bg-white p-4 shadow-soft">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
-              <div className="space-y-1.5 flex-1">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-6 w-12" />
-              </div>
+          <div key={i} className="border-b border-gray-200 px-1 py-3 sm:px-2">
+            <div className="flex items-center justify-between gap-2">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-7 w-7 rounded-lg" />
             </div>
+            <Skeleton className="mt-1 h-6 w-12" />
           </div>
         ))}
       </div>
 
-      <div className="rounded-card border border-gray-200/80 bg-white p-3 shadow-soft">
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Skeleton className="h-10 flex-1 rounded-xl" />
-          <Skeleton className="h-10 w-32 rounded-xl" />
-          <Skeleton className="h-10 w-32 rounded-xl" />
-        </div>
+      <div className="mb-6 flex flex-col gap-2 border-b border-gray-200 pb-4 sm:flex-row">
+        <Skeleton className="h-10 flex-1 rounded-xl" />
+        <Skeleton className="h-10 w-32 rounded-xl" />
+        <Skeleton className="h-10 w-32 rounded-xl" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -125,32 +121,30 @@ function StatCard({
   danger?: boolean;
 }) {
   return (
-    <div className="rounded-card border border-gray-200/80 bg-white p-4 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift">
-      <div className="flex items-center gap-3">
+    <div className="border-b border-gray-200 px-1 py-3 sm:px-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${danger
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${danger
             ? "bg-danger/10 text-danger"
             : accent
               ? "bg-primary/10 text-primary"
               : "bg-gray-100 text-gray-600"
             }`}
         >
-          <Icon size={18} />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-gray-500 truncate">{label}</p>
-          <p
-            className={`text-xl font-black tracking-tight ${danger
-              ? "text-danger"
-              : accent
-                ? "text-primary"
-                : "text-gray-900"
-              }`}
-          >
-            {value}
-          </p>
+          <Icon size={15} />
         </div>
       </div>
+      <p
+        className={`mt-1 text-xl font-black tracking-tight ${danger
+          ? "text-danger"
+          : accent
+            ? "text-primary"
+            : "text-gray-900"
+          }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -332,7 +326,7 @@ export default function CommoditiesPage() {
       </div>
 
       {allCommodities.length > 0 && (
-        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
           <StatCard
             icon={Package}
             label="Total Komoditas"
@@ -361,7 +355,7 @@ export default function CommoditiesPage() {
       {allCommodities.length > 0 && (
         <section
           aria-label="Pencarian dan filter komoditas"
-          className="mb-5 rounded-card border border-gray-200/80 bg-white p-3 shadow-soft"
+          className="mb-6 border-b border-gray-200 pb-4"
         >
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">

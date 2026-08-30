@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useActionState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import {
   ArrowRight,
   Mail,
@@ -9,6 +11,8 @@ import {
   Send,
   AtSign
 } from "lucide-react";
+import { submitContactMessage } from "@/actions/contact";
+import type { ActionState } from "@/lib/types/auth";
 
 const kebutuhanOptions = [
   { value: "petani", label: "Saya seorang petani" },
@@ -38,6 +42,22 @@ const contactItems = [
 ];
 
 export default function KontakPage() {
+  const [state, formAction, isPending] = useActionState(
+    submitContactMessage,
+    { success: false, message: "" } satisfies ActionState,
+  );
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (!state.message) return;
+    if (state.success) {
+      toast.success(state.message);
+      formRef.current?.reset();
+    } else {
+      toast.error(state.message);
+    }
+  }, [state]);
+
   return (
     <main className="min-h-screen bg-white text-[#1f1f1f]">
       <section className="px-5 pb-14 pt-24 md:px-8 md:pb-16 md:pt-28 lg:px-12">
@@ -123,13 +143,11 @@ export default function KontakPage() {
         </div>
       </section>
 
-      {/* FORM AREA */}
       <section
         id="kirim-pesan"
         className="px-5 pb-16 md:px-8 lg:px-12"
       >
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[0.7fr_1.3fr]">
-          {/* LEFT CONTENT */}
           <div className="pt-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#025246]">
               Kirim Pesan
@@ -165,8 +183,9 @@ export default function KontakPage() {
           {/* FORM */}
           <div className="rounded-2xl border border-[#E1E7E4] bg-[#FCFDFC] p-6 md:p-7">
             <form
+              ref={formRef}
               className="space-y-4"
-              onSubmit={(e) => e.preventDefault()}
+              action={formAction}
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -179,8 +198,10 @@ export default function KontakPage() {
 
                   <input
                     id="nama"
+                    name="name"
                     type="text"
                     placeholder="Nama lengkap"
+                    required
                     className="h-11 w-full rounded-lg border border-[#DDE5E2] bg-white px-3 text-sm text-[#1f1f1f] outline-none transition placeholder:text-[#9EAEA8] focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/10"
                   />
                 </div>
@@ -195,8 +216,10 @@ export default function KontakPage() {
 
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="nama@email.com"
+                    required
                     className="h-11 w-full rounded-lg border border-[#DDE5E2] bg-white px-3 text-sm text-[#1f1f1f] outline-none transition placeholder:text-[#9EAEA8] focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/10"
                   />
                 </div>
@@ -213,6 +236,7 @@ export default function KontakPage() {
 
                   <input
                     id="whatsapp"
+                    name="whatsapp"
                     type="tel"
                     placeholder="08xxxxxxxxxx"
                     className="h-11 w-full rounded-lg border border-[#DDE5E2] bg-white px-3 text-sm text-[#1f1f1f] outline-none transition placeholder:text-[#9EAEA8] focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/10"
@@ -228,7 +252,9 @@ export default function KontakPage() {
                   </label>
                   <select
                     id="subjek"
+                    name="subject"
                     defaultValue=""
+                    required
                     className="h-11 w-full rounded-lg border border-[#DDE5E2] bg-white px-3 text-sm text-[#1f1f1f] outline-none transition focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/10"
                   >
                     <option value="" disabled>
@@ -254,8 +280,10 @@ export default function KontakPage() {
 
                 <textarea
                   id="pesan"
+                  name="message"
                   rows={6}
                   placeholder="Tuliskan pertanyaan atau kebutuhanmu..."
+                  required
                   className="w-full resize-none rounded-lg border border-[#DDE5E2] bg-white p-3 text-sm text-[#1f1f1f] outline-none transition placeholder:text-[#9EAEA8] focus:border-[#025246] focus:ring-2 focus:ring-[#025246]/10"
                 />
               </div>
@@ -263,10 +291,20 @@ export default function KontakPage() {
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#025246] px-5 text-sm font-semibold text-white transition hover:bg-[#013F37]"
+                  disabled={isPending}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#025246] px-5 text-sm font-semibold text-white transition hover:bg-[#013F37] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Send size={15} />
-                  Kirim Pesan
+                  {isPending ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                      Mengirim...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={15} />
+                      Kirim Pesan
+                    </>
+                  )}
                 </button>
               </div>
             </form>
