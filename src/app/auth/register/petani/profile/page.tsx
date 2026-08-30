@@ -6,339 +6,391 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import {
   ArrowLeft,
-  Sprout,
+  ArrowRight,
+  Check,
   MapPin,
   Package,
   Plus,
+  Sprout,
   X,
+  Leaf,
+  Sparkles,
 } from "lucide-react";
 import { saveRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
-const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
-];
+const slideshowImages = ["/images/login/ImageLogin.png", "/assets/bg-login-3.jpg"];
 
 export default function ProfilPetani() {
   const router = useRouter();
-  
   const [komoditasList, setKomoditasList] = useState<string[]>([""]);
   const [lokasi, setLokasi] = useState("");
   const [estimasi, setEstimasi] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
-
   const containerRef = useRef<HTMLDivElement>(null);
-  const floatingElementsRef = useRef<HTMLDivElement>(null);
 
-  const getKomoditasString = () => {
-    return komoditasList.filter((k) => k.trim() !== "").join(", ");
+  const getKomoditasString = () => komoditasList.filter((k) => k.trim() !== "").join(", ");
+
+  const saveDraftAndRedirect = (path: string, isBack = false) => {
+    saveRegisterDraft({ komoditas: getKomoditasString(), lokasi, estimasi });
+    if (isBack) router.back();
+    else router.push(path);
   };
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    saveRegisterDraft({ komoditas: getKomoditasString(), lokasi, estimasi });
-    router.push("/auth/register/petani/password");
+    saveDraftAndRedirect("/auth/register/petani/password");
   };
 
-  const handleBack = () => {
-    saveRegisterDraft({ komoditas: getKomoditasString(), lokasi, estimasi });
-    router.back();
-  };
-
-  const handleAddKomoditas = () => {
-    setKomoditasList([...komoditasList, ""]);
-  };
-
-  const handleRemoveKomoditas = (index: number) => {
-    const newList = komoditasList.filter((_, i) => i !== index);
-    setKomoditasList(newList);
-  };
-
-  const handleChangeKomoditas = (index: number, value: string) => {
+  const handleAddKomoditas = () => setKomoditasList([...komoditasList, ""]);
+  const handleRemoveKomoditas = (i: number) => setKomoditasList(komoditasList.filter((_, index) => index !== i));
+  const handleChangeKomoditas = (i: number, val: string) => {
     const newList = [...komoditasList];
-    newList[index] = value;
+    newList[i] = val;
     setKomoditasList(newList);
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
-    }, 4000);
+    const timer = setInterval(() => setCurrentSlide((p) => (p + 1) % slideshowImages.length), 5000);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      tl.fromTo(".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
-      )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-        "-=0.9"
-      )
-      .fromTo(".footer-anim",
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 },
-        "-=0.5"
-      );
+      tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
+        .fromTo(".hero-main", { opacity: 0, scale: 0.94, y: 25 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
+        .fromTo(".floating-card", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, stagger: 0.12 }, "-=0.55")
+        .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
 
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.3,
-        });
-      });
+      gsap.to(".hero-main", { y: -8, duration: 3.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".floating-card-1", { y: -10, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".floating-card-2", { y: 8, duration: 3.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".floating-card-3", { y: -6, duration: 4.2, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out"
-      });
+      const x = (e.clientX / window.innerWidth - 0.5) * 18;
+      const y = (e.clientY / window.innerHeight - 0.5) * 18;
+      gsap.to(".parallax-element", { x, y, duration: 1.2, ease: "power2.out", overwrite: true });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-
     return () => {
       ctx.revert();
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 
-  return (
-    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
+  const filledCommodities = komoditasList.filter((item) => item.trim() !== "");
+  const estimatedLabel = estimasi === "SKALA_KECIL" ? "Skala Kecil" : estimasi === "SKALA_MENENGAH" ? "Skala Menengah" : estimasi === "SKALA_BESAR" ? "Skala Besar" : "Belum dipilih";
 
-      {/* SVG ClipPath Definition (Hidden) */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <defs>
-          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER */}
-      <div
-        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
-        style={{ clipPath: "url(#emeraldCurveClip)" }}
-      >
-        {slideshowImages.map((src, index) => {
-          const isActive = index === currentSlide;
-          return (
-            <div
-              key={src + index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isActive
-                  ? "opacity-30 scale-100 blur-0"
-                  : "opacity-0 scale-105 blur-md"
-              }`}
-            >
-              <Image
-                src={src}
-                alt="Background Slide"
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
+  const renderFormFields = (isMobile = false) => (
+    <div className="flex flex-col gap-6">
+      <div className="form-item">
+        <div className="mb-2.5 flex items-end justify-between">
+          <label className="text-[13px] font-bold text-neutral-800">Komoditas Utama</label>
+          <span className="text-[10px] font-medium text-neutral-400">{filledCommodities.length} ditambahkan</span>
+        </div>
+        <div className="flex max-h-[150px] flex-col gap-2 overflow-y-auto pr-1">
+          {komoditasList.map((komoditas, idx) => (
+            <div key={idx} className="group flex items-center gap-2">
+              <div className="relative flex-1">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400 transition-colors group-focus-within:text-emerald-600">
+                  <Sprout size={17} strokeWidth={2.2} />
+                </div>
+                <input
+                  type="text"
+                  value={komoditas}
+                  onChange={(e) => handleChangeKomoditas(idx, e.target.value)}
+                  placeholder={idx === 0 ? "Contoh: Padi, Jagung, Cabai..." : "Komoditas lainnya..."}
+                  className="w-full rounded-[16px] border border-neutral-200 bg-white py-3.5 pl-11 pr-4 text-sm font-medium text-neutral-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)] outline-none transition-all duration-200 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
+                  required={idx === 0}
+                />
+              </div>
+              {komoditasList.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveKomoditas(idx)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-neutral-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-95"
+                  title="Hapus komoditas"
+                >
+                  <X size={17} strokeWidth={2.4} />
+                </button>
+              )}
             </div>
-          );
-        })}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={handleAddKomoditas}
+          className="mt-2.5 ml-1 inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 transition-colors hover:text-emerald-800"
+        >
+          <Plus size={14} strokeWidth={3} /> Tambah komoditas
+        </button>
       </div>
 
-      {/* AMBIENT FLOATING ORBS */}
-      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
-        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
-        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
-        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
+      <div className="form-item">
+        <label htmlFor={isMobile ? "lokasi-mobile" : "lokasi"} className="mb-2.5 block text-[13px] font-bold text-neutral-800">
+          Lokasi Lahan
+        </label>
+        <div className="relative group">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400 transition-colors group-focus-within:text-emerald-600">
+            <MapPin size={17} strokeWidth={2.2} />
+          </div>
+          <input
+            id={isMobile ? "lokasi-mobile" : "lokasi"}
+            type="text"
+            value={lokasi}
+            onChange={(e) => setLokasi(e.target.value)}
+            placeholder="Desa / Kecamatan / Kabupaten"
+            className="w-full rounded-[16px] border border-neutral-200 bg-white py-3.5 pl-11 pr-4 text-sm font-medium text-neutral-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)] outline-none transition-all duration-200 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
+            required
+          />
+        </div>
+        {!isMobile && <p className="mt-2 ml-1 text-[10px] font-medium text-neutral-400">Contoh: Desa Sukamaju, Kecamatan Beji, Depok</p>}
       </div>
 
-      {/* HEADER NAV */}
-      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
-        <div className="header-item flex items-center gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
+      <div className="form-item">
+        <label htmlFor={isMobile ? "estimasi-mobile" : "estimasi"} className="mb-2.5 block text-[13px] font-bold text-neutral-800">
+          Estimasi Hasil Panen
+        </label>
+        <div className="relative group">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400 transition-colors group-focus-within:text-emerald-600">
+            <Package size={17} strokeWidth={2.2} />
+          </div>
+          <select
+            id={isMobile ? "estimasi-mobile" : "estimasi"}
+            value={estimasi}
+            onChange={(e) => setEstimasi(e.target.value)}
+            className="w-full cursor-pointer appearance-none rounded-[16px] border border-neutral-200 bg-white py-3.5 pl-11 pr-11 text-sm font-medium text-neutral-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)] outline-none transition-all duration-200 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
+            required
           >
-            <ArrowLeft size={16} />
-            Beranda
-          </Link>
-          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
-            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
-            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
+            <option value="" disabled>Pilih estimasi hasil panen</option>
+            <option value="SKALA_KECIL">Skala Kecil — Di bawah 50 Kg</option>
+            <option value="SKALA_MENENGAH">Skala Menengah — 50–500 Kg</option>
+            <option value="SKALA_BESAR">Skala Besar — Di atas 500 Kg</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-neutral-400">
+            <ArrowRight size={15} className="rotate-90" />
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
+      <div className="form-item flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => saveDraftAndRedirect("", true)}
+          className="flex w-[38%] items-center justify-center rounded-[16px] border border-neutral-200 bg-white py-3.5 text-[13px] font-bold text-neutral-700 shadow-sm transition-all duration-200 hover:border-neutral-300 hover:bg-neutral-50 active:scale-[0.98]"
+        >
+          Kembali
+        </button>
+        <button
+          type="submit"
+          className="group flex flex-1 items-center justify-center gap-2 rounded-[16px] bg-[#075e50] py-3.5 text-[13px] font-extrabold text-white shadow-lg shadow-emerald-900/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#064d42] hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
+        >
+          Berikutnya <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+        </button>
+      </div>
+    </div>
+  );
 
-        {/* LEFT PANEL */}
-        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
-          <div className="relative z-10 w-full max-w-[380px]">
-            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Kenalkan Hasil <br />
-              <span className="text-emerald-400">Pertanianmu</span>
-            </h1>
-            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Bergabunglah bersama ribuan petani lainnya untuk menjangkau pembeli langsung tanpa perantara secara transparan.
-            </p>
+  return (
+    <div ref={containerRef} className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f7f8f6] font-sans text-neutral-900">
+      {/* DESKTOP LAYOUT */}
+      <div className="hidden lg:flex min-h-[100dvh] w-full">
+        <section className="relative min-h-[100dvh] w-[50%] lg:w-[52%] xl:w-[55%] overflow-hidden bg-[#063b30]">
+          {slideshowImages.map((src, index) => (
+            <div key={`${src}-${index}`} className={`absolute inset-0 transition-all duration-[1800ms] ease-out ${currentSlide === index ? "scale-100 opacity-100" : "scale-[1.08] opacity-0"}`}>
+              <Image src={src} alt="" fill priority={index === 0} className="object-cover" />
+            </div>
+          ))}
+
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(16,185,129,0.15),transparent_35%),linear-gradient(145deg,rgba(2,44,34,0.96)_0%,rgba(3,61,49,0.82)_48%,rgba(2,44,34,0.96)_100%)]" />
+          <div className="ambient-blob absolute -left-20 top-20 h-72 w-72 rounded-full bg-emerald-400/10 blur-[90px]" />
+          <div className="ambient-blob absolute bottom-0 right-0 h-96 w-96 rounded-full bg-teal-300/10 blur-[110px]" />
+          <div className="ambient-blob absolute left-[45%] top-[25%] h-40 w-40 rounded-full bg-lime-300/5 blur-[70px]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.035] [background-image:url('data:image/svg+xml,%3Csvg viewBox=%220 0 180 180%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')]" />
+
+          <div className="page-content relative z-20 flex items-center justify-between px-8 py-8 xl:px-12">
+            <Link href="/" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-xl transition-all duration-300 hover:bg-white/[0.14]">
+              <ArrowLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" /> Beranda
+            </Link>
+            <div className="flex items-center gap-2.5 text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-xl">
+                <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="Kompas'Desa" width={25} height={25} />
+              </div>
+              <span className="text-lg font-bold tracking-tight">Kompas&apos;Desa</span>
+            </div>
           </div>
-        </div>
 
-        {/* RIGHT PANEL - Form Profile */}
-        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+          <div className="absolute inset-x-0 top-[100px] bottom-[280px] z-10 flex items-center justify-center xl:bottom-[300px]">
+            <div className="parallax-element absolute h-[400px] w-[400px] rounded-full border border-white/[0.06]" />
+            <div className="parallax-element absolute h-[310px] w-[310px] rounded-full border border-white/[0.05]" />
+            <div className="absolute h-64 w-64 rounded-full bg-emerald-400/10 blur-[80px]" />
 
-            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
-                Profil Petani
-              </h2>
-              <p className="text-xs lg:text-sm text-neutral-500 font-medium">
-                Bantu pembeli mengenal hasil panen dan lokasi lahannya.
+            <div className="hero-main parallax-element relative flex h-[270px] w-[270px] items-center justify-center rounded-[44px] border border-white/10 bg-white/[0.07] shadow-2xl shadow-black/20 backdrop-blur-md">
+              <div className="absolute inset-3 rounded-[36px] border border-white/[0.06]" />
+              <div className="relative flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-br from-emerald-300/20 to-transparent">
+                <Leaf size={92} strokeWidth={1.1} className="text-emerald-200 drop-shadow-[0_0_30px_rgba(110,231,183,0.25)]" />
+              </div>
+              <div className="absolute bottom-4 left-0 right-0 text-center">
+                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-emerald-100/50">Profil Petani</span>
+              </div>
+            </div>
+
+            <div className="floating-card floating-card-1 absolute left-[8%] top-[10%] xl:left-[15%] w-[178px] rounded-2xl border border-white/10 bg-white/[0.10] p-4 shadow-xl backdrop-blur-xl">
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/15">
+                  <Sprout size={17} className="text-emerald-300" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-medium text-white/40">KOMODITAS</p>
+                  <p className="text-xs font-bold text-white">{filledCommodities.length > 0 ? filledCommodities[0] : "Belum diisi"}</p>
+                </div>
+              </div>
+              {filledCommodities.length > 1 && <p className="text-[10px] font-medium text-emerald-200/60">+{filledCommodities.length - 1} komoditas lainnya</p>}
+            </div>
+
+            <div className="floating-card floating-card-2 absolute right-[8%] top-[16%] xl:right-[15%] w-[190px] rounded-2xl border border-white/10 bg-white/[0.10] p-4 shadow-xl backdrop-blur-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/15">
+                  <MapPin size={17} className="text-emerald-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium text-white/40">LOKASI LAHAN</p>
+                  <p className="truncate text-xs font-bold text-white">{lokasi || "Belum diisi"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="floating-card floating-card-3 absolute bottom-[6%] right-[10%] xl:right-[20%] rounded-2xl border border-white/10 bg-white/[0.10] px-4 py-3 shadow-xl backdrop-blur-xl">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-400/15">
+                  <Package size={15} className="text-emerald-300" />
+                </div>
+                <div>
+                  <p className="text-[9px] font-medium text-white/40">ESTIMASI PANEN</p>
+                  <p className="text-[11px] font-bold text-white">{estimatedLabel}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="page-content absolute bottom-0 left-0 right-0 z-20 px-8 pb-10 xl:px-12 xl:pb-12">
+            <div className="mb-7 max-w-[530px]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/10 bg-emerald-300/[0.08] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">
+                <Sparkles size={12} /> Selangkah lagi
+              </div>
+              <h1 className="max-w-[500px] text-4xl font-extrabold leading-[1.05] tracking-tight text-white xl:text-[46px]">
+                Ceritakan sedikit<br />tentang <span className="text-emerald-300">pertanianmu.</span>
+              </h1>
+              <p className="mt-4 max-w-[450px] text-sm leading-6 text-emerald-50/60">
+                Lengkapi informasi pertanianmu agar pembeli dapat menemukan hasil panen yang sesuai dengan kebutuhan mereka.
               </p>
             </div>
 
-            <form onSubmit={handleNext} className="flex flex-col gap-4">
-
-              {/* Komoditas Utama - Dynamic Inputs */}
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label className="text-[13px] font-bold text-neutral-700 ml-1 flex justify-between items-end">
-                  <span>Komoditas Utama yang Ditanam</span>
-                </label>
-                
-                <div className="flex flex-col gap-2 max-h-[120px] overflow-y-auto overflow-x-hidden pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-200 hover:[&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors">
-                  {komoditasList.map((komoditas, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="relative group flex-1">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                          <Sprout size={18} strokeWidth={2.5} />
-                        </div>
-                        <input
-                          type="text"
-                          value={komoditas}
-                          onChange={(e) => handleChangeKomoditas(idx, e.target.value)}
-                          placeholder="Contoh: Padi, Jagung, Cabai..."
-                          className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                          required={idx === 0}
-                        />
-                      </div>
-                      
-                      {komoditasList.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveKomoditas(idx)}
-                          className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 flex-shrink-0"
-                          title="Hapus komoditas"
-                        >
-                          <X size={18} strokeWidth={2.5} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-300 text-[#063b30]">
+                  <Check size={13} strokeWidth={3} />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleAddKomoditas}
-                  className="self-start mt-1 ml-1 flex items-center gap-1.5 text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
-                >
-                  <Plus size={14} strokeWidth={3} />
-                  Tambah Komoditas Lainnya
-                </button>
+                <span className="text-[10px] font-bold text-white/80">Akun</span>
               </div>
-
-              {/* Lokasi Lahan */}
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label
-                  htmlFor="lokasi"
-                  className="text-[13px] font-bold text-neutral-700 ml-1"
-                >
-                  Lokasi Lahan (Desa/Kabupaten)
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <MapPin size={18} strokeWidth={2.5} />
-                  </div>
-                  <input
-                    id="lokasi"
-                    type="text"
-                    value={lokasi}
-                    onChange={(e) => setLokasi(e.target.value)}
-                    placeholder="Ketik nama desa/kota/kabupaten..."
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                    required
-                  />
-                </div>
+              <div className="h-px w-10 bg-emerald-200/20" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#063b30] text-[10px] font-extrabold">2</div>
+                <span className="text-[10px] font-bold text-white">Profil</span>
               </div>
-
-              {/* Estimasi Hasil Panen */}
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label
-                  htmlFor="estimasi"
-                  className="text-[13px] font-bold text-neutral-700 ml-1"
-                >
-                  Estimasi Hasil Panen
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Package size={18} strokeWidth={2.5} />
-                  </div>
-                  <select
-                    id="estimasi"
-                    value={estimasi}
-                    onChange={(e) => setEstimasi(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm cursor-pointer appearance-none"
-                    required
-                  >
-                    <option value="" disabled>Pilih estimasi hasil panen</option>
-                    <option value="SKALA_KECIL">Skala Kecil (Di bawah 50 Kg)</option>
-                    <option value="SKALA_MENENGAH">Skala Menengah (50 - 500 Kg)</option>
-                    <option value="SKALA_BESAR">Skala Besar (Di atas 500 Kg)</option>
-                  </select>
-                </div>
+              <div className="h-px w-10 bg-emerald-200/20" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/15 text-[10px] font-bold text-white/40">3</div>
+                <span className="text-[10px] font-bold text-white/35">Password</span>
               </div>
-
-              {/* Navigation Buttons */}
-              <div className="right-anim-item flex gap-3 mt-2">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97]"
-                >
-                  Kembali
-                </button>
-                <button
-                  type="submit"
-                  className="group flex w-1/2 items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
-                >
-                  <span>Berikutnya</span>
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
-      </main>
+        </section>
 
-      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
-        &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
-      </footer>
+        <section className="flex flex-1 min-h-[100dvh] items-center justify-center overflow-y-auto px-10 xl:px-20">
+          <div className="w-full max-w-[470px] py-10">
+            <div className="form-item mb-8">
+              <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" /> Informasi usaha
+              </div>
+              <h2 className="text-[38px] font-extrabold leading-[1.05] tracking-tight text-neutral-950">Profil Petani</h2>
+              <p className="mt-3 max-w-[390px] text-sm leading-6 text-neutral-500">
+                Bantu pembeli mengenal komoditas, lokasi, dan kapasitas hasil panenmu.
+              </p>
+            </div>
+
+            <form onSubmit={handleNext}>{renderFormFields(false)}</form>
+
+            <p className="form-item mt-8 text-center text-[10px] font-medium text-neutral-400">
+              © 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      {/* MOBILE LAYOUT */}
+      <div className="flex min-h-[100dvh] flex-col lg:hidden">
+        <header className="flex items-center justify-between px-5 py-5">
+          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-xs font-bold text-neutral-700 shadow-sm">
+            <ArrowLeft size={14} /> Beranda
+          </Link>
+          <div className="flex items-center gap-2">
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="Kompas'Desa" width={24} height={24} />
+            <span className="text-sm font-extrabold">Kompas&apos;Desa</span>
+          </div>
+        </header>
+
+        <section className="relative mx-4 h-[250px] overflow-hidden rounded-[28px] bg-[#063b30]">
+          {slideshowImages.map((src, index) => (
+            <div key={`${src}-mobile-${index}`} className={`absolute inset-0 transition-all duration-1000 ${currentSlide === index ? "scale-100 opacity-100" : "scale-105 opacity-0"}`}>
+              <Image src={src} alt="" fill className="object-cover opacity-25" />
+            </div>
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#022c22]/95 via-[#064e3b]/80 to-[#022c22]/95" />
+          <div className="relative z-10 flex h-full flex-col justify-between p-6">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                <Sparkles size={11} /> Selangkah lagi
+              </div>
+              <h1 className="text-2xl font-extrabold leading-tight text-white">
+                Lengkapi profil<br /><span className="text-emerald-300">pertanianmu.</span>
+              </h1>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[9px] font-medium uppercase tracking-wider text-white/40">Profil Petani</p>
+                <p className="mt-1 text-xs font-bold text-white/80">Informasi usaha</p>
+              </div>
+              <div className="flex gap-1.5">
+                <span className="h-1.5 w-5 rounded-full bg-emerald-300" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <main className="flex-1 px-5 pb-8 pt-8">
+          <div className="mx-auto w-full max-w-[520px]">
+            <div className="mb-7">
+              <h2 className="text-3xl font-extrabold tracking-tight text-neutral-950">Profil Petani</h2>
+              <p className="mt-2 text-sm leading-6 text-neutral-500">Lengkapi informasi tentang usaha pertanianmu.</p>
+            </div>
+
+            <form onSubmit={handleNext}>{renderFormFields(true)}</form>
+
+            <p className="mt-8 text-center text-[10px] font-medium text-neutral-400">
+              © 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
+            </p>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

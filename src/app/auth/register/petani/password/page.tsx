@@ -10,23 +10,20 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  Check,
+  Sparkles,
 } from "lucide-react";
 import { registerAction } from "@/actions/auth";
 import { initialState } from "@/lib/types/auth";
 import { getRegisterDraft, clearRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
-const slideshowImages = [
-  "/images/Joni.svg",
-  "/",
-  "/assets/bg-login-3.jpg",
-];
+const slideshowImages = ["/images/login/ImageLogin.png", "/assets/bg-login-3.jpg"];
 
 export default function RegisterPetaniPassword() {
   const router = useRouter();
   const [state, setState] = useState(initialState);
   const [isPending, setIsPending] = useState(false);
-
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +32,6 @@ export default function RegisterPetaniPassword() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const floatingElementsRef = useRef<HTMLDivElement>(null);
 
   const getPasswordStrength = (pass: string) => {
     if (!pass) return { level: 0, text: "Masukkan kata sandi", color: "bg-neutral-200", textColor: "text-neutral-400" };
@@ -45,9 +41,9 @@ export default function RegisterPetaniPassword() {
     if (/[0-9]/.test(pass)) score++;
     if (/[^A-Za-z0-9]/.test(pass)) score++;
 
-    if (score <= 1) return { level: 1, text: "Lemah (Gunakan kombinasi simbol & angka)", color: "bg-red-500", textColor: "text-red-500" };
-    if (score === 2 || score === 3) return { level: 2, text: "Sedang (Cukup baik)", color: "bg-amber-500", textColor: "text-amber-500" };
-    return { level: 3, text: "Kuat! (Aman dengan simbol & angka)", color: "bg-emerald-600", textColor: "text-emerald-600" };
+    if (score <= 1) return { level: 1, text: "Lemah (Gunakan simbol & angka)", color: "bg-red-500", textColor: "text-red-500" };
+    if (score <= 3) return { level: 2, text: "Sedang (Cukup baik)", color: "bg-amber-500", textColor: "text-amber-500" };
+    return { level: 3, text: "Kuat! (Aman)", color: "bg-emerald-600", textColor: "text-emerald-600" };
   };
 
   const strength = getPasswordStrength(password);
@@ -56,21 +52,15 @@ export default function RegisterPetaniPassword() {
     e.preventDefault();
     setCustomError("");
 
-    if (password !== confirmPassword) {
-      setCustomError("Konfirmasi password tidak sama. Pastikan kata sandi cocok.");
-      return;
-    }
+    if (password !== confirmPassword) return setCustomError("Konfirmasi password tidak sama.");
 
     const draft = getRegisterDraft();
     const formData = new FormData(e.currentTarget);
     formData.set("role", "petani");
-    formData.set("fullName", draft.fullName);
-    formData.set("username", draft.username);
-    formData.set("noTelp", draft.noTelp);
-    formData.set("email", draft.email);
-    formData.set("preferredCommodity", draft.komoditas);
-    formData.set("address", draft.lokasi);
-    formData.set("demandScale", draft.estimasi);
+    Object.entries({
+      fullName: draft.fullName, username: draft.username, noTelp: draft.noTelp,
+      email: draft.email, preferredCommodity: draft.komoditas, address: draft.lokasi, demandScale: draft.estimasi
+    }).forEach(([key, val]) => val && formData.set(key, val as string));
 
     setIsPending(true);
     const result = await registerAction(state, formData);
@@ -84,294 +74,317 @@ export default function RegisterPetaniPassword() {
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
-    }, 4000);
+    const timer = setInterval(() => setCurrentSlide((p) => (p + 1) % slideshowImages.length), 4000);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      tl.fromTo(".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
-      )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-        "-=0.9"
-      )
-      .fromTo(".footer-anim",
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 },
-        "-=0.5"
-      );
+      tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
+        .fromTo(".illustration-item", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
+        .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
 
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.3,
-        });
+      gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
+      gsap.to(".lock-pulse", { scale: 1.06, duration: 1.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".shield-glow", { opacity: 0.85, scale: 1.1, duration: 2.4, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".orbit-dot-1", { rotate: 360, duration: 10, repeat: -1, ease: "none", transformOrigin: "190px 150px" });
+      gsap.to(".orbit-dot-2", { rotate: -360, duration: 14, repeat: -1, ease: "none", transformOrigin: "190px 150px" });
+
+      gsap.utils.toArray<SVGGElement>(".float-chip").forEach((g, i) => {
+        gsap.to(g, { y: i % 2 === 0 ? -6 : 6, duration: 2.6 + i * 0.3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.2 });
       });
     }, containerRef);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out"
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
+    return () => ctx.revert();
   }, []);
 
-  return (
-    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
+  const renderFormFields = () => (
+    <div className="flex flex-col gap-5">
+      {(state.message || customError) && (
+        <div role="alert" className="form-item text-center text-[13px] font-semibold rounded-xl px-4 py-3 border bg-red-50 text-red-600 border-red-200">
+          {customError || state.message}
+        </div>
+      )}
 
-      {/* SVG ClipPath Definition (Hidden) */}
-      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
-        <defs>
-          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
-          </clipPath>
-        </defs>
-      </svg>
-
-      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER */}
-      <div
-        className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
-        style={{ clipPath: "url(#emeraldCurveClip)" }}
-      >
-        {slideshowImages.map((src, index) => {
-          const isActive = index === currentSlide;
-          return (
-            <div
-              key={src + index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isActive
-                  ? "opacity-30 scale-100 blur-0"
-                  : "opacity-0 scale-105 blur-md"
-              }`}
-            >
-              <Image
-                src={src}
-                alt="Background Slide"
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-            </div>
-          );
-        })}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
-      </div>
-
-      {/* AMBIENT FLOATING ORBS */}
-      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
-        <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
-        <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
-        <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
-      </div>
-
-      {/* HEADER NAV */}
-      <header className="relative z-20 w-full shrink-0 flex items-center justify-between px-6 py-5 lg:px-12 xl:px-16">
-        <div className="header-item flex items-center gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-white text-neutral-800 text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm hover:bg-neutral-50 hover:shadow-md transition-all duration-200"
+      <div className="form-item">
+        <label htmlFor="password" className="mb-2 block text-[13px] font-bold text-neutral-800">Password</label>
+        <div className="relative group">
+          <Lock size={17} strokeWidth={2.2} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-emerald-600 transition-colors" />
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Minimal 8 karakter"
+            className="w-full rounded-[16px] border border-neutral-200 bg-white py-3.5 pl-11 pr-12 text-sm font-medium text-neutral-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)] outline-none transition-all duration-200 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
           >
-            <ArrowLeft size={16} />
-            Beranda
-          </Link>
-          <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
-            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
-            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
-          </div>
+            {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+          </button>
         </div>
-      </header>
-
-      {/* MAIN CONTENT */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
-
-        {/* LEFT PANEL */}
-        <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
-          <div className="relative z-10 w-full max-w-[380px]">
-            <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Keamanan <br />
-              <span className="text-emerald-400">Akun Petani</span>
-            </h1>
-            <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Buat kata sandi yang aman untuk mengamankan akun dan transaksi hasil panenmu bersama KompasDesa.
-            </p>
+        {password && (
+          <div className="mt-2 flex flex-col gap-1.5">
+            <div className="flex gap-1 w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div className={`h-full transition-all duration-300 ${strength.color} ${strength.level === 1 ? 'w-1/3' : strength.level === 2 ? 'w-2/3' : 'w-full'}`}></div>
+            </div>
+            <span className={`text-[10px] font-bold ${strength.textColor}`}>Kekuatan: {strength.text}</span>
           </div>
+        )}
+      </div>
+
+      <div className="form-item">
+        <label htmlFor="confirmPassword" className="mb-2 block text-[13px] font-bold text-neutral-800">Konfirmasi Password</label>
+        <div className="relative group">
+          <Lock size={17} strokeWidth={2.2} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-emerald-600 transition-colors" />
+          <input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Ulangi kata sandi"
+            className="w-full rounded-[16px] border border-neutral-200 bg-white py-3.5 pl-11 pr-12 text-sm font-medium text-neutral-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)] outline-none transition-all duration-200 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
+          >
+            {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+          </button>
         </div>
+        {confirmPassword && (
+          <span className={`text-[10px] font-bold mt-2 block ${password === confirmPassword ? 'text-emerald-600' : 'text-red-500'}`}>
+            {password === confirmPassword ? '✓ Password cocok' : '✕ Password tidak sama'}
+          </span>
+        )}
+      </div>
 
-        {/* RIGHT PANEL - Form Password */}
-        <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
-          <div className="w-full max-w-[380px] xl:max-w-[420px]">
+      <div className="form-item flex items-start gap-2.5 mt-1">
+        <input type="checkbox" id="agreeTerms" required className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-600 cursor-pointer" />
+        <label htmlFor="agreeTerms" className="text-[12px] text-neutral-500 leading-relaxed cursor-pointer">
+          Dengan mendaftar, Anda menyetujui <Link href="#" className="text-emerald-600 font-semibold underline underline-offset-2">Syarat & Ketentuan</Link> dan <Link href="#" className="text-emerald-600 font-semibold underline underline-offset-2">Kebijakan Privasi</Link>
+        </label>
+      </div>
 
-            <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
-                Keamanan Akun
-              </h2>
-              <p className="text-xs lg:text-sm text-neutral-500 font-medium">
+      <div className="form-item flex gap-3 pt-2">
+        <button type="button" onClick={() => router.back()} className="w-[38%] rounded-[16px] border border-neutral-200 bg-white py-3.5 text-[13px] font-bold text-neutral-700 shadow-sm hover:bg-neutral-50 active:scale-[0.98] transition-all">Kembali</button>
+        <button type="submit" disabled={isPending} className="group flex flex-1 items-center justify-center gap-2 rounded-[16px] bg-[#075e50] py-3.5 text-[13px] font-extrabold text-white shadow-lg shadow-emerald-900/10 hover:bg-[#064d42] active:scale-[0.98] disabled:opacity-70 transition-all">
+          {isPending ? <><Loader2 size={16} className="animate-spin" /> Memproses...</> : 'Daftar Akun'}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div ref={containerRef} className="min-h-[100dvh] w-full overflow-x-hidden bg-[#f7f8f6] font-sans text-neutral-900">
+      
+      {/* DESKTOP LAYOUT */}
+      <div className="hidden lg:flex min-h-[100dvh] w-full">
+        <section className="relative min-h-[100dvh] w-[50%] lg:w-[52%] xl:w-[55%] overflow-hidden bg-[#063b30]">
+          {slideshowImages.map((src, index) => (
+            <div key={src + index} className={`absolute inset-0 transition-all duration-[1800ms] ease-out ${currentSlide === index ? "scale-100 opacity-100" : "scale-[1.08] opacity-0"}`}>
+              <Image src={src} alt="" fill priority={index === 0} className="object-cover" />
+            </div>
+          ))}
+
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(16,185,129,0.15),transparent_35%),linear-gradient(145deg,rgba(2,44,34,0.96)_0%,rgba(3,61,49,0.82)_48%,rgba(2,44,34,0.96)_100%)]" />
+          <div className="ambient-blob absolute -left-20 top-20 h-72 w-72 rounded-full bg-emerald-400/10 blur-[90px]" />
+          <div className="ambient-blob absolute bottom-0 right-0 h-96 w-96 rounded-full bg-teal-300/10 blur-[110px]" />
+          <div className="ambient-blob absolute left-[45%] top-[25%] h-40 w-40 rounded-full bg-lime-300/5 blur-[70px]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.035] [background-image:url('data:image/svg+xml,%3Csvg viewBox=%220 0 180 180%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')]" />
+
+          <div className="page-content relative z-20 flex items-center justify-between px-8 py-8 xl:px-12">
+            <Link href="/" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/[0.14]">
+              <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> Beranda
+            </Link>
+            <div className="flex items-center gap-2.5 text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-xl">
+                <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="Kompas'Desa" width={25} height={25} />
+              </div>
+              <span className="text-lg font-bold tracking-tight">Kompas&apos;Desa</span>
+            </div>
+          </div>
+
+          <div className="absolute inset-x-0 top-[100px] bottom-[280px] z-10 flex items-center justify-center xl:bottom-[300px]">
+            <div className="illustration-item relative w-full max-w-[400px] flex items-center justify-center">
+              <svg viewBox="0 0 380 320" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="190" cy="160" r="150" fill="#10b981" opacity="0.06" />
+                <circle cx="190" cy="160" r="110" fill="#10b981" opacity="0.08" />
+                <circle cx="190" cy="160" r="75" fill="#10b981" opacity="0.10" />
+                <circle cx="190" cy="150" r="118" fill="none" stroke="#34d399" strokeWidth="1" strokeDasharray="3 7" opacity="0.35" />
+                <circle cx="190" cy="150" r="95" fill="none" stroke="#6ee7b7" strokeWidth="1" strokeDasharray="2 6" opacity="0.3" />
+                
+                <circle className="orbit-dot-1" cx="190" cy="32" r="4.5" fill="#6ee7b7" />
+                <circle className="orbit-dot-2" cx="308" cy="150" r="4" fill="#34d399" />
+
+                <g opacity="0.9">
+                  <g className="float-chip" transform="translate(48,90)">
+                    <rect x="-30" y="-24" width="60" height="48" rx="14" fill="#ffffff" opacity="0.08" stroke="#a7f3d0" strokeWidth="1.2" />
+                    <path d="M0 -10 a10 10 0 0 1 10 10 a10 10 0 0 1 -3 7" stroke="#6ee7b7" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    <path d="M0 -10 a10 10 0 0 0 -10 10 a10 10 0 0 0 4 8" stroke="#6ee7b7" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    <path d="M-6 8 Q0 14 6 8" stroke="#a7f3d0" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                  </g>
+                  <g className="float-chip" transform="translate(332,210)">
+                    <rect x="-32" y="-22" width="64" height="44" rx="14" fill="#ffffff" opacity="0.08" stroke="#a7f3d0" strokeWidth="1.2" />
+                    <circle cx="-10" cy="0" r="7" fill="none" stroke="#6ee7b7" strokeWidth="2.4" />
+                    <rect x="-4" y="-2" width="20" height="4" rx="1.5" fill="#6ee7b7" />
+                    <rect x="10" y="2" width="4" height="6" fill="#6ee7b7" />
+                  </g>
+                  <g className="float-chip" transform="translate(70,262)">
+                    <rect x="-18" y="-24" width="36" height="48" rx="8" fill="#ffffff" opacity="0.08" stroke="#a7f3d0" strokeWidth="1.2" />
+                    <rect x="-10" y="-16" width="20" height="26" rx="2" fill="none" stroke="#6ee7b7" strokeWidth="1.6" />
+                    <circle cx="0" cy="14" r="1.6" fill="#6ee7b7" />
+                  </g>
+                </g>
+
+                <path d="M75 95 Q130 100 160 130" stroke="#34d399" strokeWidth="1" strokeDasharray="2 5" opacity="0.3" fill="none" />
+                <path d="M300 205 Q250 195 220 168" stroke="#34d399" strokeWidth="1" strokeDasharray="2 5" opacity="0.3" fill="none" />
+                <path d="M85 250 Q130 220 155 195" stroke="#34d399" strokeWidth="1" strokeDasharray="2 5" opacity="0.3" fill="none" />
+
+                <g className="shield-glow" opacity="0.7">
+                  <path d="M190 65 L250 89 V152 Q250 208 190 238 Q130 208 130 152 V89 Z" fill="none" stroke="#34d399" strokeWidth="2.5" opacity="0.5" />
+                </g>
+
+                <g className="lock-pulse" style={{ transformOrigin: "190px 168px" }}>
+                  <path d="M164 145 V123 Q164 95 190 95 Q216 95 216 123 V145" fill="none" stroke="#a7f3d0" strokeWidth="11" strokeLinecap="round" />
+                  <rect x="144" y="142" width="92" height="76" rx="16" fill="#ecfdf5" />
+                  <rect x="144" y="142" width="92" height="76" rx="16" fill="none" stroke="#6ee7b7" strokeWidth="2" opacity="0.6" />
+                  <circle cx="190" cy="171" r="10" fill="#059669" />
+                  <rect x="185" y="178" width="11" height="20" rx="4" fill="#059669" />
+                </g>
+
+                <g transform="translate(238,210)">
+                  <circle cx="0" cy="0" r="19" fill="#025246" />
+                  <path d="M-8 0 L-2.5 7 L9 -8" stroke="#fff" strokeWidth="3.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
+
+                <path d="M120 280 q16 -20 34 -7 q-20 7 -34 7Z" fill="#34d399" opacity="0.8" />
+                <path d="M260 284 q-16 -20 -34 -7 q20 7 34 7Z" fill="#10b981" opacity="0.8" />
+                <path d="M188 300 q6 -14 18 -10 q-10 10 -18 10Z" fill="#6ee7b7" opacity="0.7" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="page-content absolute bottom-0 left-0 right-0 z-20 px-8 pb-10 xl:px-12 xl:pb-12">
+            <div className="mb-7 max-w-[530px]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-300/10 bg-emerald-300/[0.08] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">
+                <Sparkles size={12} /> Langkah Terakhir
+              </div>
+              <h1 className="max-w-[500px] text-4xl font-extrabold leading-[1.05] tracking-tight text-white xl:text-[46px]">
+                Keamanan <br /><span className="text-emerald-300">Akun Petani.</span>
+              </h1>
+              <p className="mt-4 max-w-[450px] text-sm leading-6 text-emerald-50/60">
+                Buat kata sandi yang aman untuk melindungi akun dan transaksi hasil panenmu bersama KompasDesa.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-300 text-[#063b30]"><Check size={13} strokeWidth={3} /></div>
+                <span className="text-[10px] font-bold text-white/80">Akun</span>
+              </div>
+              <div className="h-px w-10 bg-emerald-200/20" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-300 text-[#063b30]"><Check size={13} strokeWidth={3} /></div>
+                <span className="text-[10px] font-bold text-white/80">Profil</span>
+              </div>
+              <div className="h-px w-10 bg-emerald-200/20" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#063b30] text-[10px] font-extrabold">3</div>
+                <span className="text-[10px] font-bold text-white">Password</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex flex-1 min-h-[100dvh] items-center justify-center overflow-y-auto px-10 xl:px-20">
+          <div className="w-full max-w-[470px] py-10">
+            <div className="form-item mb-8">
+              <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" /> Tahap Akhir
+              </div>
+              <h2 className="text-[38px] font-extrabold leading-[1.05] tracking-tight text-neutral-950">Keamanan Akun</h2>
+              <p className="mt-3 max-w-[390px] text-sm leading-6 text-neutral-500">
                 Buat kata sandi untuk mengamankan akun dan akses masuk kamu.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {(state.message || customError) && (
-                <div
-                  role="alert"
-                  className="right-anim-item text-center text-[13px] font-semibold rounded-xl px-4 py-3 border bg-red-50 text-red-600 border-red-200"
-                >
-                  {customError || state.message}
-                </div>
-              )}
+            <form onSubmit={handleSubmit}>{renderFormFields()}</form>
 
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="password" className="text-[13px] font-bold text-neutral-700 ml-1">
-                  Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Lock size={18} strokeWidth={2.5} />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimal 8 karakter"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-12 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors focus:outline-none"
-                  >
-                    {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
-                  </button>
-                </div>
-
-                {password && (
-                  <div className="mt-1 ml-1 flex flex-col gap-1">
-                    <div className="flex gap-1 w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${strength.color} ${strength.level === 1 ? 'w-1/3' : strength.level === 2 ? 'w-2/3' : 'w-full'}`}></div>
-                    </div>
-                    <span className={`text-[10px] font-bold ${strength.textColor}`}>
-                      Kekuatan: {strength.text}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="confirmPassword" className="text-[13px] font-bold text-neutral-700 ml-1">
-                  Konfirmasi Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-emerald-600 transition-colors">
-                    <Lock size={18} strokeWidth={2.5} />
-                  </div>
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Ulangi kata sandi"
-                    className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-12 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? "Sembunyikan konfirmasi kata sandi" : "Tampilkan konfirmasi kata sandi"}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors focus:outline-none"
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
-                  </button>
-                </div>
-
-                {confirmPassword && (
-                  <span className={`text-[10px] font-bold mt-1 ml-1 ${password === confirmPassword ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {password === confirmPassword ? '✓ Password cocok' : '✕ Password tidak sama'}
-                  </span>
-                )}
-              </div>
-
-              <div className="right-anim-item flex items-start gap-2.5 mt-1">
-                <input
-                  type="checkbox"
-                  id="agreeTerms"
-                  name="agreeTerms"
-                  required
-                  className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-600 transition-colors cursor-pointer"
-                />
-                <label htmlFor="agreeTerms" className="text-[12px] text-neutral-500 leading-relaxed cursor-pointer">
-                  Dengan mendaftar, Anda menyetujui{" "}
-                  <Link href="#" className="text-emerald-600 font-semibold underline decoration-emerald-600 decoration-1 underline-offset-2">
-                    Syarat & Ketentuan
-                  </Link>{" "}
-                  dan{" "}
-                  <Link href="#" className="text-emerald-600 font-semibold underline decoration-emerald-600 decoration-1 underline-offset-2">
-                    Kebijakan Privasi
-                  </Link>
-                </label>
-              </div>
-
-              <div className="right-anim-item flex gap-3 mt-2">
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="w-1/2 bg-white border-2 border-neutral-200 hover:bg-neutral-50 text-neutral-800 font-semibold text-[13px] lg:text-sm rounded-2xl py-3.5 shadow-sm transition-all duration-150 ease-out active:scale-[0.97]"
-                >
-                  Kembali
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="group flex w-1/2 items-center justify-center gap-2 rounded-2xl bg-[#025246] px-4 py-3.5 text-[15px] font-extrabold text-white shadow-md transition-all duration-300 ease-out hover:bg-[#04382f] hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      <span>Memproses...</span>
-                    </>
-                  ) : (
-                    <span>Daftar Akun</span>
-                  )}
-                </button>
-              </div>
-            </form>
+            <p className="form-item mt-8 text-center text-[10px] font-medium text-neutral-400">
+              © 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
+            </p>
           </div>
-        </div>
-      </main>
+        </section>
+      </div>
 
-      <footer className="footer-anim relative z-10 shrink-0 w-full text-center py-4 text-[12px] font-medium text-neutral-400">
-        &copy; 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
-      </footer>
+      {/* MOBILE LAYOUT */}
+      <div className="flex min-h-[100dvh] flex-col lg:hidden bg-white">
+        <header className="flex items-center justify-between px-5 py-5 z-20">
+          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-xs font-bold text-neutral-700 shadow-sm">
+            <ArrowLeft size={14} /> Beranda
+          </Link>
+          <div className="flex items-center gap-2">
+            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="Kompas'Desa" width={24} height={24} />
+            <span className="text-sm font-extrabold text-neutral-900">Kompas&apos;Desa</span>
+          </div>
+        </header>
+
+        <section className="relative w-full h-[260px] overflow-hidden bg-[#063b30]">
+          {slideshowImages.map((src, index) => (
+            <div key={src + index} className={`absolute inset-0 transition-all duration-1000 ${currentSlide === index ? "scale-100 opacity-100" : "scale-105 opacity-0"}`}>
+              <Image src={src} alt="" fill className="object-cover opacity-25" />
+            </div>
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#022c22]/95 via-[#064e3b]/80 to-[#022c22]/95" />
+          
+          <div className="relative z-10 flex h-full flex-col justify-between p-6">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                <Sparkles size={11} /> Langkah Terakhir
+              </div>
+              <h1 className="text-2xl font-extrabold leading-tight text-white">
+                Keamanan <br /><span className="text-emerald-300">Akun Petani.</span>
+              </h1>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[9px] font-medium uppercase tracking-wider text-white/40">Keamanan</p>
+                <p className="mt-1 text-xs font-bold text-white/80">Kata sandi</p>
+              </div>
+              <div className="flex gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
+                <span className="h-1.5 w-5 rounded-full bg-emerald-300" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <main className="flex-1 px-5 pb-8 pt-8">
+          <div className="mx-auto w-full max-w-[520px]">
+            <div className="mb-7">
+              <h2 className="text-3xl font-extrabold tracking-tight text-neutral-950">Keamanan Akun</h2>
+              <p className="mt-2 text-sm leading-6 text-neutral-500">Buat kata sandi untuk mengamankan akun dan akses masuk kamu.</p>
+            </div>
+
+            <form onSubmit={handleSubmit}>{renderFormFields()}</form>
+
+            <p className="mt-8 text-center text-[10px] font-medium text-neutral-400">
+              © 2026 Kompas&apos;Desa. Hak Cipta Dilindungi.
+            </p>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

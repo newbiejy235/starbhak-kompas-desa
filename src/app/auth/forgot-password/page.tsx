@@ -17,13 +17,7 @@ import { sendCode } from "@/actions/nodeMailer/nodemailer.action";
 import { changesPassword } from "@/actions/auth";
 import Image from "next/image";
 
-const slideshowImages = [
-  "/images/Joni.svg",
-  "/assets/bg-login-2.jpg",
-  "/assets/bg-login-3.jpg",
-];
-
-export default function NewPassword() {
+export default function ForgotPassword() {
   const router = useRouter();
 
   const [userEmail, setUserEmail] = useState("");
@@ -32,12 +26,11 @@ export default function NewPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [pendingSend, setPendingSend] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingElementsRef = useRef<HTMLDivElement>(null);
@@ -107,30 +100,32 @@ export default function NewPassword() {
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      tl.fromTo(".bg-curve-container",
+      tl.fromTo(
+        ".bg-curve-container",
         { scaleX: 0, transformOrigin: "left center" },
         { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
       )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-        "-=0.9"
-      )
-      .fromTo(".footer-anim",
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 },
-        "-=0.5"
-      );
+        .fromTo(
+          [".header-item", ".left-anim-item", ".right-anim-item"],
+          { opacity: 0, y: 30, rotateX: -10 },
+          { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+          "-=0.9"
+        )
+        .fromTo(
+          ".illustration-item",
+          { opacity: 0, scale: 0.85 },
+          { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.4)" },
+          "-=0.8"
+        )
+        .fromTo(
+          ".footer-anim",
+          { opacity: 0, y: 10 },
+          { opacity: 1, duration: 0.8 },
+          "-=0.5"
+        );
 
       const orbs = document.querySelectorAll(".ambient-orb");
       orbs.forEach((orb, i) => {
@@ -144,6 +139,25 @@ export default function NewPassword() {
           delay: i * 0.3,
         });
       });
+
+      // Floating bounce on the confused character
+      gsap.to(".char-float", {
+        y: -10,
+        duration: 2.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+
+      // Thought bubble pulse
+      gsap.to(".thought-key", {
+        rotate: 6,
+        duration: 1.6,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        transformOrigin: "center",
+      });
     }, containerRef);
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -153,7 +167,7 @@ export default function NewPassword() {
         x: (i: number) => x * (i + 1.5),
         y: (i: number) => y * (i + 1.5),
         duration: 1.5,
-        ease: "power2.out"
+        ease: "power2.out",
       });
     };
 
@@ -166,48 +180,32 @@ export default function NewPassword() {
   }, []);
 
   return (
-    <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
-
+    <div
+      ref={containerRef}
+      className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000"
+    >
       {/* SVG ClipPath Definition */}
       <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
         <defs>
-          <clipPath id="emeraldCurveClip" clipPathUnits="objectBoundingBox">
+          <clipPath id="emeraldCurveClip2" clipPathUnits="objectBoundingBox">
             <path d="M0,0 L0.72,0 C0.90,0.35 0.88,0.75 0.58,1 L0,1 Z" />
           </clipPath>
         </defs>
       </svg>
 
-      {/* SHAPE BACKGROUND + SLIDESHOW WRAPPER */}
+      {/* SHAPE BACKGROUND */}
       <div
         className="bg-curve-container absolute top-0 left-0 w-full lg:w-[55%] h-full z-0 drop-shadow-2xl pointer-events-none hidden lg:block overflow-hidden bg-gradient-to-br from-[#022c22] to-[#064e3b]"
-        style={{ clipPath: "url(#emeraldCurveClip)" }}
+        style={{ clipPath: "url(#emeraldCurveClip2)" }}
       >
-        {slideshowImages.map((src, index) => {
-          const isActive = index === currentSlide;
-          return (
-            <div
-              key={src + index}
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                isActive
-                  ? "opacity-30 scale-100 blur-0"
-                  : "opacity-0 scale-105 blur-md"
-              }`}
-            >
-              <Image
-                src={src}
-                alt="Background Slide"
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-            </div>
-          );
-        })}
         <div className="absolute inset-0 bg-gradient-to-r from-[#022c22]/90 via-[#022c22]/70 to-[#064e3b]/80" />
       </div>
 
       {/* AMBIENT FLOATING ORBS */}
-      <div ref={floatingElementsRef} className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden">
+      <div
+        ref={floatingElementsRef}
+        className="absolute top-0 left-0 w-full lg:w-[55%] h-full z-1 pointer-events-none hidden lg:block overflow-hidden"
+      >
         <div className="ambient-orb absolute top-[20%] left-[15%] w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl" />
         <div className="ambient-orb absolute top-[60%] left-[35%] w-48 h-48 rounded-full bg-teal-400/10 blur-3xl" />
         <div className="ambient-orb absolute top-[40%] left-[70%] w-20 h-20 rounded-full bg-emerald-300/10 blur-xl" />
@@ -232,16 +230,104 @@ export default function NewPassword() {
 
       {/* MAIN CONTENT */}
       <main className="relative z-10 flex-1 flex flex-col lg:flex-row items-center w-full max-w-[1600px] mx-auto overflow-hidden">
-
-        {/* LEFT PANEL */}
+        {/* LEFT PANEL - Illustration + copy */}
         <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
+          <div className="illustration-item relative w-full max-w-[380px] mb-8 flex items-center justify-center">
+            <svg viewBox="0 0 400 320" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+              {/* soft backdrop circle */}
+              <circle cx="150" cy="150" r="120" fill="#10b981" opacity="0.08" />
+              <circle cx="150" cy="150" r="85" fill="#10b981" opacity="0.10" />
+
+              {/* Thought bubble */}
+              <g className="thought-key">
+                <circle cx="70" cy="55" r="6" fill="#34d399" opacity="0.7" />
+                <circle cx="88" cy="40" r="9" fill="#34d399" opacity="0.85" />
+                <ellipse cx="118" cy="52" rx="42" ry="34" fill="#022c22" />
+                <ellipse cx="118" cy="52" rx="42" ry="34" fill="none" stroke="#34d399" strokeWidth="2" opacity="0.5" />
+                {/* key icon inside bubble */}
+                <circle cx="103" cy="52" r="9" fill="none" stroke="#6ee7b7" strokeWidth="3.5" />
+                <rect x="110" y="49" width="26" height="6" rx="2" fill="#6ee7b7" />
+                <rect x="126" y="55" width="5" height="8" fill="#6ee7b7" />
+                <rect x="134" y="55" width="5" height="10" fill="#6ee7b7" />
+              </g>
+
+              {/* Character - confused person, hand on head */}
+              <g className="char-float">
+                {/* legs */}
+                <rect x="90" y="230" width="16" height="55" rx="6" fill="#022c22" />
+                <rect x="118" y="230" width="16" height="55" rx="6" fill="#01110c" />
+                {/* shoes */}
+                <ellipse cx="98" cy="288" rx="14" ry="7" fill="#0f172a" />
+                <ellipse cx="126" cy="288" rx="14" ry="7" fill="#0f172a" />
+                {/* torso */}
+                <path d="M78 170 Q78 140 112 140 Q146 140 146 170 L146 232 L78 232 Z" fill="#059669" />
+                {/* arm reaching up to head */}
+                <path
+                  d="M92 155 Q60 150 55 115 Q53 100 65 92"
+                  stroke="#059669"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <circle cx="64" cy="90" r="10" fill="#e2c9a3" />
+                {/* other arm down */}
+                <path d="M132 160 Q150 175 148 205" stroke="#059669" strokeWidth="15" strokeLinecap="round" fill="none" />
+                <circle cx="148" cy="210" r="9" fill="#e2c9a3" />
+                {/* neck + head */}
+                <rect x="103" y="118" width="18" height="18" fill="#e2c9a3" />
+                <circle cx="112" cy="105" r="26" fill="#f2d5ab" />
+                {/* hair */}
+                <path
+                  d="M86 100 Q84 72 112 70 Q140 72 138 100 Q138 84 112 84 Q92 84 90 102 Z"
+                  fill="#1f2937"
+                />
+                <path d="M86 100 Q80 120 90 132 Q84 112 90 100 Z" fill="#1f2937" />
+                {/* confused eyebrows/eyes */}
+                <path d="M100 100 q4 -4 8 0" stroke="#1f2937" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+                <path d="M118 98 q4 -5 9 -1" stroke="#1f2937" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+                <circle cx="103" cy="106" r="2" fill="#1f2937" />
+                <circle cx="122" cy="105" r="2" fill="#1f2937" />
+                {/* worried mouth */}
+                <path d="M104 116 q8 6 16 -1" stroke="#1f2937" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+              </g>
+
+              {/* Password/lock card */}
+              <g>
+                <rect x="185" y="120" width="150" height="130" rx="14" fill="#ecfdf5" />
+                <rect x="185" y="120" width="150" height="130" rx="14" fill="none" stroke="#a7f3d0" strokeWidth="2" />
+                {/* X badge */}
+                <circle cx="260" cy="112" r="20" fill="#025246" />
+                <path d="M251 103 L269 121 M269 103 L251 121" stroke="#fff" strokeWidth="4" strokeLinecap="round" />
+                {/* dotted password field */}
+                <rect x="205" y="160" width="110" height="26" rx="6" fill="#ffffff" stroke="#6ee7b7" strokeWidth="2" />
+                <circle cx="220" cy="173" r="3.5" fill="#059669" />
+                <circle cx="232" cy="173" r="3.5" fill="#059669" />
+                <circle cx="244" cy="173" r="3.5" fill="#059669" />
+                <circle cx="256" cy="173" r="3.5" fill="#059669" />
+                <circle cx="268" cy="173" r="3.5" fill="#059669" />
+                <circle cx="280" cy="173" r="3.5" fill="#059669" />
+                {/* underline field */}
+                <rect x="205" y="198" width="110" height="22" rx="6" fill="#d1fae5" />
+                <rect x="205" y="230" width="70" height="10" rx="5" fill="#a7f3d0" />
+              </g>
+
+              {/* Plant */}
+              <path d="M300 260 Q292 235 305 218 Q310 240 300 260 Z" fill="#065f46" />
+              <path d="M310 260 Q322 232 312 212 Q318 238 310 260 Z" fill="#059669" />
+              <path d="M320 260 Q332 240 322 222 Q328 244 320 260 Z" fill="#10b981" />
+              <path d="M295 260 h35 v10 q0 8 -8 8 h-19 q-8 0 -8 -8 Z" fill="#d97706" />
+              <rect x="298" y="278" width="29" height="4" rx="2" fill="#92400e" />
+            </svg>
+          </div>
+
           <div className="relative z-10 w-full max-w-[380px]">
             <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
-              Atur Ulang <br />
-              <span className="text-emerald-400">Kata Sandi</span>
+              Lupa <br />
+              <span className="text-emerald-400">Kata Sandi?</span>
             </h1>
             <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Gunakan kata sandi yang kuat dengan kombinasi huruf, angka, dan simbol agar akun Anda tetap aman.
+              Tenang, itu bisa terjadi pada siapa saja. Masukkan email, kode verifikasi,
+              dan kata sandi baru Anda untuk mengatur ulang akses akun.
             </p>
           </div>
         </div>
@@ -249,10 +335,9 @@ export default function NewPassword() {
         {/* RIGHT PANEL - Form */}
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
           <div className="w-full max-w-[380px] xl:max-w-[420px]">
-
             <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
               <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight mb-2">
-                Sandi Baru
+                Lupa Sandi?
               </h2>
               <p className="text-xs lg:text-sm text-neutral-500 font-medium">
                 Masukkan email, kode verifikasi, dan kata sandi baru Anda.
@@ -423,7 +508,6 @@ export default function NewPassword() {
                 </button>
               </div>
             </form>
-
           </div>
         </div>
       </main>

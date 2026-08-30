@@ -12,9 +12,9 @@ import { initialState } from "@/lib/types/auth";
 import type { LoginResult } from "@/lib/auth/auth.service";
 
 const slideshowImages = [
-  "/images/login/ImageLogin.png",
-  "/images/login/ImagePetani.png",
-  "/images/login/ImagePembeli.png",
+  "/images/auth/Sawah.jpg",
+  "/images/auth/Tracktor.jpg",
+  "/images/auth/Desa.jpg",
 ];
 
 export default function Login() {
@@ -121,7 +121,7 @@ export default function Login() {
               className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
                 isActive
                   ? "opacity-100 scale-100 blur-0"
-                  : "opacity-0 scale-105 blur-md"
+                  : "opacity-30 scale-105 blur-md"
               }`}
             >
               <Image
@@ -175,11 +175,8 @@ export default function Login() {
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
           <div className="w-full max-w-[380px] xl:max-w-[420px]">
             <div className="right-anim-item mb-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-              <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold tracking-widest uppercase mb-2">
-                Akses Masuk
-              </span>
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight">
-                Masuk ke akun
+              <h2 className="text-2xl lg:text-3xl font-extrabold text-neutral-900 tracking-tight">
+                Selamat datang kembali
               </h2>
             </div>
 

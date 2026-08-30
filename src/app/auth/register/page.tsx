@@ -52,14 +52,15 @@ export default function Register() {
         { scaleX: 0, transformOrigin: "left center" },
         { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
       )
+      // Animasi baru: Muncul dari bawah
       .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+        { opacity: 0, y: 80 },
+        { opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.2)" }, // Efek slide up dengan pantulan halus
         "-=0.9"
       )
       .fromTo(".footer-anim",
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 },
+        { opacity: 0, y: 30 }, // Footer juga muncul dari bawah
+        { opacity: 1, y: 0, duration: 0.8 },
         "-=0.5"
       );
 
@@ -171,10 +172,6 @@ export default function Register() {
         {/* LEFT PANEL */}
         <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
           <div className="relative z-10 w-full max-w-[380px]">
-            <div className="left-anim-item mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/30 bg-emerald-950/40 backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-semibold tracking-wide text-emerald-200">Langkah Pendaftaran</span>
-            </div>
 
             <h1 className="left-anim-item text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
               Tentukan <br />
