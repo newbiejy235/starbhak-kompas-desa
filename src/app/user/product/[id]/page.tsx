@@ -11,7 +11,7 @@ import { getOrCreateChatRoom } from "@/actions/chat";
 import ProductCard from "@/components/shared/ProductCard";
 import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { EmptyState } from "@/components/shared/States";
+import { EmptyState, ErrorState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
 import { addToCart } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
@@ -38,11 +38,11 @@ function DetailSkeleton() {
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(1);
   const [negoError, setNegoError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const { data, loading } = useFetch(
+  const { data, loading, error, reload } = useFetch(
     async () => {
       const product = await getCommodityById(Number(id));
       if (!product) {
@@ -71,6 +71,15 @@ const [quantity, setQuantity] = useState(1);
 
   if (loading) return <DetailSkeleton />;
 
+  if (error) {
+    return (
+      <ErrorState
+        message="Komoditas gagal dimuat. Silakan coba lagi."
+        onRetry={reload}
+      />
+    );
+  }
+
   if (!product) {
     return (
       <EmptyState
@@ -88,7 +97,7 @@ const [quantity, setQuantity] = useState(1);
   const maxPrice = product.maxPrice ? Number(product.maxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
-const handleAddToCart = () => {
+  const handleAddToCart = () => {
     if (!user) {
       router.push("/auth/login");
       return;
@@ -147,7 +156,7 @@ const handleAddToCart = () => {
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
               {product.name}
             </h1>
             <p className="text-xs text-gray-500 mb-4">{product.categoryName}</p>
@@ -184,7 +193,7 @@ const handleAddToCart = () => {
                 Stok {formatWeight(product.stock, product.unit)}
               </span>
               {product.harvestEstimate && (
-                <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 text-amber-700">
+                <span className="inline-flex items-center gap-1.5 text-xs bg-warning/10 border border-warning/25 rounded-full px-3 py-1.5 text-warning">
                   Estimasi panen: {formatDate(product.harvestEstimate)}
                 </span>
               )}
@@ -208,9 +217,9 @@ const handleAddToCart = () => {
 
             {isAvailable && stock > 0 ? (
               <>
-<div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-6">
                   <span className="text-sm font-medium text-gray-700">Jumlah</span>
-                  <div className="flex items-center border border-gray-200 rounded-full">
+                  <div className="flex items-center border border-gray-200 rounded-xl">
                     <button
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       className="p-2 text-gray-500 hover:text-primary active:scale-90 transition-all"
@@ -233,14 +242,14 @@ const handleAddToCart = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={handleAddToCart}
-                    className="rounded-2xl border-2 border-primary py-4 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                    className="rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
                   >
                     Masukkan ke Keranjang
                   </button>
                   {hasPriceRange ? (
                     <button
                       onClick={handleNego}
-                      className="rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lift"
+                      className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift"
                     >
                       <MessageCircle size={18} />
                       Nego Harga
@@ -248,7 +257,7 @@ const handleAddToCart = () => {
                   ) : (
                     <button
                       onClick={handleAddToCart}
-                      className="rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift"
+                      className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift"
                     >
                       Beli Sekarang
                     </button>
@@ -298,7 +307,7 @@ const handleAddToCart = () => {
           {reviews.length === 0 ? (
             <p className="text-sm text-gray-500">Belum ada ulasan untuk komoditas ini.</p>
           ) : (
-            <div className="space-y-4 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
+            <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
               {reviews.map((r) => (
                 <div key={r.id} className="border-b border-gray-100 pb-4 last:border-0 animate-fade-up">
                   <div className="flex items-center justify-between mb-1">

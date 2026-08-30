@@ -24,6 +24,8 @@ import type { AuthUser } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 import Avatar from "@/components/ui/Avatar";
 import ImageCropModal from "@/components/ui/ImageCropModal";
+import PageHeader from "@/components/shared/PageHeader";
+import { CircleUser } from "lucide-react";
 import Link from "next/link";
 
 function ProfileSkeleton() {
@@ -135,11 +137,15 @@ export default function UserProfile() {
   const currentFoto = removeFoto ? null : (previewUrl || p.fotoProfile);
 
   const inputCls =
-    "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition";
+    "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed";
 
   return (
     <div className="space-y-6 animate-fade-up max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900">Profile Saya</h1>
+      <PageHeader
+        icon={CircleUser}
+        title="Profile Saya"
+        subtitle="Kelola informasi identitas dan detail akun Anda."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-4 space-y-6">
@@ -293,7 +299,7 @@ export default function UserProfile() {
                 </div>
                 <Link
                   href="#"
-                  className="inline-flex items-center justify-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all shrink-0"
+                  className="inline-flex items-center justify-center px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all shrink-0"
                 >
                   Ubah Kata Sandi
                 </Link>

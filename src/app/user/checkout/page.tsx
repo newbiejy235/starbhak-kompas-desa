@@ -267,7 +267,7 @@ function CheckoutContent() {
                   onChange={(e) => setDeliveryAddress(e.target.value)}
                   placeholder="Nama penerima, alamat lengkap, kode pos"
                   required
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm transition hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                   rows={3}
                 />
               </div>
@@ -312,7 +312,7 @@ function CheckoutContent() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Catatan untuk petani"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm transition hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
               rows={2}
             />
           </div>
@@ -364,7 +364,7 @@ function CheckoutContent() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? "Memproses..." : "Buat Pesanan"}
             </button>

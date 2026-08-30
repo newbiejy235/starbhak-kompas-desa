@@ -28,7 +28,7 @@ import {
   saveCheckoutSnapshot,
 } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
-import { EmptyState, formatImage } from "@/components/shared/States";
+import { EmptyState, ErrorState, formatImage } from "@/components/shared/States";
 import type { CommodityDetail } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TestOrders } from "@/actions/orders/orders.action";
@@ -66,7 +66,7 @@ export default function CartPage() {
 
   const idsKey = entries.map((e) => e.commodityId).join(",");
 
-  const { data: products, loading } = useFetch(async () => {
+  const { data: products, loading, error, reload } = useFetch(async () => {
     if (entries.length === 0) return [] as CommodityDetail[];
     return (await getCommoditiesByIds(
       entries.map((e) => e.commodityId),
@@ -150,6 +150,15 @@ export default function CartPage() {
 
   if (loading) return <CartSkeleton />;
 
+  if (error && entries.length > 0) {
+    return (
+      <ErrorState
+        message="Keranjang gagal dimuat. Silakan coba lagi."
+        onRetry={reload}
+      />
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto animate-fade-up">
       <button
@@ -203,7 +212,7 @@ export default function CartPage() {
                   return (
                     <li
                       key={item.product.id}
-                      className="flex items-center gap-4 px-6 py-5 hover:bg-primary/[0.02] transition-colors"
+                      className="flex items-center gap-4 px-6 py-5 hover:bg-gray-50/70 transition-colors"
                     >
                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
                         {img ? (
@@ -306,7 +315,7 @@ export default function CartPage() {
                   onChange={(e) =>
                     setDeliveryMethod(e.target.value as DeliveryMethod)
                   }
-                  className="w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm text-gray-800 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                  className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm text-gray-800 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
                 >
                   <option value="pickup">Ambil Sendiri / Pick Up</option>
                   <option value="expedition">Jasa Ekspedisi</option>
@@ -350,7 +359,7 @@ export default function CartPage() {
                     placeholder="Nama penerima, alamat lengkap, kode pos"
                     required
                     rows={3}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition"
                   />
                 </div>
               )}
@@ -386,7 +395,7 @@ export default function CartPage() {
                 type="button"
                 onClick={checkout}
                 disabled={isChecking}
-                className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isChecking ? "Memproses..." : "Bayar Sekarang"}
               </button>
@@ -401,7 +410,7 @@ export default function CartPage() {
 
       {undoItem && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-up">
-          <div className="flex items-center gap-3 rounded-2xl bg-gray-900 px-5 py-3 shadow-lift">
+          <div className="flex items-center gap-3 rounded-xl bg-gray-900 px-5 py-3 shadow-lift">
             <span className="text-sm text-white">
               {undoItem.product.name} dihapus
             </span>

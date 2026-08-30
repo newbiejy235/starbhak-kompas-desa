@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
 import HeroCarousel from "@/components/userpage/HeroCarousel";
-import FarmerCard from "@/components/kompasdesa/FarmerCard";
+import FarmerStoreCard from "@/components/userpage/FarmerStoreCard";
 import { EmptyState } from "@/components/shared/States";
 import {
   getPublicCommodities,
@@ -77,7 +77,7 @@ const RATING_OPTIONS = [
 function CatalogSkeleton() {
   return (
     <div className="animate-fade-up">
-      <Skeleton className="mb-7 h-44 rounded-card sm:h-40" />
+      <Skeleton className="mb-6 h-44 rounded-card sm:h-40" />
       <div className="mb-6">
         <Skeleton className="mb-3 h-4 w-20" />
         <div className="flex gap-2">
@@ -289,7 +289,7 @@ function FarmerFilterPanel({
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
-          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-6 animate-slide-up">
+          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-card bg-white p-6 animate-fade-up">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">Filter Petani</h2>
               <button
@@ -437,7 +437,7 @@ function HomeContent() {
 
   const tabClass = (active: boolean) =>
     `inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${focusRing} ${active
-      ? "bg-primary text-white shadow-md"
+      ? "bg-primary text-white shadow-soft"
       : "bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-gray-200"
     }`;
 
@@ -460,7 +460,7 @@ function HomeContent() {
   }
   if (farmerFilters.minPrice !== undefined || farmerFilters.maxPrice !== undefined) {
     const minL = farmerFilters.minPrice ? formatRupiah(farmerFilters.minPrice) : "Rp0";
-    const maxL = farmerFilters.maxPrice ? formatRupiah(farmerFilters.maxPrice) : "Γê₧";
+    const maxL = farmerFilters.maxPrice ? formatRupiah(farmerFilters.maxPrice) : "∞";
     activeFarmerFilters.push({
       key: "price",
       label: `${minL} - ${maxL}`,
@@ -492,7 +492,7 @@ function HomeContent() {
   return (
     <div className="animate-fade-up">
       {/* Hero */}
-      <div className="mb-7">
+      <div className="mb-6">
         <HeroCarousel />
       </div>
 
@@ -518,8 +518,8 @@ function HomeContent() {
 
       {activeTab === "komoditas" && (
         <>
-          <section id="katalog" className="mb-7 scroll-mt-24">
-            <h2 className="mb-1 text-2xl font-bold tracking-tight text-neutral-900">
+          <section id="katalog" className="mb-6 scroll-mt-24">
+            <h2 className="mb-1 text-xl font-bold tracking-tight text-neutral-900">
               Kategori
             </h2>
             <p className="mb-3 text-sm text-gray-500">
@@ -528,7 +528,7 @@ function HomeContent() {
             <div
               role="group"
               aria-label="Filter kategori"
-              className="-mx-4 overflow-x-auto px-4 pb-1 scrollbar-thin sm:mx-0 sm:px-0"
+              className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
             >
               <div className="flex gap-2">
                 <button
@@ -560,7 +560,7 @@ function HomeContent() {
 
           <section aria-label="Katalog komoditas">
             <div className="mb-5">
-              <h2 className="text-lg font-bold tracking-tight text-neutral-900">
+              <h2 className="text-xl font-bold tracking-tight text-neutral-900">
                 Katalog Komoditas
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
@@ -752,7 +752,7 @@ function HomeContent() {
                 <>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {farmerList.map((farmer) => (
-                      <FarmerCard key={farmer.id} farmer={farmer} />
+                      <FarmerStoreCard key={farmer.id} farmer={farmer} />
                     ))}
                   </div>
 

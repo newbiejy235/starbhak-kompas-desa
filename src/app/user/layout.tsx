@@ -26,7 +26,7 @@ export default function UserLayout({
       headerLeft={<HeaderSearch />}
       headerRight={<HeaderActions />}
     >
-      <div className="p-4 sm:p-0">{children}</div>
+      {children}
       {notification && (
         <NegotiationNotificationPopup
           notification={notification}

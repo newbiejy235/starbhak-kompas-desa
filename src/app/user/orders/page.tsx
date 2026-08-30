@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function OrdersSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 space-y-4">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-4 w-64 mb-6" />
       {Array.from({ length: 4 }).map((_, i) => (
@@ -48,7 +48,7 @@ export default function UserOrders() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-up">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
       <PageHeader
         icon={ShoppingBag}
         title="Pesanan Saya"

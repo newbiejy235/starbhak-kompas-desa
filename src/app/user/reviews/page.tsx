@@ -114,7 +114,7 @@ function ReviewsContent() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tulis ulasan Anda di sini..."
-              className="w-full rounded-2xl border border-gray-300 px-5 py-4 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm transition hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
               rows={4}
             />
 

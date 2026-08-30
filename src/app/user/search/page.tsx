@@ -8,10 +8,12 @@ import {
   ArrowLeft,
   SlidersHorizontal,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
 import FarmerStoreCard from "@/components/userpage/FarmerStoreCard";
-import { EmptyState } from "@/components/shared/States";
+import PageHeader from "@/components/shared/PageHeader";
+import { EmptyState, ErrorState } from "@/components/shared/States";
 import {
   getPublicCommodities,
   countPublicCommodities,
@@ -65,7 +67,7 @@ function SearchSkeleton() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white"
+              className="overflow-hidden rounded-card border border-gray-200/80 bg-white"
             >
               <Skeleton className="h-28 rounded-none" />
               <div className="space-y-3 p-5">
@@ -218,7 +220,7 @@ function SearchContent() {
     [q, showAllFarmers, sortBy, minRating, location],
   );
 
-  const { data: products, loading: productsLoading } = useFetch(fetchProducts, [
+  const { data: products, loading: productsLoading, error, reload } = useFetch(fetchProducts, [
     q,
     showAllProducts,
   ]);
@@ -263,22 +265,17 @@ function SearchContent() {
         Kembali
       </button>
 
-      <div className="mb-5">
-        <h1 className="text-xl font-bold text-gray-900">Hasil Pencarian</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          {isLoading ? (
-            "Mencari..."
-          ) : totalResults > 0 ? (
-            <>
-              Ditemukan{" "}
-              <span className="font-semibold text-primary">{totalResults}</span>{" "}
-              hasil untuk &quot;{q}&quot;
-            </>
-          ) : (
-            <>Tidak ada hasil untuk &quot;{q}&quot;</>
-          )}
-        </p>
-      </div>
+      <PageHeader
+        icon={Search}
+        title="Hasil Pencarian"
+        subtitle={
+          isLoading
+            ? "Mencari..."
+            : totalResults > 0
+              ? `Ditemukan ${totalResults} hasil untuk "${q}"`
+              : `Tidak ada hasil untuk "${q}"`
+        }
+      />
 
       {farmerList.length > 0 && (
         <div className="mb-6">
@@ -295,30 +292,17 @@ function SearchContent() {
 
       {isLoading ? (
         <SearchSkeleton />
+      ) : error ? (
+        <ErrorState
+          message="Hasil pencarian gagal dimuat. Silakan coba lagi."
+          onRetry={reload}
+        />
       ) : totalResults === 0 ? (
-        <div className="py-12 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <Package size={28} className="text-gray-400" />
-          </div>
-          <h3 className="text-lg font-bold text-gray-900">Tidak Ditemukan</h3>
-          <p className="mt-2 text-sm text-gray-500">
-            Tidak ada komoditas atau petani yang cocok dengan &quot;{q}&quot;.
-          </p>
-          <div className="mt-4 text-xs text-gray-400">
-            <p className="mb-1 font-semibold uppercase tracking-wider">Coba gunakan:</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {["nama petani", "nama komoditas", "nama produk", "lokasi"].map(
-                (hint) => (
-                  <span
-                    key={hint}
-                    className="rounded-full bg-gray-100 px-3 py-1"
-                  >
-                    {hint}
-                  </span>
-                ),
-              )}
-            </div>
-          </div>
+        <div className="py-4">
+          <EmptyState
+            title="Tidak Ditemukan"
+            message={`Tidak ada komoditas atau petani yang cocok dengan "${q}". Coba gunakan nama petani, nama komoditas, atau lokasi.`}
+          />
         </div>
       ) : (
         <div className="space-y-10">
@@ -406,7 +390,7 @@ function SearchContent() {
 
           {/* PARTIAL EMPTY STATES */}
           {productList.length === 0 && farmerList.length > 0 && (
-            <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 text-center">
+            <div className="rounded-card border border-gray-200/80 bg-gray-50 p-6 text-center">
               <p className="text-sm text-gray-500">
                 Tidak ditemukan komoditas untuk &quot;{q}&quot;, tetapi kami
                 menemukan{" "}
@@ -418,7 +402,7 @@ function SearchContent() {
             </div>
           )}
           {farmerList.length === 0 && productList.length > 0 && (
-            <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-6 text-center">
+            <div className="rounded-card border border-gray-200/80 bg-gray-50 p-6 text-center">
               <p className="text-sm text-gray-500">
                 Tidak ditemukan petani untuk &quot;{q}&quot;, tetapi kami
                 menemukan{" "}

@@ -4,10 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Star, Package, Store } from "lucide-react";
 import { formatRupiah } from "@/lib/format";
-import type { FarmerSearchResult } from "@/lib/types/market";
-
 interface FarmerStoreCardProps {
-  farmer: FarmerSearchResult;
+  farmer: {
+    id: number;
+    fullName: string;
+    fotoProfile: string | null;
+    village: string | null;
+    commodityCount: number;
+    avgPrice: string | number | null;
+    avgRating: string | number | null;
+    reviewCount: number;
+  };
 }
 
 export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
@@ -17,7 +24,7 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
   return (
     <Link
       href={`/user/farmer/${farmer.id}`}
-      className="group block overflow-hidden rounded-card border border-gray-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lift"
+      className="group block overflow-hidden rounded-card border border-gray-200/80 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lift"
     >
       <div className="relative h-24 bg-gradient-to-r from-primary to-primary-dark sm:h-28">
         <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10" />
@@ -26,7 +33,7 @@ export default function FarmerStoreCard({ farmer }: FarmerStoreCardProps) {
 
       <div className="px-5 pb-5">
         <div className="flex items-end gap-4 -mt-8">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-primary/5 shadow-md">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-[3px] border-white bg-primary/5 shadow-soft">
             {farmer.fotoProfile ? (
               <Image
                 src={farmer.fotoProfile}

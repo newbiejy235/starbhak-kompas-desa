@@ -38,7 +38,7 @@ interface BuyerReview {
 
 function TransactionsSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 space-y-6">
       <Skeleton className="h-8 w-56" />
       <Skeleton className="h-28 rounded-card" />
       {Array.from({ length: 4 }).map((_, i) => (
@@ -120,7 +120,7 @@ export default function UserTransactions() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-up">
+    <div className="w-full px-4 py-5 sm:px-6 lg:px-8 animate-fade-up">
       <PageHeader
         icon={History}
         title="Riwayat Transaksi"
@@ -278,7 +278,7 @@ export default function UserTransactions() {
                               value={comment}
                               onChange={(e) => setComment(e.target.value)}
                               placeholder="Tulis ulasan Anda di sini..."
-                              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm transition hover:border-gray-300 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                               rows={3}
                             />
 
