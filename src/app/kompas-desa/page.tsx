@@ -96,7 +96,7 @@ export default function KompasDesaPage() {
     <MotionConfig reducedMotion="user">
       <div className="relative z-[999] w-full">
         <Navbar />
-      </div> bv
+      </div> 
       <PageLoader>
         <div className="landing-page relative min-h-screen bg-white overflow-x-hidden flex flex-col">
           <DotAnimation />
