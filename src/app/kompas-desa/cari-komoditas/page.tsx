@@ -473,6 +473,7 @@ function CariKomoditasContent() {
 
   const commodityImage = (c: PublicCommodity) => {
     if (c.image) return c.image;
+    if (c.images?.length) return c.images[0];
     return null;
   };
 
@@ -671,7 +672,6 @@ function CariKomoditasContent() {
                               fill
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                               className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              unoptimized
                             />
                           ) : (
                             <div className="flex h-full items-center justify-center text-xs text-[#8A9C98]">
@@ -803,7 +803,6 @@ function CariKomoditasContent() {
                               fill
                               sizes="64px"
                               className="object-cover"
-                              unoptimized
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#025246]">

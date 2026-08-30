@@ -2,8 +2,16 @@ import Midtrans from "midtrans-client";
 
 export const midtransConfig = {
   isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
-  serverKey: process.env.SECRET ?? "",
-  clientKey: process.env.NEXT_PUBLIC_CLIENT ?? "",
+  serverKey:
+    process.env.MIDTRANS_SERVER_KEY ??
+    process.env.SERVER_KEY ??
+    process.env.SECRET ??
+    "",
+  clientKey:
+    process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
+    process.env.MIDTRANS_CLIENTKEY ??
+    process.env.NEXT_PUBLIC_CLIENT ??
+    "",
 };
 
 if (!midtransConfig.serverKey) {

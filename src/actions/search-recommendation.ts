@@ -137,7 +137,6 @@ export async function getSearchRecommendations(
       .where(
         and(
           eq(usersTable.role, "petani"),
-          eq(usersTable.status, "verified"),
           ilike(usersTable.fullName, `%${trimmed}%`),
         ),
       )

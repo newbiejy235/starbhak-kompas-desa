@@ -33,7 +33,6 @@ export default function FarmerCard({ farmer }: FarmerCardProps) {
                 fill
                 sizes="64px"
                 className="object-cover"
-                unoptimized
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-lg font-bold text-[#025246]">

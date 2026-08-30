@@ -21,12 +21,11 @@ const menuItems: SidebarEntry[] = [
   // ── UTAMA ──
   { id: "heading-utama", label: "Utama" },
   { id: "home", label: "Beranda", icon: LayoutDashboard, href: "/user/home" },
-  { id: "cart", label: "Keranjang", icon: ShoppingCart, href: "/user/cart" },
   { id: "orders", label: "Pesanan Saya", icon: ShoppingBag, href: "/user/orders" },
 
   // ── BELANJA ──
   { id: "heading-belanja", label: "Belanja" },
-  { id: "transactions", label: "Riwayat Transaksi", icon: History, href: "/user/transactions" },
+  { id: "transactions", label: "Riwayat Pesanan", icon: History, href: "/user/transactions" },
   { id: "wishlist", label: "Wishlist", icon: Bookmark, href: "/user/wishlist" },
 
   // ── KOMUNIKASI ──

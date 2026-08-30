@@ -11,7 +11,6 @@ import {
   Map,
   Package,
   Star,
-  BadgeCheck,
   MessageCircle,
   Calendar,
 } from "lucide-react";
@@ -105,7 +104,6 @@ export default function PublicFarmerProfilePage() {
                     fill
                     sizes="96px"
                     className="object-cover"
-                    unoptimized
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[#025246]">
@@ -119,12 +117,6 @@ export default function PublicFarmerProfilePage() {
                   <h1 className="text-2xl font-bold text-[#1F302B]">
                     {farmer.fullName}
                   </h1>
-                  {farmer.isVerified && (
-                    <span className="inline-flex items-center gap-0.5 rounded-full bg-[#EAF3EF] px-2 py-0.5 text-[10px] font-bold text-[#025246]">
-                      <BadgeCheck size={12} />
-                      Terverifikasi
-                    </span>
-                  )}
                 </div>
                 <div className="mt-1 flex flex-wrap items-center justify-center gap-3 text-sm text-[#71817D] sm:justify-start">
                   <span className="inline-flex items-center gap-1">
@@ -247,7 +239,6 @@ export default function PublicFarmerProfilePage() {
                     fill
                     sizes="(max-width: 640px) 50vw, 33vw"
                     className="object-cover"
-                    unoptimized
                   />
                 </div>
               ))}
@@ -285,14 +276,13 @@ export default function PublicFarmerProfilePage() {
                   className="group overflow-hidden rounded-2xl border border-[#E2E8E5] bg-white transition-all duration-300 hover:-translate-y-1 hover:border-[#025246]/30 hover:shadow-[0_16px_40px_rgba(2,82,70,0.08)]"
                 >
                   <div className="relative h-40 overflow-hidden bg-[#EEF3F0]">
-                    {item.image ? (
+                    {(item.image || item.images?.length) ? (
                       <Image
-                        src={item.image}
+                        src={item.image || item.images![0]}
                         alt={item.name}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        unoptimized
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-xs text-[#8A9C98]">

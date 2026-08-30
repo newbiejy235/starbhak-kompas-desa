@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import ProductCard from "@/components/userpage/ProductCard";
 import FarmerStoreCard from "@/components/userpage/FarmerStoreCard";
-import { EmptyState } from "@/components/shared/States";
+import PageHeader from "@/components/shared/PageHeader";
+import { EmptyState, ErrorState } from "@/components/shared/States";
 import {
   getPublicCommodities,
   countPublicCommodities,
@@ -209,7 +210,7 @@ function SearchContent() {
     [q, showAllFarmers, sortBy, minRating, location],
   );
 
-  const { data: products, loading: productsLoading } = useFetch(fetchProducts, [
+  const { data: products, loading: productsLoading, error, reload } = useFetch(fetchProducts, [
     q,
     showAllProducts,
   ]);
@@ -273,6 +274,11 @@ function SearchContent() {
 
       {isLoading ? (
         <SearchSkeleton />
+      ) : error ? (
+        <ErrorState
+          message="Hasil pencarian gagal dimuat. Silakan coba lagi."
+          onRetry={reload}
+        />
       ) : totalResults === 0 ? (
         <div className="py-16 text-center bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">

@@ -25,7 +25,7 @@ export default function AddCommodity() {
         toast.success("Komoditas berhasil ditambahkan", {
           description: "Menunggu verifikasi admin sebelum tayang.",
         });
-        router.push("/petani/dashboard");
+        router.push("/petani/commodities");
       } else {
         toast.error(res.message);
       }
@@ -100,27 +100,16 @@ export default function AddCommodity() {
         </div>
 
         <div className="border-b border-gray-100 pb-5">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Kategori *</label>
-              <select name="categoryId" required className={inputCls} defaultValue="">
-                <option value="" disabled>Pilih kategori</option>
-                {categoryList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.icon} {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Kualitas</label>
-              <select name="quality" className={inputCls} defaultValue="A">
-                <option value="Premium">Premium</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">Kategori *</label>
+            <select name="categoryId" required className={inputCls} defaultValue="">
+              <option value="" disabled>Pilih kategori</option>
+              {categoryList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.icon} {c.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

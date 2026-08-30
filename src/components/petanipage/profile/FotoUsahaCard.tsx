@@ -129,11 +129,10 @@ export default function FotoUsahaCard({
               >
                 <Image
                   src={formatImage(img.secureUrl) || ""}
-                  alt={img.caption || "Foto usaha"}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                  unoptimized
-                />
+                   alt={img.caption || "Foto usaha"}
+                   fill
+                   className="object-cover transition-transform group-hover:scale-105"
+                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
                 <button
                   type="button"

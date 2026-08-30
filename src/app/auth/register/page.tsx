@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sprout, ShoppingBasket, ArrowLeft, ArrowUpRight } from "lucide-react";
-import gsap from "gsap";
 import Image from "next/image";
 
 const slideshowImages = [
@@ -45,57 +44,59 @@ export default function Register() {
   }, []);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let cleanupMouseMove: ((e: MouseEvent) => void) | null = null;
 
-      tl.fromTo(".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
-      )
-      // Animasi baru: Muncul dari bawah
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 80 },
-        { opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.2)" }, // Efek slide up dengan pantulan halus
-        "-=0.9"
-      )
-      .fromTo(".footer-anim",
-        { opacity: 0, y: 30 }, // Footer juga muncul dari bawah
-        { opacity: 1, y: 0, duration: 0.8 },
-        "-=0.5"
-      );
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      // Animasi Orb Ambient (Blur ijo-ijo)
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.3,
+        tl.fromTo(".bg-curve-container",
+          { scaleX: 0, transformOrigin: "left center" },
+          { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+        )
+        .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+          { opacity: 0, y: 80 },
+          { opacity: 1, y: 0, stagger: 0.1, duration: 1.2, ease: "back.out(1.2)" },
+          "-=0.9"
+        )
+        .fromTo(".footer-anim",
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8 },
+          "-=0.5"
+        );
+
+        const orbs = document.querySelectorAll(".ambient-orb");
+        orbs.forEach((orb, i) => {
+          gsap.to(orb, {
+            scale: "random(1.1, 1.4)",
+            opacity: "random(0.4, 0.8)",
+            duration: "random(3, 5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.3,
+          });
         });
-      });
-    }, containerRef);
+      }, containerRef);
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      
-      gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out"
-      });
-    };
+      cleanupMouseMove = (e: MouseEvent) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 40;
+        const y = (e.clientY / window.innerHeight - 0.5) * 40;
+        gsap.to(".ambient-orb", {
+          x: (i: number) => x * (i + 1.5),
+          y: (i: number) => y * (i + 1.5),
+          duration: 1.5,
+          ease: "power2.out"
+        });
+      };
 
-    window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousemove", cleanupMouseMove);
+    });
 
     return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      ctx?.revert?.();
+      if (cleanupMouseMove) window.removeEventListener("mousemove", cleanupMouseMove);
     };
   }, []);
 

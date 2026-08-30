@@ -350,7 +350,6 @@ export default function PetaniSales() {
                                 fill
                                 sizes="52px"
                                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                unoptimized
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-lg font-black text-white">

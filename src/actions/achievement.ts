@@ -59,7 +59,6 @@ export async function getFarmerAchievements(
   const revenue = Number(revenueRows[0]?.total ?? 0);
   const avgRating = Number(ratingRows[0]?.avg ?? 0);
   const reviewCount = ratingRows[0]?.count ?? 0;
-  const isVerified = farmer.status === "verified";
 
   return [
     {
@@ -99,13 +98,6 @@ export async function getFarmerAchievements(
         reviewCount > 0
           ? `Rating saat ini ${avgRating.toFixed(1)}`
           : "Belum ada ulasan",
-    },
-    {
-      id: "verified",
-      title: "Petani Terverifikasi",
-      description: "Akun terverifikasi oleh tim Kompas Desa.",
-      unlocked: isVerified,
-      progressLabel: isVerified ? "Terverifikasi" : "Menunggu verifikasi",
     },
   ];
 }

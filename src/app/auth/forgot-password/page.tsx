@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import gsap from "gsap";
 import {
   ArrowLeft,
   Mail,
@@ -100,82 +99,85 @@ export default function ForgotPassword() {
   };
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let cleanupMouseMove: ((e: MouseEvent) => void) | null = null;
 
-      tl.fromTo(
-        ".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
-      )
-        .fromTo(
-          [".header-item", ".left-anim-item", ".right-anim-item"],
-          { opacity: 0, y: 30, rotateX: -10 },
-          { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-          "-=0.9"
-        )
-        .fromTo(
-          ".illustration-item",
-          { opacity: 0, scale: 0.85 },
-          { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.4)" },
-          "-=0.8"
-        )
-        .fromTo(
-          ".footer-anim",
-          { opacity: 0, y: 10 },
-          { opacity: 1, duration: 0.8 },
-          "-=0.5"
-        );
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
 
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
+        tl.fromTo(
+          ".bg-curve-container",
+          { scaleX: 0, transformOrigin: "left center" },
+          { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+        )
+          .fromTo(
+            [".header-item", ".left-anim-item", ".right-anim-item"],
+            { opacity: 0, y: 30, rotateX: -10 },
+            { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+            "-=0.9"
+          )
+          .fromTo(
+            ".illustration-item",
+            { opacity: 0, scale: 0.85 },
+            { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.4)" },
+            "-=0.8"
+          )
+          .fromTo(
+            ".footer-anim",
+            { opacity: 0, y: 10 },
+            { opacity: 1, duration: 0.8 },
+            "-=0.5"
+          );
+
+        const orbs = document.querySelectorAll(".ambient-orb");
+        orbs.forEach((orb, i) => {
+          gsap.to(orb, {
+            scale: "random(1.1, 1.4)",
+            opacity: "random(0.4, 0.8)",
+            duration: "random(3, 5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.3,
+          });
+        });
+
+        gsap.to(".char-float", {
+          y: -10,
+          duration: 2.2,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
-          delay: i * 0.3,
         });
-      });
 
-      // Floating bounce on the confused character
-      gsap.to(".char-float", {
-        y: -10,
-        duration: 2.2,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
+        gsap.to(".thought-key", {
+          rotate: 6,
+          duration: 1.6,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          transformOrigin: "center",
+        });
+      }, containerRef);
 
-      // Thought bubble pulse
-      gsap.to(".thought-key", {
-        rotate: 6,
-        duration: 1.6,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        transformOrigin: "center",
-      });
-    }, containerRef);
+      cleanupMouseMove = (e: MouseEvent) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 40;
+        const y = (e.clientY / window.innerHeight - 0.5) * 40;
+        gsap.to(".ambient-orb", {
+          x: (i: number) => x * (i + 1.5),
+          y: (i: number) => y * (i + 1.5),
+          duration: 1.5,
+          ease: "power2.out",
+        });
+      };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out",
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousemove", cleanupMouseMove);
+    });
 
     return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      ctx?.revert?.();
+      if (cleanupMouseMove) window.removeEventListener("mousemove", cleanupMouseMove);
     };
   }, []);
 

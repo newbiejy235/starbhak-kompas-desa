@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
   X,
@@ -131,10 +132,30 @@ export default function ProductGallery({
     }
   }, [goTo, selectedIndex]);
 
+  useEffect(() => {
+    if (!showLightbox) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowLightbox(false);
+      } else if (e.key === "ArrowLeft" && allItems.length > 1) {
+        setSelectedIndex((i) => (i > 0 ? i - 1 : allItems.length - 1));
+      } else if (e.key === "ArrowRight" && allItems.length > 1) {
+        setSelectedIndex((i) => (i < allItems.length - 1 ? i + 1 : 0));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [showLightbox, allItems.length]);
+
   if (allItems.length === 0) {
     return (
       <div className="aspect-[4/3] bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center rounded-xl">
-        <span className="text-8xl font-black text-white/90">
+        <span className="text-4xl font-black text-white/90">
           {productName?.charAt(0)?.toUpperCase()}
         </span>
       </div>
@@ -161,7 +182,7 @@ export default function ProductGallery({
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
                 <button
                   onClick={togglePlay}
-                  className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors shadow-lg"
+                  className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors shadow-soft"
                 >
                   {isPlaying ? (
                     <Pause size={28} className="text-primary" />
@@ -206,7 +227,7 @@ export default function ProductGallery({
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-                  <span className="text-8xl font-black text-white/90">
+                  <span className="text-4xl font-black text-white/90">
                     {productName?.charAt(0)?.toUpperCase()}
                   </span>
                 </div>
@@ -219,14 +240,14 @@ export default function ProductGallery({
               <button
                 onClick={goPrev}
                 disabled={selectedIndex === 0}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-white transition-colors disabled:opacity-0 disabled:pointer-events-none opacity-0 group-hover:opacity-100 shadow-md"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-white transition-colors disabled:opacity-0 disabled:pointer-events-none opacity-0 group-hover:opacity-100 shadow-soft"
               >
                 <ChevronLeft size={18} />
               </button>
               <button
                 onClick={goNext}
                 disabled={selectedIndex === allItems.length - 1}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-white transition-colors disabled:opacity-0 disabled:pointer-events-none opacity-0 group-hover:opacity-100 shadow-md"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-gray-700 hover:bg-white transition-colors disabled:opacity-0 disabled:pointer-events-none opacity-0 group-hover:opacity-100 shadow-soft"
               >
                 <ChevronRight size={18} />
               </button>
@@ -245,7 +266,7 @@ export default function ProductGallery({
                   transition-all duration-200
                   ${
                     index === selectedIndex
-                      ? "border-primary shadow-md scale-105"
+                      ? "border-primary shadow-soft scale-105"
                       : "border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100"
                   }
                 `}
@@ -277,9 +298,11 @@ export default function ProductGallery({
         )}
       </div>
 
-      {showLightbox && (
+      {showLightbox &&
+        typeof document !== "undefined" &&
+        createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center animate-fade-in"
+          className="fixed inset-0 z-[100] w-screen h-dvh max-w-none bg-black/95 flex items-center justify-center animate-fade-in"
           onClick={() => setShowLightbox(false)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -342,7 +365,8 @@ export default function ProductGallery({
               {selectedIndex + 1} / {allItems.length}
             </div>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

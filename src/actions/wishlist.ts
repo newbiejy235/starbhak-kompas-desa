@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { wishlistItemsTable, commoditiesTable } from "@/db/schema";
+import { wishlistItemsTable, commoditiesTable, ImageUpload } from "@/db/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth/auth.service";
 import { revalidatePath } from "next/cache";
@@ -176,9 +176,12 @@ export async function getUserWishlist(userId: number) {
         commodityUnit: commoditiesTable.unit,
         commodityLocation: commoditiesTable.location,
         commodityStatus: commoditiesTable.status,
+        commodityImage: ImageUpload.secureUrl,
+        commodityImages: commoditiesTable.images,
       })
       .from(wishlistItemsTable)
       .innerJoin(commoditiesTable, eq(commoditiesTable.id, wishlistItemsTable.commodityId))
+      .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
       .where(eq(wishlistItemsTable.userId, userId))
       .orderBy(desc(wishlistItemsTable.createdAt));
 

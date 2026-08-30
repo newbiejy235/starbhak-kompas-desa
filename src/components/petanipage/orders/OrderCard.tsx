@@ -45,7 +45,6 @@ export default function OrderCard({
               fill
               sizes="44px"
               className="object-cover"
-              unoptimized
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-base font-black text-white">

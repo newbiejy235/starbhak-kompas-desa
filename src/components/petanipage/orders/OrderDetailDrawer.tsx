@@ -268,7 +268,6 @@ export default function OrderDetailDrawer({
                         fill
                         sizes="64px"
                         className="object-cover"
-                        unoptimized
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary-dark text-xl font-black text-white">

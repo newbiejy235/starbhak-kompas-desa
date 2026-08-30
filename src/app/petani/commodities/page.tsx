@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Plus,
@@ -24,7 +25,6 @@ import { getClientUser } from "@/lib/auth/client";
 import { useFetch } from "@/lib/hooks";
 import { formatNumber } from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
-import CommodityFormPopup from "@/components/petanipage/CommodityFormPopup";
 import DeleteConfirmDialog from "@/components/petanipage/DeleteConfirmDialog";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import ProductCard from "@/components/shared/ProductCard";
@@ -150,10 +150,9 @@ function StatCard({
 }
 
 export default function CommoditiesPage() {
+  const router = useRouter();
   const user = getClientUser();
   const userId = user?.id;
-  const [showForm, setShowForm] = useState(false);
-  const [editingCommodity, setEditingCommodity] = useState<FarmerCommodity | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<FarmerCommodity | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -231,22 +230,11 @@ export default function CommoditiesPage() {
   const hasActiveFilters = query.trim() || statusFilter !== "all" || publicationFilter !== "all";
 
   function handleAdd() {
-    setEditingCommodity(null);
-    setShowForm(true);
+    router.push("/petani/commodities/add");
   }
 
   function handleEdit(item: FarmerCommodity) {
-    setEditingCommodity(item);
-    setShowForm(true);
-  }
-
-  function handleFormClose() {
-    setShowForm(false);
-    setEditingCommodity(null);
-  }
-
-  function handleFormSuccess() {
-    reload();
+    router.push(`/petani/commodities/edit/${item.id}`);
   }
 
   function handleDeleteClick(item: FarmerCommodity) {
@@ -503,13 +491,6 @@ export default function CommoditiesPage() {
           ))}
         </div>
       )}
-
-      <CommodityFormPopup
-        open={showForm}
-        onClose={handleFormClose}
-        onSuccess={handleFormSuccess}
-        commodity={editingCommodity}
-      />
 
       <DeleteConfirmDialog
         open={!!deleteTarget}

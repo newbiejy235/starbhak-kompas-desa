@@ -82,14 +82,13 @@ export default function KomoditasDetailPage() {
           <div className="grid md:grid-cols-2">
             {/* IMAGE */}
             <div className="relative aspect-square bg-[#EEF3F0] md:aspect-auto md:min-h-[400px]">
-              {product.image ? (
+              {(product.image || product.images?.length) ? (
                 <Image
-                  src={product.image}
+                  src={product.image || product.images![0]}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
-                  unoptimized
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-[#8A9C98]">
@@ -222,14 +221,13 @@ export default function KomoditasDetailPage() {
                   className="group overflow-hidden rounded-2xl border border-[#E2E8E5] bg-white transition-all duration-300 hover:-translate-y-1 hover:border-[#025246]/30 hover:shadow-[0_12px_32px_rgba(2,82,70,0.08)]"
                 >
                   <div className="relative h-36 overflow-hidden bg-[#EEF3F0]">
-                    {item.image ? (
+                    {(item.image || item.images?.length) ? (
                       <Image
-                        src={item.image}
+                        src={item.image || item.images![0]}
                         alt={item.name}
                         fill
                         sizes="(max-width: 640px) 100vw, 33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        unoptimized
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-xs text-[#8A9C98]">

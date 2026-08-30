@@ -91,7 +91,7 @@ export async function register(data: FormData): Promise<RegisterResult> {
     await db.insert(notificationsTable).values({
       userId: user.id,
       title: "Selamat datang di Kompas Desa",
-      message: "Akun Anda berhasil dibuat. Menunggu verifikasi admin.",
+      message: "Akun Anda berhasil dibuat. Silakan masuk untuk mulai menggunakan layanan.",
       type: "system",
     });
 

@@ -1,141 +1,78 @@
-import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db } from "@/db";
-import { ordersTable, paymentsTable, notificationsTable } from "@/db/schema";
 import { core } from "@/lib/midtrans";
-
-type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
-
-function mapMidtransStatus(
-  status: string | undefined,
-  fraudStatus: string | undefined,
-): PaymentStatus {
-  const s = (status ?? "").toLowerCase();
-  if (s === "capture") return fraudStatus === "challenge" ? "pending" : "paid";
-  if (s === "settlement") return "paid";
-  if (s === "deny" || s === "cancel" || s === "expire") return "failed";
-  if (
-    s === "refund" ||
-    s === "chargeback" ||
-    s === "partial_refund" ||
-    s === "partial_chargeback"
-  ) {
-    return "refunded";
-  }
-  return "pending";
-}
-
-const PAYMENT_TYPE_METHOD: Record<string, "bank_transfer" | "virtual_account" | "ewallet" | "qris" | "cod"> = {
-  bank_transfer: "bank_transfer",
-  echannel: "virtual_account",
-  permata: "virtual_account",
-  cstore: "virtual_account",
-  briva: "virtual_account",
-  qris: "qris",
-  gopay: "ewallet",
-  ovo: "ewallet",
-  dana: "ewallet",
-  shopeepay: "ewallet",
-  akulaku: "ewallet",
-  credit_card: "bank_transfer",
-  bca_klikpay: "bank_transfer",
-  bca_klikbca: "bank_transfer",
-  bri_epay: "bank_transfer",
-  cimb_clicks: "bank_transfer",
-  danamon_online: "bank_transfer",
-};
+import { applyMidtransStatus } from "@/lib/midtrans-sync";
 
 export async function POST(request: Request) {
   try {
-    const notification = await core.transaction.notification(await request.json());
+    let rawBody: string;
+    try {
+      rawBody = await request.text();
+    } catch {
+      return Response.json(
+        { ok: false, error: "Request tidak valid" },
+        { status: 400 },
+      );
+    }
 
-    const orderCode = notification.order_id;
-    const transactionStatus = notification.transaction_status;
-    const grossAmount = Number(notification.gross_amount ?? 0);
+    let body: Record<string, unknown>;
+    try {
+      body = JSON.parse(rawBody || "{}");
+    } catch {
+      return Response.json(
+        { ok: false, error: "Format JSON tidak valid" },
+        { status: 400 },
+      );
+    }
 
-    if (!orderCode || !transactionStatus) {
+    const orderId = body.order_id as string | undefined;
+    const transactionId = body.transaction_id as string | undefined;
+
+    if (!orderId || !transactionId) {
+      console.warn("[Midtrans] Notification received without order_id/transaction_id");
       return Response.json(
         { ok: false, error: "Notifikasi tidak lengkap" },
         { status: 400 },
       );
     }
 
-    const [order] = await db
-      .select()
-      .from(ordersTable)
-      .where(eq(ordersTable.orderCode, orderCode));
-
-    if (!order) {
-      return Response.json(
-        { ok: false, error: "Pesanan tidak ditemukan" },
-        { status: 404 },
-      );
-    }
-
-    const [payment] = await db
-      .select()
-      .from(paymentsTable)
-      .where(eq(paymentsTable.orderId, order.id));
-
-    if (!payment) {
-      return Response.json(
-        { ok: false, error: "Pembayaran tidak ditemukan" },
-        { status: 404 },
-      );
-    }
-
-    if (Math.abs(Number(payment.amount) - grossAmount) > 1) {
-      return Response.json(
-        { ok: false, error: "Nominal pembayaran tidak cocok" },
-        { status: 400 },
-      );
-    }
-
-    const mappedStatus = mapMidtransStatus(
-      transactionStatus,
-      notification.fraud_status,
+    // Server-side verification: fetch authoritative status from Midtrans using
+    // the Server Key. The POST body status is NOT trusted. Signature is not
+    // verified here because this project's SDK resolves status via the
+    // Core API (transaction.status) authenticating with the Server Key.
+    const status = await core.transaction.notification(body);
+    console.log(
+      `[Midtrans] Notification received for ${status.order_id} (${status.transaction_status})`,
     );
 
-    if (payment.status === mappedStatus) {
+    const result = await applyMidtransStatus({
+      order_id: status.order_id as string | undefined,
+      transaction_status: status.transaction_status as string | undefined,
+      fraud_status: status.fraud_status as string | undefined,
+      payment_type: status.payment_type as string | undefined,
+      transaction_id: status.transaction_id as string | undefined,
+      gross_amount: status.gross_amount as string | number | undefined,
+    });
+
+    if (!result.ok) {
+      console.warn(`[Midtrans] Order verification failed: ${result.error}`);
+      return Response.json(
+        { ok: false, error: result.error },
+        { status: result.status },
+      );
+    }
+
+    if (result.already) {
       return Response.json({ ok: true, already: true });
     }
 
-    await db
-      .update(paymentsTable)
-      .set({
-        status: mappedStatus,
-        method:
-          PAYMENT_TYPE_METHOD[notification.payment_type ?? ""] ??
-          payment.method,
-        referenceCode: notification.transaction_id
-          ? `MT-${notification.transaction_id}`
-          : payment.referenceCode,
-        paidAt: mappedStatus === "paid" ? new Date() : null,
-      })
-      .where(eq(paymentsTable.id, payment.id));
-
-    if (mappedStatus === "paid") {
-      await db.insert(notificationsTable).values([
-        {
-          userId: order.farmerId,
-          title: "Pembayaran Diterima",
-          message: `Pembayaran untuk pesanan ${order.orderCode} telah diterima sebesar Rp ${Number(
-            payment.amount,
-          ).toLocaleString("id-ID")}.`,
-          type: "payment",
-        },
-        {
-          userId: order.buyerId,
-          title: "Pembayaran Berhasil",
-          message: `Pembayaran pesanan ${order.orderCode} berhasil. Petani akan segera memproses pesanan Anda.`,
-          type: "payment",
-        },
-      ]);
-    }
+    console.log(
+      `[Midtrans] Payment status updated for ${status.order_id} (${status.transaction_status})`,
+    );
 
     revalidatePath("/user/orders");
     revalidatePath("/user/checkout");
     revalidatePath("/user/transactions");
+    revalidatePath("/user/transactions/failed");
     revalidatePath("/petani/dashboard");
     revalidatePath("/admin/orders");
 

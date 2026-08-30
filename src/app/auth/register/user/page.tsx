@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import gsap from "gsap";
 import {
   ArrowLeft,
   User,
@@ -15,7 +14,7 @@ import {
   Wheat,
   MapPin
 } from "lucide-react";
-import { saveRegisterDraft } from "@/lib/register";
+import { saveRegisterDraft, getRegisterDraft } from "@/lib/register";
 import StepProgress from "@/components/auth/StepProgress";
 import RegisterStepMeta from "@/components/auth/RegisterStepMeta";
 import BrandStoryPanel from "@/components/auth/BrandStoryPanel";
@@ -43,6 +42,14 @@ export default function RegisterUser() {
   const rightColRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const draft = getRegisterDraft();
+    if (draft.fullName) setFullName(draft.fullName);
+    if (draft.username) setUsername(draft.username);
+    if (draft.noTelp) setPhone(draft.noTelp);
+    if (draft.email) setEmail(draft.email);
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prevIndex) => (prevIndex + 1) % slideshowImages.length);
     }, 4000);
@@ -51,85 +58,86 @@ export default function RegisterUser() {
 
   useEffect(() => {
     const reduced = prefersReducedMotion();
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let cleanupMouseMove: ((e: MouseEvent) => void) | null = null;
 
-    const ctx = gsap.context(() => {
-      if (reduced) {
-        gsap.set(
-          [
-            ".bg-curve-container",
-            ".header-item",
-            ".left-anim-item",
-            ".right-anim-item",
-            ".footer-anim",
-          ],
-          { opacity: 1, x: 0, y: 0, scaleX: 1, rotateX: 0 }
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        if (reduced) {
+          gsap.set(
+            [
+              ".bg-curve-container",
+              ".header-item",
+              ".left-anim-item",
+              ".right-anim-item",
+              ".footer-anim",
+            ],
+            { opacity: 1, x: 0, y: 0, scaleX: 1, rotateX: 0 }
+          );
+          return;
+        }
+
+        const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+        tl.fromTo(".bg-curve-container",
+          { scaleX: 0, transformOrigin: "left center" },
+          { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+        )
+        .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+          { opacity: 0, y: 30, rotateX: -10 },
+          { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+          "-=0.9"
+        )
+        .fromTo(".footer-anim",
+          { opacity: 0, y: 10 },
+          { opacity: 1, duration: 0.8 },
+          "-=0.5"
         );
-        return;
+
+        const orbs = document.querySelectorAll(".ambient-orb");
+        orbs.forEach((orb, i) => {
+          gsap.to(orb, {
+            scale: "random(1.1, 1.4)",
+            opacity: "random(0.4, 0.8)",
+            duration: "random(3, 5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.3,
+          });
+        });
+
+        const storyCards = document.querySelectorAll(".story-float-card");
+        storyCards.forEach((card, i) => {
+          gsap.to(card, {
+            y: "random(-6, 6)",
+            duration: "random(3, 4.5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.4,
+          });
+        });
+      }, containerRef);
+
+      if (!reduced) {
+        cleanupMouseMove = (e: MouseEvent) => {
+          const x = (e.clientX / window.innerWidth - 0.5) * 40;
+          const y = (e.clientY / window.innerHeight - 0.5) * 40;
+          gsap.to(".ambient-orb", {
+            x: (i: number) => x * (i + 1.5),
+            y: (i: number) => y * (i + 1.5),
+            duration: 1.5,
+            ease: "power2.out"
+          });
+        };
+        window.addEventListener("mousemove", cleanupMouseMove);
       }
-
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-
-      tl.fromTo(".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
-      )
-      .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-        { opacity: 0, y: 30, rotateX: -10 },
-        { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-        "-=0.9"
-      )
-      .fromTo(".footer-anim",
-        { opacity: 0, y: 10 },
-        { opacity: 1, duration: 0.8 },
-        "-=0.5"
-      );
-
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.3,
-        });
-      });
-
-      const storyCards = document.querySelectorAll(".story-float-card");
-      storyCards.forEach((card, i) => {
-        gsap.to(card, {
-          y: "random(-6, 6)",
-          duration: "random(3, 4.5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.4,
-        });
-      });
-    }, containerRef);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out"
-      });
-    };
-
-    if (!reduced) {
-      window.addEventListener("mousemove", handleMouseMove);
-    }
+    });
 
     return () => {
-      ctx.revert();
-      if (!reduced) {
-        window.removeEventListener("mousemove", handleMouseMove);
-      }
+      ctx?.revert?.();
+      if (cleanupMouseMove) window.removeEventListener("mousemove", cleanupMouseMove);
     };
   }, []);
 

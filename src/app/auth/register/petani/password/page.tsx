@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import gsap from "gsap";
 import {
   ArrowLeft,
   Lock,
@@ -32,6 +31,13 @@ export default function RegisterPetaniPassword() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const draft = getRegisterDraft();
+    if (!draft.fullName || !draft.komoditas) {
+      router.replace("/auth/register/petani");
+    }
+  }, [router]);
 
   const getPasswordStrength = (pass: string) => {
     if (!pass) return { level: 0, text: "Masukkan kata sandi", color: "bg-neutral-200", textColor: "text-neutral-400" };
@@ -79,24 +85,31 @@ export default function RegisterPetaniPassword() {
   }, []);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+    let ctx: ReturnType<typeof gsap.context> | null = null;
 
-      tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
-        .fromTo(".illustration-item", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
-        .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
-      gsap.to(".lock-pulse", { scale: 1.06, duration: 1.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to(".shield-glow", { opacity: 0.85, scale: 1.1, duration: 2.4, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to(".orbit-dot-1", { rotate: 360, duration: 10, repeat: -1, ease: "none", transformOrigin: "190px 150px" });
-      gsap.to(".orbit-dot-2", { rotate: -360, duration: 14, repeat: -1, ease: "none", transformOrigin: "190px 150px" });
+        tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
+          .fromTo(".illustration-item", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
+          .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
 
-      gsap.utils.toArray<SVGGElement>(".float-chip").forEach((g, i) => {
-        gsap.to(g, { y: i % 2 === 0 ? -6 : 6, duration: 2.6 + i * 0.3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.2 });
-      });
-    }, containerRef);
-    return () => ctx.revert();
+        gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
+        gsap.to(".lock-pulse", { scale: 1.06, duration: 1.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to(".shield-glow", { opacity: 0.85, scale: 1.1, duration: 2.4, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to(".orbit-dot-1", { rotate: 360, duration: 10, repeat: -1, ease: "none", transformOrigin: "190px 150px" });
+        gsap.to(".orbit-dot-2", { rotate: -360, duration: 14, repeat: -1, ease: "none", transformOrigin: "190px 150px" });
+
+        gsap.utils.toArray<SVGGElement>(".float-chip").forEach((g, i) => {
+          gsap.to(g, { y: i % 2 === 0 ? -6 : 6, duration: 2.6 + i * 0.3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.2 });
+        });
+      }, containerRef);
+    });
+
+    return () => {
+      ctx?.revert?.();
+    };
   }, []);
 
   const renderFormFields = () => (

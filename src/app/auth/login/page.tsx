@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import gsap from "gsap";
 import Image from "next/image";
 import { loginAction } from "@/actions/auth";
 import { saveSession } from "@/lib/auth/client";
@@ -48,54 +47,59 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let handleMouseMove: ((e: MouseEvent) => void) | null = null;
 
-      tl.fromTo(".bg-curve-container",
-        { scaleX: 0, transformOrigin: "left center" },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
-      )
-        .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
-          { opacity: 0, y: 30, rotateX: -10 },
-          { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-          "-=0.9"
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+        tl.fromTo(".bg-curve-container",
+          { scaleX: 0, transformOrigin: "left center" },
+          { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
         )
-        .fromTo(".footer-anim",
-          { opacity: 0, y: 10 },
-          { opacity: 1, duration: 0.8 },
-          "-=0.5"
-        );
+          .fromTo([".header-item", ".left-anim-item", ".right-anim-item"],
+            { opacity: 0, y: 30, rotateX: -10 },
+            { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
+            "-=0.9"
+          )
+          .fromTo(".footer-anim",
+            { opacity: 0, y: 10 },
+            { opacity: 1, duration: 0.8 },
+            "-=0.5"
+          );
 
-      const orbs = document.querySelectorAll(".ambient-orb");
-      orbs.forEach((orb, i) => {
-        gsap.to(orb, {
-          scale: "random(1.1, 1.4)",
-          opacity: "random(0.4, 0.8)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: i * 0.3,
+        const orbs = document.querySelectorAll(".ambient-orb");
+        orbs.forEach((orb, i) => {
+          gsap.to(orb, {
+            scale: "random(1.1, 1.4)",
+            opacity: "random(0.4, 0.8)",
+            duration: "random(3, 5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            delay: i * 0.3,
+          });
         });
-      });
-    }, containerRef);
+      }, containerRef);
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 40;
-      const y = (e.clientY / window.innerHeight - 0.5) * 40;
-      gsap.to(".ambient-orb", {
-        x: (i: number) => x * (i + 1.5),
-        y: (i: number) => y * (i + 1.5),
-        duration: 1.5,
-        ease: "power2.out"
-      });
-    };
+      handleMouseMove = (e: MouseEvent) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 40;
+        const y = (e.clientY / window.innerHeight - 0.5) * 40;
+        gsap.to(".ambient-orb", {
+          x: (i: number) => x * (i + 1.5),
+          y: (i: number) => y * (i + 1.5),
+          duration: 1.5,
+          ease: "power2.out"
+        });
+      };
 
-    window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove);
+    });
 
     return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      ctx?.revert();
+      if (handleMouseMove) window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 

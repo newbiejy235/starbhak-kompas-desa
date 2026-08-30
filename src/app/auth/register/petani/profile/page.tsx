@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import gsap from "gsap";
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,7 +15,8 @@ import {
   Leaf,
   Sparkles,
 } from "lucide-react";
-import { saveRegisterDraft } from "@/lib/register";
+import { saveRegisterDraft, getRegisterDraft } from "@/lib/register";
+import { daftarKota } from "@/constants/dataKota";
 import Image from "next/image";
 
 const slideshowImages = ["/images/login/ImageLogin.png", "/images/login/ImagePetani.png"];
@@ -26,8 +26,23 @@ export default function ProfilPetani() {
   const [komoditasList, setKomoditasList] = useState<string[]>([""]);
   const [lokasi, setLokasi] = useState("");
   const [estimasi, setEstimasi] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const draft = getRegisterDraft();
+    if (!draft.fullName) {
+      router.replace("/auth/register/petani");
+      return;
+    }
+    if (draft.komoditas) {
+      const items = draft.komoditas.split(",").map((s) => s.trim()).filter(Boolean);
+      setKomoditasList(items.length > 0 ? items : [""]);
+    }
+    if (draft.lokasi) setLokasi(draft.lokasi);
+    if (draft.estimasi) setEstimasi(draft.estimasi);
+  }, [router]);
 
   const getKomoditasString = () => komoditasList.filter((k) => k.trim() !== "").join(", ");
 
@@ -56,36 +71,45 @@ export default function ProfilPetani() {
   }, []);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let cleanupMouseMove: ((e: MouseEvent) => void) | null = null;
 
-      tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
-        .fromTo(".hero-main", { opacity: 0, scale: 0.94, y: 25 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
-        .fromTo(".floating-card", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, stagger: 0.12 }, "-=0.55")
-        .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      gsap.to(".hero-main", { y: -8, duration: 3.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to(".floating-card-1", { y: -10, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to(".floating-card-2", { y: 8, duration: 3.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to(".floating-card-3", { y: -6, duration: 4.2, repeat: -1, yoyo: true, ease: "sine.inOut" });
-      gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
-    }, containerRef);
+        tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
+          .fromTo(".hero-main", { opacity: 0, scale: 0.94, y: 25 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
+          .fromTo(".floating-card", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, stagger: 0.12 }, "-=0.55")
+          .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 18;
-      const y = (e.clientY / window.innerHeight - 0.5) * 18;
-      gsap.to(".parallax-element", { x, y, duration: 1.2, ease: "power2.out", overwrite: true });
-    };
+        gsap.to(".hero-main", { y: -8, duration: 3.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to(".floating-card-1", { y: -10, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to(".floating-card-2", { y: 8, duration: 3.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to(".floating-card-3", { y: -6, duration: 4.2, repeat: -1, yoyo: true, ease: "sine.inOut" });
+        gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
+      }, containerRef);
 
-    window.addEventListener("mousemove", handleMouseMove);
+      cleanupMouseMove = (e: MouseEvent) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 18;
+        const y = (e.clientY / window.innerHeight - 0.5) * 18;
+        gsap.to(".parallax-element", { x, y, duration: 1.2, ease: "power2.out", overwrite: true });
+      };
+      window.addEventListener("mousemove", cleanupMouseMove);
+    });
+
     return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      ctx?.revert?.();
+      if (cleanupMouseMove) window.removeEventListener("mousemove", cleanupMouseMove);
     };
   }, []);
 
   const filledCommodities = komoditasList.filter((item) => item.trim() !== "");
   const estimatedLabel = estimasi === "SKALA_KECIL" ? "Skala Kecil" : estimasi === "SKALA_MENENGAH" ? "Skala Menengah" : estimasi === "SKALA_BESAR" ? "Skala Besar" : "Belum dipilih";
+
+  const filteredKota = daftarKota.filter((kota) =>
+    kota.toLowerCase().includes(lokasi.toLowerCase())
+  );
 
   const renderFormFields = (isMobile = false) => (
     <div className="flex flex-col gap-6">
@@ -132,7 +156,7 @@ export default function ProfilPetani() {
         </button>
       </div>
 
-      <div className="form-item">
+      <div className={`form-item ${showDropdown ? 'relative z-50' : 'relative z-10'}`}>
         <label htmlFor={isMobile ? "lokasi-mobile" : "lokasi"} className="mb-2.5 block text-[13px] font-bold text-neutral-800">
           Lokasi Lahan
         </label>
@@ -144,13 +168,42 @@ export default function ProfilPetani() {
             id={isMobile ? "lokasi-mobile" : "lokasi"}
             type="text"
             value={lokasi}
-            onChange={(e) => setLokasi(e.target.value)}
-            placeholder="Desa / Kecamatan / Kabupaten"
+            onChange={(e) => {
+              setLokasi(e.target.value);
+              setShowDropdown(true);
+            }}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+            placeholder="Ketik nama kota/kabupaten..."
             className="w-full rounded-[16px] border border-neutral-200 bg-white py-3.5 pl-11 pr-4 text-sm font-medium text-neutral-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)] outline-none transition-all duration-200 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10"
             required
+            autoComplete="off"
           />
         </div>
-        {!isMobile && <p className="mt-2 ml-1 text-[10px] font-medium text-neutral-400">Contoh: Desa Sukamaju, Kecamatan Beji, Depok</p>}
+        {showDropdown && (
+          <ul className="absolute z-50 top-[calc(100%+6px)] left-0 right-0 max-h-52 overflow-y-auto bg-white border border-neutral-200 rounded-2xl shadow-2xl divide-y divide-neutral-100 focus:outline-none">
+            {filteredKota.length > 0 ? (
+              filteredKota.map((kota) => (
+                <li
+                  key={kota}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setLokasi(kota);
+                    setShowDropdown(false);
+                  }}
+                  className="px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-emerald-50 hover:text-emerald-800 cursor-pointer transition-colors"
+                >
+                  {kota}
+                </li>
+              ))
+            ) : (
+              <li className="px-4 py-3 text-sm text-neutral-400 text-center select-none">
+                Kota tidak ditemukan
+              </li>
+            )}
+          </ul>
+        )}
+        {!isMobile && <p className="mt-2 ml-1 text-[10px] font-medium text-neutral-400">Contoh: Kota Depok, Kabupaten Bogor</p>}
       </div>
 
       <div className="form-item">

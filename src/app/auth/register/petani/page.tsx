@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import gsap from "gsap";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,7 +16,7 @@ import {
   BadgeCheck,
   Globe
 } from "lucide-react";
-import { saveRegisterDraft } from "@/lib/register";
+import { saveRegisterDraft, getRegisterDraft } from "@/lib/register";
 import Image from "next/image";
 
 const slideshowImages = ["/images/login/ImageLogin.png", "/images/auth/Sawah.jpg"];
@@ -33,6 +32,14 @@ export default function RegisterPetani() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const draft = getRegisterDraft();
+    if (draft.fullName) setFullName(draft.fullName);
+    if (draft.username) setUsername(draft.username);
+    if (draft.noTelp) setPhone(draft.noTelp);
+    if (draft.email) setEmail(draft.email);
+  }, []);
+
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -46,30 +53,35 @@ export default function RegisterPetani() {
   }, []);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let cleanupMouseMove: ((e: MouseEvent) => void) | null = null;
 
-      tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
-        .fromTo(".illustration-item", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
-        .fromTo(".floating-card", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, stagger: 0.12 }, "-=0.55")
-        .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
+    import("gsap").then(({ default: gsap }) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
 
-      gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
-      gsap.to(".float-element", { y: -10, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut", stagger: 0.2 });
-      gsap.to(".orbit-dot", { rotate: 360, duration: 12, repeat: -1, ease: "none", transformOrigin: "center center" });
-      gsap.to(".pulse-ring", { scale: 1.2, opacity: 0, duration: 2, repeat: -1, ease: "power2.out" });
-    }, containerRef);
+        tl.fromTo(".page-content", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 })
+          .fromTo(".illustration-item", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 1 }, "-=0.45")
+          .fromTo(".floating-card", { opacity: 0, scale: 0.85, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.7, stagger: 0.12 }, "-=0.55")
+          .fromTo(".form-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, "-=0.55");
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 18;
-      const y = (e.clientY / window.innerHeight - 0.5) * 18;
-      gsap.to(".parallax-element", { x, y, duration: 1.2, ease: "power2.out", overwrite: true });
-    };
+        gsap.to(".ambient-blob", { scale: 1.15, opacity: 0.65, duration: 4, repeat: -1, yoyo: true, stagger: 0.5, ease: "sine.inOut" });
+        gsap.to(".float-element", { y: -10, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut", stagger: 0.2 });
+        gsap.to(".orbit-dot", { rotate: 360, duration: 12, repeat: -1, ease: "none", transformOrigin: "center center" });
+        gsap.to(".pulse-ring", { scale: 1.2, opacity: 0, duration: 2, repeat: -1, ease: "power2.out" });
+      }, containerRef);
 
-    window.addEventListener("mousemove", handleMouseMove);
+      cleanupMouseMove = (e: MouseEvent) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 18;
+        const y = (e.clientY / window.innerHeight - 0.5) * 18;
+        gsap.to(".parallax-element", { x, y, duration: 1.2, ease: "power2.out", overwrite: true });
+      };
+      window.addEventListener("mousemove", cleanupMouseMove);
+    });
+
     return () => {
-      ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
+      ctx?.revert?.();
+      if (cleanupMouseMove) window.removeEventListener("mousemove", cleanupMouseMove);
     };
   }, []);
 
@@ -240,8 +252,8 @@ export default function RegisterPetani() {
                   <CheckCircle2 size={15} className="text-emerald-300" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-medium text-white/40">VERIFIKASI</p>
-                  <p className="text-[11px] font-bold text-white">Mudah & Cepat</p>
+                  <p className="text-[9px] font-medium text-white/40">PEMBAYARAN</p>
+                  <p className="text-[11px] font-bold text-white">Aman & Transparan</p>
                 </div>
               </div>
             </div>

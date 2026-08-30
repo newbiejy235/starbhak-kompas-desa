@@ -19,7 +19,6 @@ export async function getPublicFarmers(params?: {
 }) {
   const conditions = [
     eq(usersTable.role, "petani"),
-    eq(usersTable.status, "verified"),
   ];
 
   if (params?.search) {
@@ -82,7 +81,6 @@ export async function countPublicFarmers(params?: {
 }) {
   const conditions = [
     eq(usersTable.role, "petani"),
-    eq(usersTable.status, "verified"),
   ];
 
   if (params?.search) {
@@ -118,7 +116,6 @@ export async function searchPublicFarmers(params?: {
 }) {
   const farmerConditions = [
     eq(usersTable.role, "petani"),
-    eq(usersTable.status, "verified"),
   ];
 
   if (params?.search) {
@@ -196,7 +193,8 @@ export async function searchPublicFarmers(params?: {
       usersTable.createdAt,
     );
 
-  let filtered = rows;
+  // Hanya tampilkan petani yang benar-benar punya komoditas aktif
+  let filtered = rows.filter((r) => (r.commodityCount || 0) > 0);
 
   if (params?.minPrice !== undefined) {
     filtered = filtered.filter(
@@ -269,7 +267,6 @@ export async function countSearchPublicFarmers(params?: {
 }) {
   const farmerConditions = [
     eq(usersTable.role, "petani"),
-    eq(usersTable.status, "verified"),
   ];
 
   if (params?.search) {
@@ -376,7 +373,6 @@ export async function getPublicFarmerById(farmerId: number) {
     farmImages,
     avgRating: ratingAgg[0]?.avgRating ?? null,
     reviewCount: ratingAgg[0]?.reviewCount ?? 0,
-    isVerified: farmer.status === "verified",
   };
 }
 
@@ -529,6 +525,9 @@ export async function searchFarmersForBuyer(params?: {
     reviewCount: reviewMap.get(r.id)?.reviewCount ?? 0,
   }));
 
+  // Hanya tampilkan petani yang benar-benar punya komoditas aktif
+  enriched = enriched.filter((r) => (r.commodityCount || 0) > 0);
+
   if (params?.minRating !== undefined) {
     enriched = enriched.filter(
       (r) => r.avgRating !== null && Number(r.avgRating) >= params.minRating!,
@@ -639,7 +638,6 @@ export async function getFarmerStorePage(farmerId: number) {
     farmImages,
     avgRating: ratingAgg?.avgRating ?? null,
     reviewCount: ratingAgg?.reviewCount ?? 0,
-    isVerified: farmer.status === "verified",
     commodities,
   };
 }

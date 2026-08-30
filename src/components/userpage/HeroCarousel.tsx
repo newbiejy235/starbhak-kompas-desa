@@ -21,7 +21,7 @@ const slides: Slide[] = [
     cta: "Lihat Promo",
     ctaHref: "#katalog",
     icon: Tag,
-    gradient: "from-primary via-emerald-700 to-secondary",
+    gradient: "from-primary via-primary-dark to-secondary",
   },
   {
     id: 2,
@@ -30,7 +30,7 @@ const slides: Slide[] = [
     cta: "Jelajahi Sekarang",
     ctaHref: "#katalog",
     icon: TrendingUp,
-    gradient: "from-primary-dark via-emerald-800 to-cyan-800",
+    gradient: "from-primary via-primary-dark to-secondary",
   },
   {
     id: 3,
@@ -39,7 +39,7 @@ const slides: Slide[] = [
     cta: "Mulai Belanja",
     ctaHref: "#katalog",
     icon: Sprout,
-    gradient: "from-primary-dark via-primary to-emerald-700",
+    gradient: "from-primary via-primary-dark to-secondary",
   },
 ];
 
@@ -78,7 +78,7 @@ export default function HeroCarousel() {
           </div>
 
           <div className="relative z-10 max-w-xl animate-fade-in" key={slide.id}>
-            <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <Icon size={24} />
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 leading-tight">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Package, MoreHorizontal, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
@@ -20,6 +20,7 @@ export interface ProductCardData {
   unit: string;
   location: string;
   image: string | null;
+  images?: string[] | null;
   quality?: string | null;
   status?: string;
   isPublished?: boolean;
@@ -40,7 +41,7 @@ interface ProductCardProps {
 }
 
 /* ── Component ───────────────────────────────────────────── */
-export default function ProductCard({
+export default React.memo(function ProductCard({
   data,
   href,
   farmer = false,
@@ -49,7 +50,7 @@ export default function ProductCard({
   onTogglePublication,
   index = 0,
 }: ProductCardProps) {
-  const img = formatImage(data.image);
+  const img = formatImage(data.image) ?? formatImage(data.images?.[0] ?? null);
   const stock = Number(data.stock);
   const outOfStock = stock <= 0;
   const lowStock = stock > 0 && stock <= LOW_STOCK_THRESHOLD;
@@ -83,7 +84,6 @@ export default function ProductCard({
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover transition-transform duration-700 ease-smooth group-hover:scale-[1.04]"
-            unoptimized
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
@@ -286,4 +286,4 @@ export default function ProductCard({
       {cardContent}
     </div>
   );
-}
+});

@@ -46,11 +46,10 @@ export default function WishlistButton({
       type="button"
       onClick={handleToggle}
       disabled={isPending || !userId}
-      className={`${btnSize} rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
-        wishlisted
-          ? "bg-amber-100 text-amber-600 hover:bg-amber-200"
-          : "bg-white/80 text-gray-400 hover:bg-white hover:text-amber-500 shadow-sm"
-      } disabled:opacity-50 ${className}`}
+      className={`${btnSize} rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${wishlisted
+        ? "bg-white/80 text-emerald-700"
+        : "bg-white/80 text-gray-400 hover:bg-white hover:text-emerald-700 shadow-sm"
+        } disabled:opacity-50 ${className}`}
       aria-label={wishlisted ? "Hapus dari wishlist" : "Tambah ke wishlist"}
     >
       <Bookmark
