@@ -170,17 +170,6 @@ export function HeaderActions() {
         )}
       </Link>
 
-      {/* Keranjang */}
-      <Link
-        href="/user/cart"
-        aria-label="Keranjang belanja"
-        aria-current={pathname.startsWith("/user/cart") ? "page" : undefined}
-        className={`${iconBtn} ${pathname.startsWith("/user/cart") ? "bg-primary/10 text-primary" : ""
-          }`}
-      >
-        <ShoppingCart size={19} />
-      </Link>
-
       {/* Notifikasi */}
       <Link
         href="/user/notifications"
