@@ -65,7 +65,6 @@ export async function getPublicCommodities(params?: {
   offset?: number;
 }) {
   const conditions = [
-    eq(commoditiesTable.isPublished, true),
     or(
       eq(commoditiesTable.status, "available"),
       eq(commoditiesTable.status, "verified"),

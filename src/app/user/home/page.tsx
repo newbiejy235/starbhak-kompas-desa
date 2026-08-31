@@ -649,7 +649,9 @@ function HomeContent() {
                     <ProductCard
                       data={{
                         ...item,
-                        images: item.image ? [item.image] : [],
+                        images: item.image
+                          ? [item.image, ...(item.images ?? [])]
+                          : (item.images ?? []),
                       }}
                       userId={userId}
                     />

@@ -169,6 +169,11 @@ export default function AddCommodity() {
 
         <input
           type="hidden"
+          name="image"
+          value={mediaItems.find((i) => i.type === "image")?.id ?? ""}
+        />
+        <input
+          type="hidden"
           name="images"
           value={JSON.stringify(mediaItems.filter((i) => i.type === "image").map((i) => i.url))}
         />
