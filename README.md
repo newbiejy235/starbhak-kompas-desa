@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./public/logo-kompas-desa/kompas_logo_icon.png" alt="Logo Kompas'Desa" width="100" height="100" />
   
-  <h1>🌾 Kompas'Desa</h1>
+  <h1>Kompas'Desa</h1>
   <p><b>Menghubungkan Petani Lokal dan Pembeli Langsung dalam Satu Ekosistem Digital</b></p>
 
   <p>
