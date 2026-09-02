@@ -120,6 +120,13 @@
       "when": 1787942352681,
       "tag": "0008_dual_accept_negotiation",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1788200000000,
+      "tag": "0013_nego_wishlist_checkout",
+      "breakpoints": true
     }
   ]
 }

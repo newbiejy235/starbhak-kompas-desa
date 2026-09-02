@@ -7,6 +7,9 @@ import { toggleWishlist, isCommodityWishlisted } from "@/actions/wishlist";
 interface WishlistButtonProps {
   commodityId: number;
   userId: number | null;
+  transactionType?: "nego" | "fixed_price";
+  weight?: number;
+  price?: number;
   size?: "sm" | "md";
   className?: string;
 }
@@ -14,6 +17,9 @@ interface WishlistButtonProps {
 export default function WishlistButton({
   commodityId,
   userId,
+  transactionType = "fixed_price",
+  weight,
+  price,
   size = "md",
   className = "",
 }: WishlistButtonProps) {
@@ -31,7 +37,7 @@ export default function WishlistButton({
     if (!userId) return;
 
     startTransition(async () => {
-      const result = await toggleWishlist(userId, commodityId);
+      const result = await toggleWishlist(userId, commodityId, transactionType, weight, price);
       if (result.success && result.wishlisted !== undefined) {
         setWishlisted(result.wishlisted);
       }

@@ -136,6 +136,8 @@ export const commoditiesTable = pgTable(
     quality: varchar({ length: 50 }).notNull().default("A"),
     location: varchar({ length: 150 }).notNull(),
     isPublished: boolean().notNull().default(false),
+    minWeightForNego: numeric({ precision: 12, scale: 2 }),
+    fixedPrice: numeric({ precision: 12, scale: 2 }),
     harvestEstimate: timestamp({ withTimezone: true }),
     image: integer().references(() => ImageUpload.id, {
       onDelete: "set null",
@@ -179,6 +181,14 @@ export const ordersTable = pgTable(
     totalPrice: numeric({ precision: 14, scale: 2 }).notNull(),
     deliveryMethod: deliveryMethodEnum().notNull().default("pickup"),
     deliveryAddress: text(),
+    recipientName: varchar({ length: 100 }),
+    recipientPhone: varchar({ length: 20 }),
+    addressStreet: text(),
+    addressProvince: varchar({ length: 100 }),
+    addressCity: varchar({ length: 100 }),
+    addressDistrict: varchar({ length: 100 }),
+    addressPostalCode: varchar({ length: 10 }),
+    addressNotes: text(),
     status: orderStatusEnum().notNull().default("pending"),
     notes: text(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -367,6 +377,11 @@ export const chatRoomStatusEnum = pgEnum("chat_room_status", [
   "closed",
 ]);
 
+export const wishlistTransactionTypeEnum = pgEnum("wishlist_transaction_type", [
+  "nego",
+  "fixed_price",
+]);
+
 export const chatRoomsTable = pgTable(
   "chat_rooms_table",
   {
@@ -480,6 +495,9 @@ export const wishlistItemsTable = pgTable(
     commodityId: integer()
       .notNull()
       .references(() => commoditiesTable.id, { onDelete: "cascade" }),
+    transactionType: wishlistTransactionTypeEnum().notNull().default("fixed_price"),
+    weight: numeric({ precision: 12, scale: 2 }),
+    price: numeric({ precision: 12, scale: 2 }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Search, ShoppingCart, Bell, Bookmark } from "lucide-react";
+import { Search, Bell, Bookmark } from "lucide-react";
 
 import { getUnreadNotificationCount } from "@/actions/notification";
 import { getWishlistCount } from "@/actions/wishlist";
@@ -168,17 +168,6 @@ export function HeaderActions() {
             {wishlistQty > 99 ? "99+" : wishlistQty}
           </span>
         )}
-      </Link>
-
-      {/* Keranjang */}
-      <Link
-        href="/user/cart"
-        aria-label="Keranjang belanja"
-        aria-current={pathname.startsWith("/user/cart") ? "page" : undefined}
-        className={`${iconBtn} ${pathname.startsWith("/user/cart") ? "bg-primary/10 text-primary" : ""
-          }`}
-      >
-        <ShoppingCart size={19} />
       </Link>
 
       {/* Notifikasi */}
