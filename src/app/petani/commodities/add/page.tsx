@@ -144,6 +144,19 @@ export default function AddCommodity() {
               <input type="number" name="maxPrice" min="0" placeholder="15000" className={inputCls} />
             </div>
           </div>
+
+          <div className="mt-4 grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Minimal Berat untuk Nego (kg) *</label>
+              <input type="number" name="minWeightForNego" required min="1" placeholder="50" className={inputCls} />
+              <p className="mt-1 text-[11px] text-gray-400">Pembelian ≥ berat ini masuk alur negosiasi</p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Harga Pas / kg (Rp) *</label>
+              <input type="number" name="fixedPrice" required min="1" placeholder="15000" className={inputCls} />
+              <p className="mt-1 text-[11px] text-gray-400">Harga tetap untuk pembelian di bawah berat minimum</p>
+            </div>
+          </div>
         </div>
 
         <div className="border-b border-gray-100 pb-5">

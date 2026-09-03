@@ -53,6 +53,7 @@ export async function getPublicFarmers(params?: {
       commoditiesTable,
       and(
         eq(commoditiesTable.farmerId, usersTable.id),
+        eq(commoditiesTable.isPublished, true),
         or(
           eq(commoditiesTable.status, "available"),
           eq(commoditiesTable.status, "verified"),
@@ -130,9 +131,12 @@ export async function searchPublicFarmers(params?: {
     farmerConditions.push(ilike(usersTable.village, `%${params.location}%`));
   }
 
-  const commodityConditions = or(
-    eq(commoditiesTable.status, "available"),
-    eq(commoditiesTable.status, "verified"),
+  const commodityConditions = and(
+    eq(commoditiesTable.isPublished, true),
+    or(
+      eq(commoditiesTable.status, "available"),
+      eq(commoditiesTable.status, "verified"),
+    ),
   )!;
 
   if (params?.categoryId) {
@@ -281,9 +285,12 @@ export async function countSearchPublicFarmers(params?: {
     farmerConditions.push(ilike(usersTable.village, `%${params.location}%`));
   }
 
-  const commodityConditions = or(
-    eq(commoditiesTable.status, "available"),
-    eq(commoditiesTable.status, "verified"),
+  const commodityConditions = and(
+    eq(commoditiesTable.isPublished, true),
+    or(
+      eq(commoditiesTable.status, "available"),
+      eq(commoditiesTable.status, "verified"),
+    ),
   )!;
 
   if (params?.categoryId) {
@@ -388,9 +395,12 @@ export async function searchFarmersForBuyer(params?: {
   const limit = params?.limit ?? 20;
   const offset = params?.offset ?? 0;
 
-  const commodityStatusCond = or(
-    eq(commoditiesTable.status, "available"),
-    eq(commoditiesTable.status, "verified"),
+  const commodityStatusCond = and(
+    eq(commoditiesTable.isPublished, true),
+    or(
+      eq(commoditiesTable.status, "available"),
+      eq(commoditiesTable.status, "verified"),
+    ),
   )!;
 
   let matchingFarmerIds: number[] | null = null;
@@ -625,6 +635,7 @@ export async function getFarmerStorePage(farmerId: number) {
     .where(
       and(
         eq(commoditiesTable.farmerId, farmerId),
+        eq(commoditiesTable.isPublished, true),
         or(
           eq(commoditiesTable.status, "available"),
           eq(commoditiesTable.status, "verified"),

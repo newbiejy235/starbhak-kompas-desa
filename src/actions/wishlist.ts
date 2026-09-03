@@ -10,6 +10,9 @@ import type { ActionState } from "@/lib/types/auth";
 export async function addToWishlist(
   userId: number,
   commodityId: number,
+  transactionType: "nego" | "fixed_price" = "fixed_price",
+  weight?: number,
+  price?: number,
 ): Promise<ActionState> {
   const user = await getAuthUser(userId);
   if (!user) {
@@ -47,6 +50,9 @@ export async function addToWishlist(
     await db.insert(wishlistItemsTable).values({
       userId,
       commodityId,
+      transactionType,
+      weight: weight ? String(weight) : null,
+      price: price ? String(price) : null,
     });
 
     revalidatePath("/user/home");
@@ -89,6 +95,9 @@ export async function removeFromWishlist(
 export async function toggleWishlist(
   userId: number,
   commodityId: number,
+  transactionType: "nego" | "fixed_price" = "fixed_price",
+  weight?: number,
+  price?: number,
 ): Promise<ActionState & { wishlisted?: boolean }> {
   const user = await getAuthUser(userId);
   if (!user) {
@@ -128,6 +137,9 @@ export async function toggleWishlist(
     await db.insert(wishlistItemsTable).values({
       userId,
       commodityId,
+      transactionType,
+      weight: weight ? String(weight) : null,
+      price: price ? String(price) : null,
     });
 
     revalidatePath("/user/home");
@@ -167,11 +179,16 @@ export async function getUserWishlist(userId: number) {
       .select({
         id: wishlistItemsTable.id,
         commodityId: wishlistItemsTable.commodityId,
+        transactionType: wishlistItemsTable.transactionType,
+        weight: wishlistItemsTable.weight,
+        price: wishlistItemsTable.price,
         createdAt: wishlistItemsTable.createdAt,
         commodityName: commoditiesTable.name,
         commodityPrice: commoditiesTable.price,
         commodityMinPrice: commoditiesTable.minPrice,
         commodityMaxPrice: commoditiesTable.maxPrice,
+        commodityMinWeightForNego: commoditiesTable.minWeightForNego,
+        commodityFixedPrice: commoditiesTable.fixedPrice,
         commodityStock: commoditiesTable.stock,
         commodityUnit: commoditiesTable.unit,
         commodityLocation: commoditiesTable.location,

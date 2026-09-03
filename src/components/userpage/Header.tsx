@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Search, ShoppingCart, Bell, Bookmark } from "lucide-react";
+import { Search, Bell, Bookmark } from "lucide-react";
 
 import { getUnreadNotificationCount } from "@/actions/notification";
 import { getWishlistCount } from "@/actions/wishlist";

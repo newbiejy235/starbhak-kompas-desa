@@ -105,6 +105,16 @@ export default function ProductDetail() {
   const maxPrice = product.maxPrice ? Number(product.maxPrice) : null;
   const hasPriceRange = minPrice !== null && maxPrice !== null && minPrice !== maxPrice;
 
+  const minWeightForNego = product.minWeightForNego ? Number(product.minWeightForNego) : null;
+  const fixedPrice = product.fixedPrice ? Number(product.fixedPrice) : null;
+  const hasNegoConfig = minWeightForNego !== null && fixedPrice !== null;
+  const isNegoMode = hasNegoConfig && quantity >= minWeightForNego!;
+  const currentPrice = hasNegoConfig
+    ? isNegoMode
+      ? Number(product.price)
+      : fixedPrice!
+    : Number(product.price);
+
   const handleAddToCart = () => {
     if (!user) {
       router.push("/auth/login");
@@ -252,97 +262,136 @@ export default function ProductDetail() {
             )}
 
             <div className="mb-4 flex items-center gap-2">
-              <WishlistButton commodityId={product.id} userId={user?.id ?? null} />
+              <WishlistButton
+                commodityId={product.id}
+                userId={user?.id ?? null}
+                transactionType={hasNegoConfig ? (isNegoMode ? "nego" : "fixed_price") : "fixed_price"}
+                weight={quantity}
+                price={currentPrice}
+              />
               <span className="text-xs text-gray-400">
                 {user ? "Simpan ke wishlist" : "Masuk untuk wishlist"}
               </span>
             </div>
 
             {isAvailable && stock > 0 ? (
-              hasPriceRange ? (
-                <div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-5 flex flex-col items-center text-center">
-                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                    Produk ini <span className="font-semibold text-gray-900">memerlukan negosiasi</span> sebelum pembelian. Hubungi petani untuk menawar harga dan jumlah pesanan.
-                  </p>
-                  <button
-                    onClick={handleNego}
-                    disabled={chatOpening || isOwnProduct}
-                    className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
-                    {chatOpening ? "Membuka Chat..." : "Nego Harga"}
-                  </button>
-                  {chatError && (
-                    <p className="text-xs text-red-500 mt-3 text-center">{chatError}</p>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center gap-3 mb-6">
-                    <span className="text-sm font-medium text-gray-700">Jumlah</span>
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                      <button
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        disabled={quantity <= 1}
-                        className="p-2.5 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
-                        aria-label="Kurangi jumlah"
-                      >
-                        <Minus size={18} />
-                      </button>
-                      <span className="w-11 text-center font-bold tabular-nums">{quantity}</span>
-                      <button
-                        onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
-                        disabled={quantity >= stock}
-                        className="p-2.5 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
-                        aria-label="Tambah jumlah"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      Stok tersedia: {formatWeight(product.stock, product.unit)}
-                    </span>
+              <>
+                {hasNegoConfig && (
+                  <div className="mb-3 rounded-xl border border-primary/10 bg-primary/[0.03] p-3">
+                    <p className="text-xs text-gray-600">
+                      <span className="font-semibold">Harga Pas:</span> {formatRupiah(fixedPrice!)} / {product.unit} (beli &lt; {minWeightForNego} {product.unit})
+                    </p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      <span className="font-semibold">Nego:</span> beli ≥ {minWeightForNego} {product.unit} → hubungi petani
+                    </p>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {hasPriceRange && !hasNegoConfig && (
+                  <div className="rounded-2xl border border-primary/10 bg-primary/[0.03] p-5 flex flex-col items-center text-center mb-4">
+                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                      Produk ini <span className="font-semibold text-gray-900">memerlukan negosiasi</span> sebelum pembelian. Hubungi petani untuk menawar harga dan jumlah pesanan.
+                    </p>
                     <button
-                      onClick={handleAddToCart}
-                      className="w-full rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
-                    >
-                      Masukkan ke Keranjang
-                    </button>
-                    <button
-                      onClick={handleBuyNow}
-                      disabled={buying}
-                      className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {buying ? (
-                        <span className="inline-flex items-center justify-center gap-2">
-                          <Loader2 size={18} className="animate-spin" /> Membuat Pesanan...
-                        </span>
-                      ) : (
-                        "Beli Sekarang"
-                      )}
-                    </button>
-                  </div>
-                  {buyError && (
-                    <p className="mt-3 text-xs text-red-500 text-center">{buyError}</p>
-                  )}
-                  {!isOwnProduct && (
-                    <button
-                      onClick={openChat}
-                      disabled={chatOpening}
-                      className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                      onClick={handleNego}
+                      disabled={chatOpening || isOwnProduct}
+                      className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
-                      {chatOpening ? "Membuka Chat..." : "Chat Petani"}
+                      {chatOpening ? "Membuka Chat..." : "Nego Harga"}
                     </button>
+                    {chatError && (
+                      <p className="text-xs text-red-500 mt-3 text-center">{chatError}</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <span className="text-sm font-medium text-gray-700">
+                    {hasNegoConfig ? "Berat (kg)" : "Jumlah"}
+                  </span>
+                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity <= 1}
+                      className="p-2.5 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                      aria-label="Kurangi jumlah"
+                    >
+                      <Minus size={18} />
+                    </button>
+                    <span className="w-11 text-center font-bold tabular-nums">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
+                      disabled={quantity >= stock}
+                      className="p-2.5 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                      aria-label="Tambah jumlah"
+                    >
+                      <Plus size={18} />
+                    </button>
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    Stok tersedia: {formatWeight(product.stock, product.unit)}
+                  </span>
+                </div>
+
+                {hasNegoConfig && (
+                  <p className="mb-4 text-sm font-semibold text-primary">
+                    Total: {formatRupiah(currentPrice * quantity)}
+                    {isNegoMode ? " (harga nego)" : ` (${formatRupiah(currentPrice)}/kg)`}
+                  </p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {hasNegoConfig && isNegoMode ? (
+                    <button
+                      onClick={handleNego}
+                      disabled={chatOpening || isOwnProduct}
+                      className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:col-span-2"
+                    >
+                      {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+                      {chatOpening ? "Membuka Chat..." : "Ajukan Nego"}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleAddToCart}
+                        className="w-full rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                      >
+                        {hasNegoConfig ? "Beli Harga Pas" : "Masukkan ke Keranjang"}
+                      </button>
+                      <button
+                        onClick={handleBuyNow}
+                        disabled={buying}
+                        className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {buying ? (
+                          <span className="inline-flex items-center justify-center gap-2">
+                            <Loader2 size={18} className="animate-spin" /> Membuat Pesanan...
+                          </span>
+                        ) : (
+                          "Beli Sekarang"
+                        )}
+                      </button>
+                    </>
                   )}
-                  {chatError && (
-                    <p className="text-xs text-red-500 mt-2 text-center">{chatError}</p>
-                  )}
-                </>
-              )
+                </div>
+                {buyError && (
+                  <p className="mt-3 text-xs text-red-500 text-center">{buyError}</p>
+                )}
+                {!hasNegoConfig && !isOwnProduct && (
+                  <button
+                    onClick={openChat}
+                    disabled={chatOpening}
+                    className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-primary/5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+                    {chatOpening ? "Membuka Chat..." : "Chat Petani"}
+                  </button>
+                )}
+                {chatError && (
+                  <p className="text-xs text-red-500 mt-2 text-center">{chatError}</p>
+                )}
+              </>
             ) : (
               <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center text-sm text-gray-500">
                 Komoditas ini sedang tidak tersedia

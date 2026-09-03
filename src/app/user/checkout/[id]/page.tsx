@@ -13,6 +13,7 @@ import {
   MapPin,
   AlertCircle,
   RotateCcw,
+  User,
 } from "lucide-react";
 import { getOrderById } from "@/actions/order";
 import {
@@ -357,9 +358,27 @@ export default function OrderDetail() {
                 <dd className="font-medium text-gray-900">
                   {order.deliveryMethod === "pickup"
                     ? "Pick Up (ambil di lokasi petani)"
-                    : `Ekspedisi — ${order.deliveryAddress}`}
+                    : order.addressStreet
+                      ? `${order.addressStreet}${order.addressDistrict ? `, ${order.addressDistrict}` : ""}${order.addressCity ? `, ${order.addressCity}` : ""}${order.addressProvince ? `, ${order.addressProvince}` : ""}${order.addressPostalCode ? ` ${order.addressPostalCode}` : ""}`
+                      : order.deliveryAddress || "-"}
                 </dd>
               </div>
+              {order.recipientName && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <User size={14} className="text-primary shrink-0" />
+                  <dt className="text-gray-400">Penerima</dt>
+                  <dd className="font-medium text-gray-900">
+                    {order.recipientName}
+                    {order.recipientPhone ? ` (${order.recipientPhone})` : ""}
+                  </dd>
+                </div>
+              )}
+              {order.addressNotes && (
+                <div className="flex items-start gap-2 text-gray-600">
+                  <dt className="text-gray-400 shrink-0">Catatan Alamat</dt>
+                  <dd className="italic text-gray-500">{order.addressNotes}</dd>
+                </div>
+              )}
               {order.notes && (
                 <div className="flex items-start gap-2 text-gray-600">
                   <dt className="text-gray-400 shrink-0">Catatan</dt>

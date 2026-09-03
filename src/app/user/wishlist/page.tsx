@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   MapPin,
   MessageCircle,
@@ -10,10 +11,14 @@ import {
   Package,
   Trash2,
   X,
+  ShoppingCart,
+  Scale,
 } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import { getClientUser } from "@/lib/auth/client";
 import { getUserWishlist, removeFromWishlist } from "@/actions/wishlist";
+import { getOrCreateChatRoom } from "@/actions/chat";
+import { createOrder } from "@/actions/order";
 import { formatRupiah, formatNumber } from "@/lib/format";
 import { EmptyState, ErrorState, formatImage } from "@/components/shared/States";
 import { useFetch } from "@/lib/hooks";
@@ -22,11 +27,16 @@ import { Skeleton } from "@/components/ui/Skeleton";
 interface WishlistRow {
   id: number;
   commodityId: number;
+  transactionType: "nego" | "fixed_price";
+  weight: string | null;
+  price: string | null;
   createdAt: Date;
   commodityName: string;
   commodityPrice: string;
   commodityMinPrice: string | null;
   commodityMaxPrice: string | null;
+  commodityMinWeightForNego: string | null;
+  commodityFixedPrice: string | null;
   commodityStock: string;
   commodityUnit: string;
   commodityLocation: string;
@@ -64,7 +74,11 @@ function WishlistSkeleton() {
 export default function UserWishlistPage() {
   const [user] = useState(() => getClientUser());
   const userId = user?.id ?? 0;
+  const router = useRouter();
   const [removing, setRemoving] = useState<number | null>(null);
+  const [openingNego, setOpeningNego] = useState<number | null>(null);
+  const [buying, setBuying] = useState<number | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const { data: items, loading, error, reload } = useFetch(
     () =>
@@ -78,6 +92,48 @@ export default function UserWishlistPage() {
     await removeFromWishlist(userId, commodityId);
     setRemoving(null);
     reload();
+  };
+
+  const handleNegoFromWishlist = async (item: WishlistRow) => {
+    if (!userId || openingNego) return;
+    setActionError(null);
+    setOpeningNego(item.commodityId);
+    try {
+      const farmerId = (item as unknown as { farmerId?: number }).farmerId ?? 0;
+      const result = await getOrCreateChatRoom(userId, farmerId, item.commodityId);
+      if (result?.roomId) {
+        router.push(`/user/chat/${result.roomId}`);
+      } else {
+        setActionError("Gagal membuka chat nego. Silakan coba lagi.");
+      }
+    } catch {
+      setActionError("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setOpeningNego(null);
+    }
+  };
+
+  const handleCheckoutFromWishlist = async (item: WishlistRow) => {
+    if (!userId || buying) return;
+    setActionError(null);
+    setBuying(item.commodityId);
+    try {
+      const weight = item.weight ? Number(item.weight) : 1;
+      const price = item.price ? Number(item.price) : Number(item.commodityPrice);
+      const form = new FormData();
+      form.set("commodityId", String(item.commodityId));
+      form.set("quantity", String(weight));
+      const result = await createOrder(userId, form);
+      if (result.success && result.orderId) {
+        router.push(`/user/checkout/${result.orderId}`);
+      } else {
+        setActionError(result.message || "Gagal membuat pesanan. Silakan coba lagi.");
+      }
+    } catch {
+      setActionError("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setBuying(null);
+    }
   };
 
   if (loading) return <WishlistSkeleton />;
@@ -104,6 +160,9 @@ export default function UserWishlistPage() {
         />
       ) : (
         <div className="space-y-2">
+          {actionError && (
+            <p className="text-sm text-red-500 text-center mb-3">{actionError}</p>
+          )}
           {list.map((item, i) => {
             const hasRange =
               item.commodityMinPrice &&
@@ -165,11 +224,51 @@ export default function UserWishlistPage() {
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {hasRange && (
+                    {item.transactionType === "nego" && (
                       <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600">
                         <MessageCircle size={10} />
-                        Bisa Nego
+                        Nego
                       </span>
+                    )}
+                    {item.transactionType === "fixed_price" && (
+                      <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
+                        <Scale size={10} />
+                        Harga Pas
+                      </span>
+                    )}
+
+                    {item.weight && (
+                      <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                        {item.weight} {item.commodityUnit}
+                      </span>
+                    )}
+
+                    {item.transactionType === "fixed_price" ? (
+                      <button
+                        onClick={() => handleCheckoutFromWishlist(item)}
+                        disabled={buying === item.commodityId}
+                        className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
+                      >
+                        {buying === item.commodityId ? (
+                          <X size={12} className="animate-spin" />
+                        ) : (
+                          <ShoppingCart size={10} />
+                        )}
+                        Checkout
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleNegoFromWishlist(item)}
+                        disabled={openingNego === item.commodityId}
+                        className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
+                      >
+                        {openingNego === item.commodityId ? (
+                          <X size={12} className="animate-spin" />
+                        ) : (
+                          <MessageCircle size={10} />
+                        )}
+                        Ajukan Nego
+                      </button>
                     )}
 
                     <button

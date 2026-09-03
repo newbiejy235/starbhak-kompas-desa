@@ -46,6 +46,14 @@ export async function createOrder(
   const paymentMethod =
     (data.get("paymentMethod") as string) || "bank_transfer";
   const notes = (data.get("notes") as string)?.trim() || "";
+  const recipientName = (data.get("recipientName") as string)?.trim() || null;
+  const recipientPhone = (data.get("recipientPhone") as string)?.trim() || null;
+  const addressStreet = (data.get("addressStreet") as string)?.trim() || null;
+  const addressProvince = (data.get("addressProvince") as string)?.trim() || null;
+  const addressCity = (data.get("addressCity") as string)?.trim() || null;
+  const addressDistrict = (data.get("addressDistrict") as string)?.trim() || null;
+  const addressPostalCode = (data.get("addressPostalCode") as string)?.trim() || null;
+  const addressNotes = (data.get("addressNotes") as string)?.trim() || null;
 
   if (!commodityId || !quantity || quantity <= 0) {
     return { success: false, message: "Jumlah pesanan tidak valid" };
@@ -95,6 +103,14 @@ export async function createOrder(
         totalPrice: String(totalPrice),
         deliveryMethod: deliveryMethod as "pickup" | "expedition",
         deliveryAddress,
+        recipientName,
+        recipientPhone,
+        addressStreet,
+        addressProvince,
+        addressCity,
+        addressDistrict,
+        addressPostalCode,
+        addressNotes,
         status: "pending",
         notes,
       })
@@ -254,6 +270,16 @@ export async function createOrders(
   deliveryAddress: string,
   paymentMethod: string,
   notes: string,
+  addressData?: {
+    recipientName?: string | null;
+    recipientPhone?: string | null;
+    addressStreet?: string | null;
+    addressProvince?: string | null;
+    addressCity?: string | null;
+    addressDistrict?: string | null;
+    addressPostalCode?: string | null;
+    addressNotes?: string | null;
+  },
 ): Promise<ActionState & { orderIds?: number[]; redirect?: string }> {
   const buyer = await getAuthUser(buyerId);
   if (!buyer || buyer.role !== "pembeli") {
@@ -322,6 +348,14 @@ export async function createOrders(
           totalPrice: String(totalPrice),
           deliveryMethod: deliveryMethod as "pickup" | "expedition",
           deliveryAddress,
+          recipientName: addressData?.recipientName ?? null,
+          recipientPhone: addressData?.recipientPhone ?? null,
+          addressStreet: addressData?.addressStreet ?? null,
+          addressProvince: addressData?.addressProvince ?? null,
+          addressCity: addressData?.addressCity ?? null,
+          addressDistrict: addressData?.addressDistrict ?? null,
+          addressPostalCode: addressData?.addressPostalCode ?? null,
+          addressNotes: addressData?.addressNotes ?? null,
           status: "pending",
           notes,
         })
@@ -470,6 +504,14 @@ export async function getOrderById(orderId: number) {
       totalPrice: ordersTable.totalPrice,
       deliveryMethod: ordersTable.deliveryMethod,
       deliveryAddress: ordersTable.deliveryAddress,
+      recipientName: ordersTable.recipientName,
+      recipientPhone: ordersTable.recipientPhone,
+      addressStreet: ordersTable.addressStreet,
+      addressProvince: ordersTable.addressProvince,
+      addressCity: ordersTable.addressCity,
+      addressDistrict: ordersTable.addressDistrict,
+      addressPostalCode: ordersTable.addressPostalCode,
+      addressNotes: ordersTable.addressNotes,
       status: ordersTable.status,
       notes: ordersTable.notes,
       createdAt: ordersTable.createdAt,

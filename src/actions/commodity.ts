@@ -41,6 +41,7 @@ export async function getCategoriesWithCount() {
       commoditiesTable,
       and(
         eq(commoditiesTable.categoryId, categoriesTable.id),
+        eq(commoditiesTable.isPublished, true),
         or(
           eq(commoditiesTable.status, "available"),
           eq(commoditiesTable.status, "verified"),
@@ -65,6 +66,7 @@ export async function getPublicCommodities(params?: {
   offset?: number;
 }) {
   const conditions = [
+    eq(commoditiesTable.isPublished, true),
     or(
       eq(commoditiesTable.status, "available"),
       eq(commoditiesTable.status, "verified"),
@@ -156,6 +158,7 @@ export async function countPublicCommodities(params?: {
   quality?: string;
 }) {
   const conditions = [
+    eq(commoditiesTable.isPublished, true),
     or(
       eq(commoditiesTable.status, "available"),
       eq(commoditiesTable.status, "verified"),
@@ -222,7 +225,12 @@ export async function getCommoditiesByIds(ids: number[]) {
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
-    .where(inArray(commoditiesTable.id, uniqueIds));
+    .where(
+      and(
+        inArray(commoditiesTable.id, uniqueIds),
+        eq(commoditiesTable.isPublished, true),
+      ),
+    );
 }
 
 export async function getCommodityById(id: number) {
@@ -244,6 +252,8 @@ export async function getCommodityById(id: number) {
       image: ImageUpload.secureUrl,
       images: commoditiesTable.images,
       videoUrl: commoditiesTable.videoUrl,
+      minWeightForNego: commoditiesTable.minWeightForNego,
+      fixedPrice: commoditiesTable.fixedPrice,
       status: commoditiesTable.status,
       rating: commoditiesTable.rating,
       reviewCount: commoditiesTable.reviewCount,
@@ -260,7 +270,7 @@ export async function getCommodityById(id: number) {
     .innerJoin(categoriesTable, eq(categoriesTable.id, commoditiesTable.categoryId))
     .innerJoin(usersTable, eq(usersTable.id, commoditiesTable.farmerId))
     .leftJoin(ImageUpload, eq(ImageUpload.id, commoditiesTable.image))
-    .where(eq(commoditiesTable.id, id));
+    .where(and(eq(commoditiesTable.id, id), eq(commoditiesTable.isPublished, true)));
 
   return row ?? null;
 }
@@ -286,6 +296,8 @@ export async function getFarmerCommodities(farmerId: number) {
       videoUrl: commoditiesTable.videoUrl,
       status: commoditiesTable.status,
       isPublished: commoditiesTable.isPublished,
+      minWeightForNego: commoditiesTable.minWeightForNego,
+      fixedPrice: commoditiesTable.fixedPrice,
       createdAt: commoditiesTable.createdAt,
       categoryName: categoriesTable.name,
     })
@@ -331,6 +343,10 @@ export async function createCommodity(
       })()
     : [];
   const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
+  const minWeightForNegoRaw = data.get("minWeightForNego") as string | null;
+  const fixedPriceRaw = data.get("fixedPrice") as string | null;
+  const minWeightForNego = minWeightForNegoRaw ? Number(minWeightForNegoRaw) : null;
+  const fixedPrice = fixedPriceRaw ? Number(fixedPriceRaw) : null;
 
   if (!name || !categoryId || !price || !stock || !location) {
     return { success: false, message: "Lengkapi semua field wajib" };
@@ -355,6 +371,8 @@ export async function createCommodity(
       image,
       images,
       videoUrl,
+      minWeightForNego: minWeightForNego ? String(minWeightForNego) : null,
+      fixedPrice: fixedPrice ? String(fixedPrice) : null,
       status: "pending",
     });
 
@@ -415,6 +433,10 @@ export async function updateCommodity(
     : [];
   const videoUrl = (data.get("videoUrl") as string)?.trim() || null;
   const status = (data.get("status") as string) || undefined;
+  const minWeightForNegoRaw = data.get("minWeightForNego") as string | null;
+  const fixedPriceRaw = data.get("fixedPrice") as string | null;
+  const minWeightForNego = minWeightForNegoRaw ? Number(minWeightForNegoRaw) : null;
+  const fixedPrice = fixedPriceRaw ? Number(fixedPriceRaw) : null;
 
   if (!name || !categoryId || !price || !stock || !location) {
     return { success: false, message: "Lengkapi semua field wajib" };
@@ -440,6 +462,8 @@ export async function updateCommodity(
         image,
         images,
         videoUrl,
+        minWeightForNego: minWeightForNego ? String(minWeightForNego) : null,
+        fixedPrice: fixedPrice ? String(fixedPrice) : null,
         ...(status ? { status: status as never } : {}),
       })
       .where(eq(commoditiesTable.id, id));
