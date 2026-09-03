@@ -43,6 +43,7 @@ interface WishlistRow {
   commodityStatus: string;
   commodityImage: string | null;
   commodityImages: string[] | null;
+  farmerId: number;
 }
 
 function WishlistSkeleton() {
@@ -86,7 +87,9 @@ export default function UserWishlistPage() {
     [userId],
   );
 
-  const handleRemove = async (commodityId: number) => {
+  const handleRemove = async (commodityId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!userId || removing) return;
     setRemoving(commodityId);
     await removeFromWishlist(userId, commodityId);
@@ -94,13 +97,14 @@ export default function UserWishlistPage() {
     reload();
   };
 
-  const handleNegoFromWishlist = async (item: WishlistRow) => {
+  const handleNegoFromWishlist = async (item: WishlistRow, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!userId || openingNego) return;
     setActionError(null);
     setOpeningNego(item.commodityId);
     try {
-      const farmerId = (item as unknown as { farmerId?: number }).farmerId ?? 0;
-      const result = await getOrCreateChatRoom(userId, farmerId, item.commodityId);
+      const result = await getOrCreateChatRoom(userId, item.farmerId, item.commodityId);
       if (result?.roomId) {
         router.push(`/user/chat/${result.roomId}`);
       } else {
@@ -113,13 +117,14 @@ export default function UserWishlistPage() {
     }
   };
 
-  const handleCheckoutFromWishlist = async (item: WishlistRow) => {
+  const handleCheckoutFromWishlist = async (item: WishlistRow, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!userId || buying) return;
     setActionError(null);
     setBuying(item.commodityId);
     try {
       const weight = item.weight ? Number(item.weight) : 1;
-      const price = item.price ? Number(item.price) : Number(item.commodityPrice);
       const form = new FormData();
       form.set("commodityId", String(item.commodityId));
       form.set("quantity", String(weight));
@@ -224,28 +229,20 @@ export default function UserWishlistPage() {
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {item.transactionType === "nego" && (
-                      <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600">
-                        <MessageCircle size={10} />
-                        Nego
-                      </span>
-                    )}
-                    {item.transactionType === "fixed_price" && (
-                      <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
-                        <Scale size={10} />
-                        Harga Pas
-                      </span>
-                    )}
+                    <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600">
+                      <MessageCircle size={10} />
+                      Nego
+                    </span>
 
                     {item.weight && (
-                      <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-500">
                         {item.weight} {item.commodityUnit}
                       </span>
                     )}
 
                     {item.transactionType === "fixed_price" ? (
                       <button
-                        onClick={() => handleCheckoutFromWishlist(item)}
+                        onClick={(e) => handleCheckoutFromWishlist(item, e)}
                         disabled={buying === item.commodityId}
                         className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
                       >
@@ -258,7 +255,7 @@ export default function UserWishlistPage() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleNegoFromWishlist(item)}
+                        onClick={(e) => handleNegoFromWishlist(item, e)}
                         disabled={openingNego === item.commodityId}
                         className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
                       >
@@ -267,12 +264,12 @@ export default function UserWishlistPage() {
                         ) : (
                           <MessageCircle size={10} />
                         )}
-                        Ajukan Nego
+                        Nego Harga
                       </button>
                     )}
 
                     <button
-                      onClick={() => handleRemove(item.commodityId)}
+                      onClick={(e) => handleRemove(item.commodityId, e)}
                       disabled={removing === item.commodityId}
                       className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
                       aria-label="Hapus dari wishlist"

@@ -195,6 +195,7 @@ export async function getUserWishlist(userId: number) {
         commodityStatus: commoditiesTable.status,
         commodityImage: ImageUpload.secureUrl,
         commodityImages: commoditiesTable.images,
+        farmerId: commoditiesTable.farmerId,
       })
       .from(wishlistItemsTable)
       .innerJoin(commoditiesTable, eq(commoditiesTable.id, wishlistItemsTable.commodityId))

@@ -5,19 +5,21 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   MapPin, Star, Truck, ChevronLeft, Minus, Plus, ShieldCheck, MessageCircle,
-  BadgeCheck, ChevronRight, Loader2,
+  ChevronRight, Loader2, CheckCircle2, Bookmark, ShoppingCart,
 } from "lucide-react";
+import { toast } from "sonner";
 import { getCommodityById, getRelatedCommodities } from "@/actions/commodity";
 import { getReviewsForCommodity } from "@/actions/review";
 import { getOrCreateChatRoom } from "@/actions/chat";
 import { createOrder } from "@/actions/order";
+import { addToWishlist } from "@/actions/wishlist";
 import ProductCard from "@/components/shared/ProductCard";
 import ProductGallery from "@/components/userpage/ProductGallery";
 import StatusBadge from "@/components/shared/StatusBadge";
 import Avatar from "@/components/ui/Avatar";
+import Modal from "@/components/ui/Modal";
 import { EmptyState, ErrorState } from "@/components/shared/States";
 import { formatRupiah, formatDate, formatWeight } from "@/lib/format";
-import { addToCart } from "@/lib/cart";
 import { useAuth, useFetch } from "@/lib/hooks";
 import WishlistButton from "@/components/shared/WishlistButton";
 import type {
@@ -48,6 +50,9 @@ export default function ProductDetail() {
   const [chatOpening, setChatOpening] = useState(false);
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState<string | null>(null);
+  const [wishlistAdding, setWishlistAdding] = useState(false);
+  const [wishlistModal, setWishlistModal] = useState(false);
+  const [wishlistQty, setWishlistQty] = useState(1);
   const { user } = useAuth();
 
   const { data, loading, error, reload } = useFetch(
@@ -115,13 +120,37 @@ export default function ProductDetail() {
       : fixedPrice!
     : Number(product.price);
 
-  const handleAddToCart = () => {
+  const openWishlistModal = () => {
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    addToCart(product.id, quantity);
-    router.push("/user/cart");
+    if (hasNegoConfig) {
+      setWishlistQty(1);
+      setWishlistModal(true);
+    } else {
+      handleSaveWishlist("fixed_price", quantity);
+    }
+  };
+
+  const handleSaveWishlist = async (transactionType: "nego" | "fixed_price", qty: number) => {
+    if (!user) return;
+    if (wishlistAdding) return;
+    setWishlistAdding(true);
+    setWishlistModal(false);
+    try {
+      const price = transactionType === "fixed_price" ? currentPrice : undefined;
+      const result = await addToWishlist(user.id, product.id, transactionType, qty, price);
+      if (result.success) {
+        toast.success(result.message, { icon: <CheckCircle2 size={18} /> });
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error("Gagal menambahkan ke wishlist");
+    } finally {
+      setWishlistAdding(false);
+    }
   };
 
   const handleBuyNow = async () => {
@@ -265,7 +294,7 @@ export default function ProductDetail() {
               <WishlistButton
                 commodityId={product.id}
                 userId={user?.id ?? null}
-                transactionType={hasNegoConfig ? (isNegoMode ? "nego" : "fixed_price") : "fixed_price"}
+                transactionType={hasNegoConfig ? "nego" : "fixed_price"}
                 weight={quantity}
                 price={currentPrice}
               />
@@ -342,22 +371,29 @@ export default function ProductDetail() {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {hasNegoConfig && isNegoMode ? (
+                  {hasNegoConfig ? (
                     <button
                       onClick={handleNego}
                       disabled={chatOpening || isOwnProduct}
                       className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 shadow-soft hover:shadow-lift disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:col-span-2"
                     >
                       {chatOpening ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
-                      {chatOpening ? "Membuka Chat..." : "Ajukan Nego"}
+                      {chatOpening ? "Membuka Chat..." : "Nego Harga"}
                     </button>
                   ) : (
                     <>
                       <button
-                        onClick={handleAddToCart}
-                        className="w-full rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200"
+                        onClick={openWishlistModal}
+                        disabled={wishlistAdding}
+                        className="w-full rounded-xl border-2 border-primary px-6 py-3 text-sm font-bold text-primary hover:bg-primary/5 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        {hasNegoConfig ? "Beli Harga Pas" : "Masukkan ke Keranjang"}
+                        {wishlistAdding ? (
+                          <span className="inline-flex items-center justify-center gap-2">
+                            <Loader2 size={18} className="animate-spin" /> Menambahkan...
+                          </span>
+                        ) : (
+                          "Simpan ke Wishlist"
+                        )}
                       </button>
                       <button
                         onClick={handleBuyNow}
@@ -479,6 +515,60 @@ export default function ProductDetail() {
           </div>
         </div>
       )}
+
+      <Modal open={wishlistModal} onClose={() => setWishlistModal(false)} title="Simpan ke Wishlist">
+        <p className="text-sm text-gray-600 mb-4">
+          Produk ini memiliki harga nego. Pilih cara simpan:
+        </p>
+        <div className="space-y-2">
+          <button
+            onClick={() => handleSaveWishlist("nego", 1)}
+            disabled={wishlistAdding}
+            className="w-full flex items-center gap-3 rounded-xl border-2 border-primary px-4 py-3 text-left hover:bg-primary/5 active:scale-[0.98] transition-all duration-200 disabled:opacity-60"
+          >
+            <Bookmark size={20} className="text-primary flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-gray-900">Simpan Saja</p>
+              <p className="text-xs text-gray-500">Tanpa jumlah, nanti nego lewat chat</p>
+            </div>
+          </button>
+          <div className="rounded-xl border border-gray-200 p-3">
+            <div className="flex items-center gap-3 mb-3">
+              <ShoppingCart size={20} className="text-primary flex-shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-gray-900">Simpan & Masukkan Jumlah</p>
+                <p className="text-xs text-gray-500">Harga pas, pilih jumlah dulu</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden flex-1">
+                <button
+                  onClick={() => setWishlistQty((q) => Math.max(1, q - 1))}
+                  disabled={wishlistQty <= 1}
+                  className="p-2 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Minus size={16} />
+                </button>
+                <span className="w-10 text-center font-bold tabular-nums text-sm">{wishlistQty}</span>
+                <button
+                  onClick={() => setWishlistQty((q) => Math.min(stock, q + 1))}
+                  disabled={wishlistQty >= stock}
+                  className="p-2 text-gray-500 hover:text-primary hover:bg-gray-50 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              <button
+                onClick={() => handleSaveWishlist("fixed_price", wishlistQty)}
+                disabled={wishlistAdding}
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
