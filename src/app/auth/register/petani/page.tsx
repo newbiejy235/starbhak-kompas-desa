@@ -125,7 +125,7 @@ export default function RegisterPetani() {
           <Phone size={17} strokeWidth={2.2} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-emerald-600 transition-colors" />
           <input
             id="phone"
-            type="tel"
+            type="Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Contoh: 08123456789"

@@ -300,7 +300,7 @@ export default function RegisterUser() {
                   </div>
                   <input
                     id="phone"
-                    type="tel"
+                    type="number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Contoh: 08123456789"

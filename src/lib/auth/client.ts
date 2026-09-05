@@ -90,7 +90,7 @@ export function clearSession() {
 }
 
 export function getRoleRedirect(role: string): string {
-  if (role === "admin") return "/admin/dashboard";
+  if (role === "admin") return "/admin";
   if (role === "petani") return "/petani/dashboard";
   return "/user/home";
 }

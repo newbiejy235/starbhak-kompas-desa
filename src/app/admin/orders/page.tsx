@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { getAllOrders, updateOrderStatus } from "@/actions/order";
-import { getClientUser } from "@/lib/auth/client";
-import { formatRupiah, formatDateTime, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL } from "@/lib/format";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { getAllOrders } from "@/actions/order";
+import {
+  formatRupiah,
+  formatDateTime,
+  ORDER_STATUS_LABEL,
+  PAYMENT_METHOD_LABEL,
+} from "@/lib/format";
 import { EmptyState } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { Store, Truck } from "lucide-react";
+import { Store, Truck, Eye } from "lucide-react";
 import { useFetch } from "@/lib/hooks";
 import type { AdminOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -25,42 +30,42 @@ function OrdersSkeleton() {
   );
 }
 
+const statusOptions = [
+  "pending",
+  "confirmed",
+  "processing",
+  "shipped",
+  "completed",
+  "cancelled",
+];
+
 export default function AdminOrders() {
-  const admin = getClientUser();
   const [filter, setFilter] = useState("all");
 
-  const { data: orders, loading, reload } = useFetch(
-    () => getAllOrders(),
-    [],
-  );
+  const { data: orders, loading } = useFetch(() => getAllOrders(), []);
 
-  const setStatus = async (id: number, status: string) => {
-    if (!admin) return;
-    const res = await updateOrderStatus(id, status, admin.id);
-    if (!res.success) alert(res.message);
-    reload();
-  };
+  const list = useMemo(() => orders ?? [], [orders]) as AdminOrder[];
+
+  const filtered = useMemo(
+    () => list.filter((o) => filter === "all" || o.status === filter),
+    [list, filter],
+  );
 
   if (loading) return <OrdersSkeleton />;
 
-  const list: AdminOrder[] = orders ?? [];
-  const filtered = list.filter((o) => filter === "all" || o.status === filter);
-
-  const statusOptions = [
-    "pending",
-    "confirmed",
-    "processing",
-    "shipped",
-    "completed",
-    "cancelled",
-  ];
-
   return (
-    <div className="animate-fade-up">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Manajemen Pesanan</h1>
-      <p className="text-sm text-gray-500 mb-6">Pantau dan kelola seluruh pesanan marketplace.</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Manajemen Pesanan
+        </h1>
+        <p className="text-sm text-gray-500">
+          Pantau dan review seluruh pesanan marketplace. Buka detail pesanan
+          untuk melihat hubungan pembeli, petani, pembayaran, dan pengiriman.
+        </p>
+      </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2">
         {["all", ...statusOptions].map((s) => (
           <button
             key={s}
@@ -77,7 +82,10 @@ export default function AdminOrders() {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState title="Tidak Ada Pesanan" message="Tidak ada pesanan yang cocok dengan filter." />
+        <EmptyState
+          title="Tidak Ada Pesanan"
+          message="Tidak ada pesanan yang cocok dengan filter."
+        />
       ) : (
         <div className="bg-white rounded-card border border-gray-200/80 shadow-soft overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
@@ -94,12 +102,24 @@ export default function AdminOrders() {
             </thead>
             <tbody>
               {filtered.map((o) => (
-                <tr key={o.id} className="border-b border-gray-50 hover:bg-primary/[0.03] transition-colors">
+                <tr
+                  key={o.id}
+                  className="border-b border-gray-50 hover:bg-primary/[0.03] transition-colors"
+                >
                   <td className="px-5 py-4">
-                    <p className="font-semibold text-gray-900">{o.orderCode}</p>
-                    <p className="text-xs text-gray-400">{formatDateTime(o.createdAt)}</p>
+                    <Link
+                      href={`/admin/orders/${o.id}`}
+                      className="font-semibold text-gray-900 hover:text-primary transition-colors"
+                    >
+                      {o.orderCode}
+                    </Link>
+                    <p className="text-xs text-gray-400">
+                      {formatDateTime(o.createdAt)}
+                    </p>
                   </td>
-                  <td className="px-5 py-4 font-medium text-gray-800">{o.commodityName}</td>
+                  <td className="px-5 py-4 font-medium text-gray-800">
+                    {o.commodityName}
+                  </td>
                   <td className="px-5 py-4">
                     <p className="flex items-center gap-1 text-xs text-gray-600">
                       <Store size={12} /> {o.buyerName}
@@ -108,7 +128,9 @@ export default function AdminOrders() {
                       <Truck size={12} /> {o.farmerName}
                     </p>
                   </td>
-                  <td className="px-5 py-4 font-extrabold text-primary">{formatRupiah(o.totalPrice)}</td>
+                  <td className="px-5 py-4 font-extrabold text-primary">
+                    {formatRupiah(o.totalPrice)}
+                  </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={o.paymentStatus ?? "pending"} />
                     <p className="text-xs text-gray-400 mt-1">
@@ -118,19 +140,13 @@ export default function AdminOrders() {
                   <td className="px-5 py-4">
                     <StatusBadge status={o.status} />
                   </td>
-                  <td className="px-5 py-4">
-                    <select
-                      value={o.status}
-                      onChange={(e) => setStatus(o.id, e.target.value)}
-                      aria-label={`Ubah status pesanan ${o.orderCode}`}
-                      className="rounded-lg border border-gray-200 px-2 py-2 text-xs font-medium bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition"
+                  <td className="px-5 py-4 text-right">
+                    <Link
+                      href={`/admin/orders/${o.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white"
                     >
-                      {statusOptions.map((s) => (
-                        <option key={s} value={s}>
-                          {ORDER_STATUS_LABEL[s]}
-                        </option>
-                      ))}
-                    </select>
+                      <Eye size={14} /> Detail
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -140,4 +156,4 @@ export default function AdminOrders() {
       )}
     </div>
   );
-}
+}

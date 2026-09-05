@@ -14,6 +14,7 @@ import { useAuth, useFetch } from "@/lib/hooks";
 import type { ActionState } from "@/lib/types/auth";
 import type { BuyerOrder } from "@/lib/types/market";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Image from "next/image";
 
 function ReviewsSkeleton() {
   return (
@@ -87,40 +88,56 @@ function ReviewsContent() {
         />
       ) : (
         <div className="space-y-4">
-          {completedOrders.map((o, i) => (
-            <div
-              key={o.id}
-              className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5 flex items-center justify-between gap-4 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth animate-fade-up"
-              style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-black text-lg flex-shrink-0">
-                  {o.commodityName?.charAt(0)?.toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
-                  <p className="text-xs text-gray-500">
-                    {o.orderCode} · {formatDateTime(o.createdAt)} · {formatRupiah(o.totalPrice)}
-                  </p>
-                  <p className="text-xs text-gray-400">Petani: {o.farmerName}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedOrder(o.id);
-                  setRating(5);
-                  setComment("");
-                }}
-                className="flex-shrink-0 inline-flex items-center gap-2 rounded-xl bg-primary/10 text-primary px-5 py-3 text-sm font-bold hover:bg-primary hover:text-white active:scale-95 transition-all duration-200"
+          {completedOrders.map((o, i) => {
+            const productImage = o.commodityImage;
+
+            return (
+              <div
+                key={o.id}
+                className="bg-white rounded-card border border-gray-200/80 shadow-soft p-5 flex items-center justify-between gap-4 hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 ease-smooth animate-fade-up"
+                style={{ animationDelay: `${Math.min(i * 60, 360)}ms`, animationFillMode: "backwards" }}
               >
-                <Star size={16} /> Beri Ulasan
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center gap-4 min-w-0">
+                  {productImage ? (
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100 bg-gray-50">
+                      <Image
+                        src={productImage}
+                        alt={o.commodityName || "Produk"}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-black text-lg flex-shrink-0">
+                      {o.commodityName?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 truncate">{o.commodityName}</p>
+                    <p className="text-xs text-gray-500">
+                      {o.orderCode} · {formatDateTime(o.createdAt)} · {formatRupiah(o.totalPrice)}
+                    </p>
+                    <p className="text-xs text-gray-400">Petani: {o.farmerName}</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setSelectedOrder(o.id);
+                    setRating(5);
+                    setComment("");
+                  }}
+                  className="flex-shrink-0 inline-flex items-center gap-2 rounded-xl bg-primary/10 text-primary px-5 py-3 text-sm font-bold hover:bg-primary hover:text-white active:scale-95 transition-all duration-200"
+                >
+                  <Star size={16} /> Beri Ulasan
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Overlay ulasan — tingkat viewport */}
       {selectedOrder !== null &&
         typeof document !== "undefined" &&
         createPortal(

@@ -667,7 +667,7 @@ export default function BuyerFarmerStorePage() {
                       minPrice: item.minPrice,
                       maxPrice: item.maxPrice,
                       stock: item.stock,
-                      unit: item.unit,
+                      unit: item.unit || "kg",
                       location: item.location ?? "",
                       image: item.image,
                       status: item.status,
@@ -682,6 +682,13 @@ export default function BuyerFarmerStorePage() {
                 message="Petani ini belum memiliki komoditas yang tersedia saat ini."
               />
             )}
+            {/* Quality info section */}
+            <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200/80 shadow-sm">
+<h3 className="text-sm font-bold text-gray-900 mb-3">Kualitas Komoditas</h3>
+<p className="text-sm text-gray-500">
+  Kualitas komoditas ditampilkan per item di bawah.
+</p>
+            </div>
           </section>
 
           {/* ---------- FOTO USAHA ---------- */}

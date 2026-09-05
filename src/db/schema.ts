@@ -10,6 +10,7 @@ import {
   index,
   json,
   unique,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 export const contactMessageStatusEnum = pgEnum("contact_message_status", [
@@ -27,6 +28,7 @@ export const userRoleEnum = pgEnum("user_role", ["admin", "petani", "pembeli"]);
 export const userStatusEnum = pgEnum("user_status", [
   "pending",
   "verified",
+  "rejected",
   "suspended",
 ]);
 
@@ -103,6 +105,11 @@ export const usersTable = pgTable(
     farmingMethod: varchar({ length: 100 }),
     village: varchar({ length: 100 }),
     status: userStatusEnum().notNull().default("pending"),
+    rejectedReason: text(),
+    reviewedAt: timestamp({ withTimezone: true }),
+    reviewedBy: integer().references((): AnyPgColumn => usersTable.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("users_role_idx").on(table.role)],
@@ -145,6 +152,11 @@ export const commoditiesTable = pgTable(
     images: json("images").$type<string[]>().default([]),
     videoUrl: text("video_url"),
     status: commodityStatusEnum().notNull().default("pending"),
+    rejectedReason: text(),
+    reviewedAt: timestamp({ withTimezone: true }),
+    reviewedBy: integer().references((): AnyPgColumn => usersTable.id, {
+      onDelete: "set null",
+    }),
     rating: numeric({ precision: 3, scale: 2 }).notNull().default("0"),
     reviewCount: integer().notNull().default(0),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -649,4 +661,27 @@ export type NewFarmerNote = typeof farmerNotesTable.$inferInsert;
 export type FarmerProfileImage = typeof farmerProfileImagesTable.$inferSelect;
 export type ContactMessage = typeof contactMessagesTable.$inferSelect;
 export type NewContactMessage = typeof contactMessagesTable.$inferInsert;
+export const adminActivityLogTable = pgTable(
+  "admin_activity_log",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    adminId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "restrict" }),
+    action: varchar({ length: 50 }).notNull(),
+    entityType: varchar({ length: 50 }).notNull(),
+    entityId: integer().notNull(),
+    reason: text(),
+    metadata: json("metadata").$type<Record<string, unknown>>().default({}),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("admin_activity_log_admin_idx").on(table.adminId),
+    index("admin_activity_log_entity_idx").on(table.entityType, table.entityId),
+    index("admin_activity_log_created_idx").on(table.createdAt),
+  ],
+);
+
 export type WishlistItem = typeof wishlistItemsTable.$inferSelect;
+export type AdminActivityLog = typeof adminActivityLogTable.$inferSelect;
+export type NewAdminActivityLog = typeof adminActivityLogTable.$inferInsert;

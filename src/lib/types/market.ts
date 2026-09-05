@@ -7,6 +7,20 @@ import type {
   getRelatedCommodities,
 } from "@/actions/commodity";
 import type {
+  getAdminFarmers,
+  getAdminFarmerDetail,
+  getAdminCommodityDetail,
+  getAdminUserDetail,
+  getAdminPayments,
+  getAdminDistribution,
+  getAdminAuditLogs,
+  getRecentActivity,
+  getVerificationOverview,
+  getPendingFarmerVerifications,
+  getPendingCommodityVerifications,
+  getAdminOrderDetail,
+} from "@/actions/admin";
+import type {
   getAllCommoditiesAdmin,
   getAllUsers,
   getAllTransactions,
@@ -80,6 +94,35 @@ export type OrderDetail = NonNullable<
 export type AdminOrder = Awaited<ReturnType<typeof getAllOrders>>[number];
 
 export type AdminUser = Awaited<ReturnType<typeof getAllUsers>>[number];
+export type AdminFarmerRow =
+  Awaited<ReturnType<typeof getAdminFarmers>>[number];
+export type AdminFarmerDetail = NonNullable<
+  Awaited<ReturnType<typeof getAdminFarmerDetail>>
+>;
+export type AdminCommodityDetail = NonNullable<
+  Awaited<ReturnType<typeof getAdminCommodityDetail>>
+>;
+export type AdminUserDetail = NonNullable<
+  Awaited<ReturnType<typeof getAdminUserDetail>>
+>;
+export type AdminPaymentRow =
+  Awaited<ReturnType<typeof getAdminPayments>>[number];
+export type AdminDistributionRow =
+  Awaited<ReturnType<typeof getAdminDistribution>>[number];
+export type AdminAuditLogRow =
+  Awaited<ReturnType<typeof getAdminAuditLogs>>[number];
+export type AdminOrderDetail = NonNullable<
+  Awaited<ReturnType<typeof getAdminOrderDetail>>
+>;
+export type RecentActivityEntry =
+  Awaited<ReturnType<typeof getRecentActivity>>[number];
+export type VerificationOverview = Awaited<
+  ReturnType<typeof getVerificationOverview>
+>;
+export type PendingFarmerVerification =
+  Awaited<ReturnType<typeof getPendingFarmerVerifications>>[number];
+export type PendingCommodityVerification =
+  Awaited<ReturnType<typeof getPendingCommodityVerifications>>[number];
 export type TransactionRow =
   Awaited<ReturnType<typeof getAllTransactions>>[number];
 export type FeeSettingRow = Awaited<ReturnType<typeof getFeeSettings>>[number];

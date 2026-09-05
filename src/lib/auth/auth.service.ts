@@ -155,7 +155,7 @@ export async function login(data: FormData): Promise<LoginResult> {
     });
 
     let redirect = "/user/home";
-    if (user.role === "admin") redirect = "/admin/dashboard";
+    if (user.role === "admin") redirect = "/admin";
     if (user.role === "petani") redirect = "/petani/dashboard";
 
     return {

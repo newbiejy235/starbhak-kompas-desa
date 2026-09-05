@@ -128,3 +128,25 @@ export const COMMODITY_STATUS_LABEL: Record<string, string> = {
   available: "Tersedia",
   sold_out: "Habis",
 };
+
+export const DELIVERY_METHOD_LABEL: Record<string, string> = {
+  pickup: "Ambil Sendiri (Pickup)",
+  expedition: "Dikirim (Ekspedisi)",
+};
+
+export const USER_STATUS_LABEL: Record<string, string> = {
+  pending: "Menunggu Verifikasi",
+  verified: "Terverifikasi",
+  rejected: "Ditolak",
+  suspended: "Ditangguhkan",
+};
+
+export const ADMIN_ACTION_LABEL: Record<string, string> = {
+  APPROVE: "Menyetujui",
+  REJECT: "Menolak",
+  SUSPEND: "Menangguhkan",
+  RESTORE: "Memulihkan",
+  ARCHIVE: "Mengarsipkan",
+  UPDATE: "Memperbarui",
+  DELETE: "Menghapus",
+};
