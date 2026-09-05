@@ -35,16 +35,39 @@ export default function ForgotPassword() {
   const floatingElementsRef = useRef<HTMLDivElement>(null);
 
   const getPasswordStrength = (pass: string) => {
-    if (!pass) return { level: 0, text: "Masukkan kata sandi", color: "bg-neutral-200", textColor: "text-neutral-400" };
+    if (!pass)
+      return {
+        level: 0,
+        text: "Masukkan kata sandi",
+        color: "bg-neutral-200",
+        textColor: "text-neutral-400",
+      };
     let score = 0;
     if (pass.length >= 8) score++;
     if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score++;
     if (/[0-9]/.test(pass)) score++;
     if (/[^A-Za-z0-9]/.test(pass)) score++;
 
-    if (score <= 1) return { level: 1, text: "Lemah (Gunakan kombinasi simbol & angka)", color: "bg-red-500", textColor: "text-red-500" };
-    if (score === 2 || score === 3) return { level: 2, text: "Sedang (Cukup baik)", color: "bg-amber-500", textColor: "text-amber-500" };
-    return { level: 3, text: "Kuat! (Aman dengan simbol & angka)", color: "bg-emerald-600", textColor: "text-emerald-600" };
+    if (score <= 1)
+      return {
+        level: 1,
+        text: "Lemah (Gunakan kombinasi simbol & angka)",
+        color: "bg-red-500",
+        textColor: "text-red-500",
+      };
+    if (score === 2 || score === 3)
+      return {
+        level: 2,
+        text: "Sedang (Cukup baik)",
+        color: "bg-amber-500",
+        textColor: "text-amber-500",
+      };
+    return {
+      level: 3,
+      text: "Kuat! (Aman dengan simbol & angka)",
+      color: "bg-emerald-600",
+      textColor: "text-emerald-600",
+    };
   };
 
   const strength = getPasswordStrength(newPassword);
@@ -69,7 +92,9 @@ export default function ForgotPassword() {
     }
   };
 
-  const changesPasswordHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+  const changesPasswordHandler = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
     setMessage("");
 
@@ -84,7 +109,17 @@ export default function ForgotPassword() {
 
     try {
       setPendingSubmit(true);
-      await changesPassword(userEmail, newPassword, verification);
+      const changes = await changesPassword(
+        userEmail,
+        newPassword,
+        verification,
+      );
+      if (!changes?.success) {
+        setIsSuccess(false);
+        setMessage("Kata sandi gagal diperbarui!");
+        return;
+      }
+
       setIsSuccess(true);
       setMessage("Kata sandi berhasil diperbarui!");
       setTimeout(() => {
@@ -109,25 +144,25 @@ export default function ForgotPassword() {
         tl.fromTo(
           ".bg-curve-container",
           { scaleX: 0, transformOrigin: "left center" },
-          { scaleX: 1, duration: 1.5, ease: "power4.inOut" }
+          { scaleX: 1, duration: 1.5, ease: "power4.inOut" },
         )
           .fromTo(
             [".header-item", ".left-anim-item", ".right-anim-item"],
             { opacity: 0, y: 30, rotateX: -10 },
             { opacity: 1, y: 0, rotateX: 0, stagger: 0.05, duration: 1.2 },
-            "-=0.9"
+            "-=0.9",
           )
           .fromTo(
             ".illustration-item",
             { opacity: 0, scale: 0.85 },
             { opacity: 1, scale: 1, duration: 1, ease: "back.out(1.4)" },
-            "-=0.8"
+            "-=0.8",
           )
           .fromTo(
             ".footer-anim",
             { opacity: 0, y: 10 },
             { opacity: 1, duration: 0.8 },
-            "-=0.5"
+            "-=0.5",
           );
 
         const orbs = document.querySelectorAll(".ambient-orb");
@@ -177,7 +212,8 @@ export default function ForgotPassword() {
 
     return () => {
       ctx?.revert?.();
-      if (cleanupMouseMove) window.removeEventListener("mousemove", cleanupMouseMove);
+      if (cleanupMouseMove)
+        window.removeEventListener("mousemove", cleanupMouseMove);
     };
   }, []);
 
@@ -224,8 +260,15 @@ export default function ForgotPassword() {
             Masuk
           </Link>
           <div className="hidden sm:flex items-center gap-2.5 ml-2 lg:text-white text-emerald-950">
-            <Image src="/logo-kompas-desa/kompas_logo_icon.png" alt="logo" width={25} height={25} />
-            <span className="text-xl font-bold tracking-tight">Kompas&apos;Desa</span>
+            <Image
+              src="/logo-kompas-desa/kompas_logo_icon.png"
+              alt="logo"
+              width={25}
+              height={25}
+            />
+            <span className="text-xl font-bold tracking-tight">
+              Kompas&apos;Desa
+            </span>
           </div>
         </div>
       </header>
@@ -235,7 +278,11 @@ export default function ForgotPassword() {
         {/* LEFT PANEL - Illustration + copy */}
         <div className="hidden lg:flex lg:w-[45%] h-full flex-col justify-center px-6 lg:px-12 xl:px-16 text-white relative z-40">
           <div className="illustration-item relative w-full max-w-[380px] mb-8 flex items-center justify-center">
-            <svg viewBox="0 0 400 320" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              viewBox="0 0 400 320"
+              className="w-full h-auto"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               {/* soft backdrop circle */}
               <circle cx="150" cy="150" r="120" fill="#10b981" opacity="0.08" />
               <circle cx="150" cy="150" r="85" fill="#10b981" opacity="0.10" />
@@ -245,10 +292,33 @@ export default function ForgotPassword() {
                 <circle cx="70" cy="55" r="6" fill="#34d399" opacity="0.7" />
                 <circle cx="88" cy="40" r="9" fill="#34d399" opacity="0.85" />
                 <ellipse cx="118" cy="52" rx="42" ry="34" fill="#022c22" />
-                <ellipse cx="118" cy="52" rx="42" ry="34" fill="none" stroke="#34d399" strokeWidth="2" opacity="0.5" />
+                <ellipse
+                  cx="118"
+                  cy="52"
+                  rx="42"
+                  ry="34"
+                  fill="none"
+                  stroke="#34d399"
+                  strokeWidth="2"
+                  opacity="0.5"
+                />
                 {/* key icon inside bubble */}
-                <circle cx="103" cy="52" r="9" fill="none" stroke="#6ee7b7" strokeWidth="3.5" />
-                <rect x="110" y="49" width="26" height="6" rx="2" fill="#6ee7b7" />
+                <circle
+                  cx="103"
+                  cy="52"
+                  r="9"
+                  fill="none"
+                  stroke="#6ee7b7"
+                  strokeWidth="3.5"
+                />
+                <rect
+                  x="110"
+                  y="49"
+                  width="26"
+                  height="6"
+                  rx="2"
+                  fill="#6ee7b7"
+                />
                 <rect x="126" y="55" width="5" height="8" fill="#6ee7b7" />
                 <rect x="134" y="55" width="5" height="10" fill="#6ee7b7" />
               </g>
@@ -256,13 +326,30 @@ export default function ForgotPassword() {
               {/* Character - confused person, hand on head */}
               <g className="char-float">
                 {/* legs */}
-                <rect x="90" y="230" width="16" height="55" rx="6" fill="#022c22" />
-                <rect x="118" y="230" width="16" height="55" rx="6" fill="#01110c" />
+                <rect
+                  x="90"
+                  y="230"
+                  width="16"
+                  height="55"
+                  rx="6"
+                  fill="#022c22"
+                />
+                <rect
+                  x="118"
+                  y="230"
+                  width="16"
+                  height="55"
+                  rx="6"
+                  fill="#01110c"
+                />
                 {/* shoes */}
                 <ellipse cx="98" cy="288" rx="14" ry="7" fill="#0f172a" />
                 <ellipse cx="126" cy="288" rx="14" ry="7" fill="#0f172a" />
                 {/* torso */}
-                <path d="M78 170 Q78 140 112 140 Q146 140 146 170 L146 232 L78 232 Z" fill="#059669" />
+                <path
+                  d="M78 170 Q78 140 112 140 Q146 140 146 170 L146 232 L78 232 Z"
+                  fill="#059669"
+                />
                 {/* arm reaching up to head */}
                 <path
                   d="M92 155 Q60 150 55 115 Q53 100 65 92"
@@ -273,7 +360,13 @@ export default function ForgotPassword() {
                 />
                 <circle cx="64" cy="90" r="10" fill="#e2c9a3" />
                 {/* other arm down */}
-                <path d="M132 160 Q150 175 148 205" stroke="#059669" strokeWidth="15" strokeLinecap="round" fill="none" />
+                <path
+                  d="M132 160 Q150 175 148 205"
+                  stroke="#059669"
+                  strokeWidth="15"
+                  strokeLinecap="round"
+                  fill="none"
+                />
                 <circle cx="148" cy="210" r="9" fill="#e2c9a3" />
                 {/* neck + head */}
                 <rect x="103" y="118" width="18" height="18" fill="#e2c9a3" />
@@ -283,25 +376,76 @@ export default function ForgotPassword() {
                   d="M86 100 Q84 72 112 70 Q140 72 138 100 Q138 84 112 84 Q92 84 90 102 Z"
                   fill="#1f2937"
                 />
-                <path d="M86 100 Q80 120 90 132 Q84 112 90 100 Z" fill="#1f2937" />
+                <path
+                  d="M86 100 Q80 120 90 132 Q84 112 90 100 Z"
+                  fill="#1f2937"
+                />
                 {/* confused eyebrows/eyes */}
-                <path d="M100 100 q4 -4 8 0" stroke="#1f2937" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-                <path d="M118 98 q4 -5 9 -1" stroke="#1f2937" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+                <path
+                  d="M100 100 q4 -4 8 0"
+                  stroke="#1f2937"
+                  strokeWidth="2.4"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M118 98 q4 -5 9 -1"
+                  stroke="#1f2937"
+                  strokeWidth="2.4"
+                  fill="none"
+                  strokeLinecap="round"
+                />
                 <circle cx="103" cy="106" r="2" fill="#1f2937" />
                 <circle cx="122" cy="105" r="2" fill="#1f2937" />
                 {/* worried mouth */}
-                <path d="M104 116 q8 6 16 -1" stroke="#1f2937" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+                <path
+                  d="M104 116 q8 6 16 -1"
+                  stroke="#1f2937"
+                  strokeWidth="2.2"
+                  fill="none"
+                  strokeLinecap="round"
+                />
               </g>
 
               {/* Password/lock card */}
               <g>
-                <rect x="185" y="120" width="150" height="130" rx="14" fill="#ecfdf5" />
-                <rect x="185" y="120" width="150" height="130" rx="14" fill="none" stroke="#a7f3d0" strokeWidth="2" />
+                <rect
+                  x="185"
+                  y="120"
+                  width="150"
+                  height="130"
+                  rx="14"
+                  fill="#ecfdf5"
+                />
+                <rect
+                  x="185"
+                  y="120"
+                  width="150"
+                  height="130"
+                  rx="14"
+                  fill="none"
+                  stroke="#a7f3d0"
+                  strokeWidth="2"
+                />
                 {/* X badge */}
                 <circle cx="260" cy="112" r="20" fill="#025246" />
-                <path d="M251 103 L269 121 M269 103 L251 121" stroke="#fff" strokeWidth="4" strokeLinecap="round" />
+                <path
+                  d="M251 103 L269 121 M269 103 L251 121"
+                  stroke="#fff"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
                 {/* dotted password field */}
-                <rect x="205" y="160" width="110" height="26" rx="6" fill="#ffffff" stroke="#6ee7b7" strokeWidth="2" />
+                <rect
+                  x="205"
+                  y="160"
+                  width="110"
+                  height="26"
+                  rx="6"
+                  fill="#ffffff"
+                  stroke="#6ee7b7"
+                  strokeWidth="2"
+                />
                 <circle cx="220" cy="173" r="3.5" fill="#059669" />
                 <circle cx="232" cy="173" r="3.5" fill="#059669" />
                 <circle cx="244" cy="173" r="3.5" fill="#059669" />
@@ -309,16 +453,49 @@ export default function ForgotPassword() {
                 <circle cx="268" cy="173" r="3.5" fill="#059669" />
                 <circle cx="280" cy="173" r="3.5" fill="#059669" />
                 {/* underline field */}
-                <rect x="205" y="198" width="110" height="22" rx="6" fill="#d1fae5" />
-                <rect x="205" y="230" width="70" height="10" rx="5" fill="#a7f3d0" />
+                <rect
+                  x="205"
+                  y="198"
+                  width="110"
+                  height="22"
+                  rx="6"
+                  fill="#d1fae5"
+                />
+                <rect
+                  x="205"
+                  y="230"
+                  width="70"
+                  height="10"
+                  rx="5"
+                  fill="#a7f3d0"
+                />
               </g>
 
               {/* Plant */}
-              <path d="M300 260 Q292 235 305 218 Q310 240 300 260 Z" fill="#065f46" />
-              <path d="M310 260 Q322 232 312 212 Q318 238 310 260 Z" fill="#059669" />
-              <path d="M320 260 Q332 240 322 222 Q328 244 320 260 Z" fill="#10b981" />
-              <path d="M295 260 h35 v10 q0 8 -8 8 h-19 q-8 0 -8 -8 Z" fill="#d97706" />
-              <rect x="298" y="278" width="29" height="4" rx="2" fill="#92400e" />
+              <path
+                d="M300 260 Q292 235 305 218 Q310 240 300 260 Z"
+                fill="#065f46"
+              />
+              <path
+                d="M310 260 Q322 232 312 212 Q318 238 310 260 Z"
+                fill="#059669"
+              />
+              <path
+                d="M320 260 Q332 240 322 222 Q328 244 320 260 Z"
+                fill="#10b981"
+              />
+              <path
+                d="M295 260 h35 v10 q0 8 -8 8 h-19 q-8 0 -8 -8 Z"
+                fill="#d97706"
+              />
+              <rect
+                x="298"
+                y="278"
+                width="29"
+                height="4"
+                rx="2"
+                fill="#92400e"
+              />
             </svg>
           </div>
 
@@ -328,8 +505,9 @@ export default function ForgotPassword() {
               <span className="text-emerald-400">Kata Sandi?</span>
             </h1>
             <p className="left-anim-item text-sm lg:text-base text-emerald-100/80 leading-relaxed font-medium">
-              Tenang, itu bisa terjadi pada siapa saja. Masukkan email, kode verifikasi,
-              dan kata sandi baru Anda untuk mengatur ulang akses akun.
+              Tenang, itu bisa terjadi pada siapa saja. Masukkan email, kode
+              verifikasi, dan kata sandi baru Anda untuk mengatur ulang akses
+              akun.
             </p>
           </div>
         </div>
@@ -346,7 +524,10 @@ export default function ForgotPassword() {
               </p>
             </div>
 
-            <form onSubmit={changesPasswordHandler} className="flex flex-col gap-4">
+            <form
+              onSubmit={changesPasswordHandler}
+              className="flex flex-col gap-4"
+            >
               {message && (
                 <div
                   role="alert"
@@ -362,7 +543,10 @@ export default function ForgotPassword() {
 
               {/* Email */}
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="userEmail" className="text-[13px] font-bold text-neutral-700 ml-1">
+                <label
+                  htmlFor="userEmail"
+                  className="text-[13px] font-bold text-neutral-700 ml-1"
+                >
                   Email Terdaftar
                 </label>
                 <div className="relative group">
@@ -383,7 +567,10 @@ export default function ForgotPassword() {
 
               {/* Verification Code */}
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="verification" className="text-[13px] font-bold text-neutral-700 ml-1">
+                <label
+                  htmlFor="verification"
+                  className="text-[13px] font-bold text-neutral-700 ml-1"
+                >
                   Kode Verifikasi
                 </label>
                 <div className="relative group flex items-center">
@@ -405,14 +592,21 @@ export default function ForgotPassword() {
                     disabled={pendingSend}
                     className="absolute right-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50"
                   >
-                    {pendingSend ? <Loader2 size={14} className="animate-spin inline" /> : "Kirim Kode"}
+                    {pendingSend ? (
+                      <Loader2 size={14} className="animate-spin inline" />
+                    ) : (
+                      "Kirim Kode"
+                    )}
                   </button>
                 </div>
               </div>
 
               {/* New Password */}
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="newPassword" className="text-[13px] font-bold text-neutral-700 ml-1">
+                <label
+                  htmlFor="newPassword"
+                  className="text-[13px] font-bold text-neutral-700 ml-1"
+                >
                   Sandi Baru
                 </label>
                 <div className="relative group">
@@ -431,19 +625,29 @@ export default function ForgotPassword() {
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    aria-label={showNewPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
+                    aria-label={
+                      showNewPassword ? "Sembunyikan sandi" : "Tampilkan sandi"
+                    }
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors focus:outline-none"
                   >
-                    {showNewPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                    {showNewPassword ? (
+                      <EyeOff size={18} strokeWidth={2.5} />
+                    ) : (
+                      <Eye size={18} strokeWidth={2.5} />
+                    )}
                   </button>
                 </div>
 
                 {newPassword && (
                   <div className="mt-1 ml-1 flex flex-col gap-1">
                     <div className="flex gap-1 w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${strength.color} ${strength.level === 1 ? 'w-1/3' : strength.level === 2 ? 'w-2/3' : 'w-full'}`}></div>
+                      <div
+                        className={`h-full transition-all duration-300 ${strength.color} ${strength.level === 1 ? "w-1/3" : strength.level === 2 ? "w-2/3" : "w-full"}`}
+                      ></div>
                     </div>
-                    <span className={`text-[10px] font-bold ${strength.textColor}`}>
+                    <span
+                      className={`text-[10px] font-bold ${strength.textColor}`}
+                    >
                       Kekuatan: {strength.text}
                     </span>
                   </div>
@@ -452,7 +656,10 @@ export default function ForgotPassword() {
 
               {/* Confirm Password */}
               <div className="right-anim-item flex flex-col gap-1.5">
-                <label htmlFor="confirmPassword" className="text-[13px] font-bold text-neutral-700 ml-1">
+                <label
+                  htmlFor="confirmPassword"
+                  className="text-[13px] font-bold text-neutral-700 ml-1"
+                >
                   Konfirmasi Sandi Baru
                 </label>
                 <div className="relative group">
@@ -471,16 +678,28 @@ export default function ForgotPassword() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Sembunyikan sandi"
+                        : "Tampilkan sandi"
+                    }
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors focus:outline-none"
                   >
-                    {showConfirmPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} strokeWidth={2.5} />
+                    ) : (
+                      <Eye size={18} strokeWidth={2.5} />
+                    )}
                   </button>
                 </div>
 
                 {confirmPassword && (
-                  <span className={`text-[10px] font-bold mt-1 ml-1 ${newPassword === confirmPassword ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {newPassword === confirmPassword ? '✓ Password cocok' : '✕ Password tidak sama'}
+                  <span
+                    className={`text-[10px] font-bold mt-1 ml-1 ${newPassword === confirmPassword ? "text-emerald-600" : "text-red-500"}`}
+                  >
+                    {newPassword === confirmPassword
+                      ? "✓ Password cocok"
+                      : "✕ Password tidak sama"}
                   </span>
                 )}
               </div>

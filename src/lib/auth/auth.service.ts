@@ -91,7 +91,8 @@ export async function register(data: FormData): Promise<RegisterResult> {
     await db.insert(notificationsTable).values({
       userId: user.id,
       title: "Selamat datang di Kompas Desa",
-      message: "Akun Anda berhasil dibuat. Silakan masuk untuk mulai menggunakan layanan.",
+      message:
+        "Akun Anda berhasil dibuat. Silakan masuk untuk mulai menggunakan layanan.",
       type: "system",
     });
 
@@ -261,6 +262,7 @@ export async function updatePassword(
       };
     }
 
+    // 1. Cari user berdasarkan email
     const [user] = await db
       .select({
         id: usersTable.id,
@@ -276,6 +278,7 @@ export async function updatePassword(
       };
     }
 
+    // 2. Cari kode verifikasi milik user
     const [validatedCode] = await db
       .select({
         id: verificationCode.id,
@@ -291,20 +294,15 @@ export async function updatePassword(
       )
       .limit(1);
 
+    // 3. Kode tidak ditemukan / salah
     if (!validatedCode) {
-      return {
-        success: false,
-        message: "Kode verifikasi tidak ditemukan, silakan kirim ulang",
-      };
-    }
-
-    if (code != validatedCode.token) {
       return {
         success: false,
         message: "Kode verifikasi salah",
       };
     }
 
+    // 4. Kode expired
     if (validatedCode.expiredDate < new Date()) {
       return {
         success: false,
@@ -312,8 +310,10 @@ export async function updatePassword(
       };
     }
 
+    // 5. Hash password baru
     const hashedPassword = await hashPassword(newPassword);
 
+    // 6. Update password user
     await db
       .update(usersTable)
       .set({
@@ -321,6 +321,7 @@ export async function updatePassword(
       })
       .where(eq(usersTable.id, user.id));
 
+    // 7. Hapus kode agar tidak bisa digunakan lagi
     await db
       .delete(verificationCode)
       .where(eq(verificationCode.id, validatedCode.id));

@@ -42,6 +42,9 @@ export async function changesPassword(
     }
 
     const result = await updatePassword(email, newPassword, code);
+    if (!result.success) {
+      return result
+    }
     console.log(`status ${result.success} message ${result.message} `);
 
     return result;
