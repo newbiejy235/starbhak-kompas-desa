@@ -15,11 +15,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { getOrderById, syncPaymentStatus } from "@/actions/order";
-import {
-  formatRupiah,
-  formatWeight,
-  PAYMENT_METHOD_LABEL,
-} from "@/lib/format";
+import { formatRupiah, formatWeight, PAYMENT_METHOD_LABEL } from "@/lib/format";
 import { formatImage } from "@/components/shared/States";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { useAuth, useFetch } from "@/lib/hooks";
@@ -35,10 +31,10 @@ function loadSnapScript(snapUrl: string): Promise<void> {
     script.src = snapUrl;
     script.setAttribute(
       "data-client-key",
-      (process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
+      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ??
         process.env.MIDTRANS_CLIENTKEY ??
-        process.env.NEXT_PUBLIC_CLIENT) ??
-      "",
+        process.env.NEXT_PUBLIC_CLIENT ??
+        "",
     );
     script.async = true;
     script.onload = () => resolve();
@@ -100,11 +96,27 @@ export default function OrderPayment() {
   const { user } = useAuth();
   const [payState, setPayState] = useState<PayState>("idle");
   const [payError, setPayError] = useState<string | null>(null);
+  const [snapToken, setSnapToken] = useState<string | null>(null);
 
-  const { data: order, loading, reload } = useFetch(
-    () => getOrderById(Number(id)),
-    [id],
-  );
+  const {
+    data: order,
+    loading,
+    reload,
+  } = useFetch(() => getOrderById(Number(id)), [id]);
+
+  useEffect(() => {
+    const tokenOrders = async () => {
+      if (!order?.id) return;
+
+      const storageKey = `midtrans_snap_token_${order.id}`;
+      const savedToken = localStorage.getItem(storageKey);
+
+      if (savedToken) {
+        await setSnapToken(savedToken);
+      }
+    };
+    tokenOrders();
+  }, [order?.id]);
 
   const [syncing, setSyncing] = useState(false);
   const syncedRef = useRef(false);
@@ -166,45 +178,148 @@ export default function OrderPayment() {
       router.push("/auth/login");
       return;
     }
+
+    if (!order) return;
+
     if (payState === "preparing") return;
+
     setPayState("preparing");
     setPayError(null);
+
     try {
-      const res = await fetch("/api/tokenizer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.token) {
-        throw new Error(data.error ?? "Gagal menyiapkan pembayaran");
+      const storageKey = `midtrans_snap_token_${order.id}`;
+
+      /**
+       * Urutan pencarian token:
+       *
+       * 1. React state
+       * 2. localStorage
+       * 3. Kalau tidak ada -> minta token baru ke backend
+       */
+      let token = snapToken;
+
+      // Kalau state kosong, cek localStorage
+      if (!token) {
+        token = localStorage.getItem(storageKey);
       }
 
-      await loadSnapScript(data.snapUrl);
+      /**
+       * BELUM PUNYA TOKEN
+       *
+       * Baru request ke /api/tokenizer
+       */
+      if (!token) {
+        const res = await fetch("/api/tokenizer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: order.id,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.token) {
+          throw new Error(data.error ?? "Gagal menyiapkan pembayaran");
+        }
+
+        token = data.token;
+
+        // Simpan ke React state
+        setSnapToken(token);
+
+        if (!token) {
+          return console.log("ga ada token");
+        }
+
+        // Simpan ke localStorage
+        localStorage.setItem(storageKey, token);
+
+        // Load Snap JS
+        await loadSnapScript(data.snapUrl);
+      } else {
+        /**
+         * SUDAH PUNYA TOKEN
+         *
+         * Tidak perlu request /api/tokenizer lagi.
+         * Langsung gunakan token yang tersimpan.
+         */
+        setSnapToken(token);
+
+        await loadSnapScript(
+          process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL ??
+            "https://app.sandbox.midtrans.com/snap/snap.js",
+        );
+      }
+
+      // Pastikan TypeScript tahu token bukan null
+      if (!token) {
+        throw new Error("Snap token tidak tersedia");
+      }
+
       setPayState("idle");
 
-      window.snap?.pay(data.token, {
+      window.snap?.pay(token, {
+        /**
+         * PEMBAYARAN BERHASIL
+         */
         onSuccess: () => {
+          // Token sudah tidak diperlukan
+          localStorage.removeItem(storageKey);
+          setSnapToken(null);
+
           setPayState("idle");
+
           sync();
         },
+
+        /**
+         * PEMBAYARAN PENDING
+         *
+         * Contoh:
+         * - BCA VA
+         * - Mandiri VA
+         * - metode yang belum dibayar
+         */
         onPending: () => {
           setPayState("pending");
+
           sync();
         },
+
+        /**
+         * ERROR DARI SNAP
+         */
         onError: () => {
           setPayState("error");
+
           setPayError("Terjadi kesalahan saat memproses pembayaran.");
+
           sync();
         },
+
+        /**
+         * USER MENUTUP POPUP
+         *
+         * PENTING:
+         * JANGAN hapus token di sini.
+         *
+         * Karena user mungkin cuma menutup popup
+         * lalu ingin klik "Bayar Lagi".
+         */
         onClose: () => {
           setPayState("idle");
+
           sync();
         },
       });
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("MIDTRANS PAYMENT ERROR:", error);
+
       setPayState("error");
+
       setPayError("Gagal menyiapkan pembayaran. Silakan coba lagi.");
     }
   };
@@ -236,10 +351,14 @@ export default function OrderPayment() {
           <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
             <CheckCircle2 className="text-green-600" size={32} />
           </div>
-          <h2 className="text-lg font-bold text-gray-900">Pembayaran Berhasil</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            Pembayaran Berhasil
+          </h2>
           <p className="mt-2 text-sm text-gray-500 max-w-sm">
             Pembayaran untuk pesanan{" "}
-            <span className="font-semibold text-gray-900">{order.orderCode}</span>{" "}
+            <span className="font-semibold text-gray-900">
+              {order.orderCode}
+            </span>{" "}
             telah berhasil diproses.
           </p>
           <p className="mt-1 text-xs text-gray-400">
@@ -264,7 +383,9 @@ export default function OrderPayment() {
           </h2>
           <p className="mt-2 text-sm text-gray-500 max-w-sm">
             Dana untuk pesanan{" "}
-            <span className="font-semibold text-gray-900">{order.orderCode}</span>{" "}
+            <span className="font-semibold text-gray-900">
+              {order.orderCode}
+            </span>{" "}
             telah dikembalikan.
           </p>
           <Link
@@ -339,7 +460,9 @@ export default function OrderPayment() {
                 </span>
               </div>
               <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                <span className="font-bold text-gray-900">Total Pembayaran</span>
+                <span className="font-bold text-gray-900">
+                  Total Pembayaran
+                </span>
                 <span className="text-xl font-extrabold text-primary">
                   {formatRupiah(order.totalPrice)}
                 </span>
@@ -349,13 +472,11 @@ export default function OrderPayment() {
 
           <div className="border-t border-gray-100 px-6 py-4 bg-gray-50/40 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-2 text-xs text-gray-500 sm:max-w-xs">
-              <ShieldCheck
-                size={16}
-                className="mt-0.5 shrink-0 text-primary"
-              />
+              <ShieldCheck size={16} className="mt-0.5 shrink-0 text-primary" />
               <span>
                 Anda akan diarahkan ke sistem pembayaran Midtrans untuk
-                menyelesaikan transaksi. Status diperbarui otomatis dari Midtrans.
+                menyelesaikan transaksi. Status diperbarui otomatis dari
+                Midtrans.
               </span>
             </div>
 
