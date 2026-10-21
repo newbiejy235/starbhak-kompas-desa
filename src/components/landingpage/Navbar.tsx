@@ -378,7 +378,7 @@ export default function Navbar() {
 
         <div className="p-6 border-t border-gray-200/50 bg-white/50">
           <Link
-            href={dashboardHref || "/auth/login"}
+            href={dashboardHref || "https://not-found.kompasdesa.site"}
             onClick={toggleMenu}
             className="flex w-full items-center justify-center bg-[#025246] hover:bg-[#024036] text-white py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-[#025246]/30"
           >
