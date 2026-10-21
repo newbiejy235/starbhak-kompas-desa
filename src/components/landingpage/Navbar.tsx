@@ -259,7 +259,7 @@ export default function Navbar() {
         {/* Action Button & Mobile Hamburger */}
         <div className="flex items-center gap-4 sm:gap-6">
           <Link
-            href={dashboardHref || "/auth/login"}
+            href={dashboardHref || "https://not-found.kompasdesa.site/"}
             className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-xl hover:bg-[#024036] hover:scale-105 active:scale-95 transition-all duration-300 shadow-md shadow-[#025246]/20 cursor-pointer"
           >
             {dashboardHref ? "Dasbor Saya" : "Masuk"}
