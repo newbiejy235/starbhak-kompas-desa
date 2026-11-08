@@ -259,7 +259,7 @@ export default function Navbar() {
         {/* Action Button & Mobile Hamburger */}
         <div className="flex items-center gap-4 sm:gap-6">
           <Link
-            href={dashboardHref || "https://not-found.kompasdesa.site/"}
+            href={dashboardHref || "https://www.kompasdesa.site/auth/login"}
             className="hidden sm:flex items-center justify-center bg-[#025246] text-white font-bold text-sm lg:text-base px-5 py-2 rounded-xl hover:bg-[#024036] hover:scale-105 active:scale-95 transition-all duration-300 shadow-md shadow-[#025246]/20 cursor-pointer"
           >
             {dashboardHref ? "Dasbor Saya" : "Masuk"}
@@ -378,7 +378,7 @@ export default function Navbar() {
 
         <div className="p-6 border-t border-gray-200/50 bg-white/50">
           <Link
-            href={dashboardHref || "https://not-found.kompasdesa.site"}
+            href={dashboardHref || "https://www.kompasdesa.site/auth/login"}
             onClick={toggleMenu}
             className="flex w-full items-center justify-center bg-[#025246] hover:bg-[#024036] text-white py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-[#025246]/30"
           >
