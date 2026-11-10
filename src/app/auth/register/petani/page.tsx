@@ -7,9 +7,6 @@ import { Sprout, ShoppingBasket, ArrowLeft, ArrowUpRight, UserCircle, Phone, Mai
 import type gsapType from "gsap";
 import Image from "next/image";
 import { saveRegisterDraft, getRegisterDraft } from "@/lib/register";
-import { neonAuthClient } from "@/lib/auth/neon-client";
-import { startOAuth, checkNeonSession, clearOAuthContext, getOAuthActor, getOAuthSource } from "@/lib/auth/oauth-flow";
-import { saveSession, type ClientUser } from "@/lib/auth/client";
 
 const slideshowImages = [
   "/images/login/ImageLogin.png",
@@ -42,43 +39,6 @@ export default function RegisterPetani() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [oAuthEmail, setOAuthEmail] = useState("");
-  const [isOAuthAuthenticated, setIsOAuthAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Restore actor selection from OAuth context if returning from OAuth
-    async function restoreOAuthContext() {
-      const source = getOAuthSource();
-      const actor = getOAuthActor();
-
-      if (source === "register" && actor) {
-        // User came from register page OAuth - restore actor selection
-        setSelectedRole(actor);
-        // Try to check if session already exists
-        const user = await checkNeonSession();
-        if (user?.id) {
-          // Already authenticated via OAuth from register
-          setIsOAuthAuthenticated(true);
-          // Pre-fill email and mark as authenticated
-          if (user.email) {
-            setOAuthEmail(user.email);
-          }
-        } else {
-          // No session yet - clear and wait for OAuth to complete
-          clearOAuthContext();
-          setSelectedRole(null);
-        }
-      }
-    }
-    restoreOAuthContext();
-  }, []);
-
-  useEffect(() => {
-    // Clear OAuth context when leaving the page
-    return () => {
-      clearOAuthContext();
-    };
-  }, []);
 
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
@@ -91,13 +51,7 @@ export default function RegisterPetani() {
     if (draft.fullName) setFullName(draft.fullName);
     if (draft.username) setUsername(draft.username);
     if (draft.noTelp) setPhone(draft.noTelp);
-    if (draft.email) {
-      setEmailState(draft.email);
-      // If we have OAuth email, prefer that
-      if (oAuthEmail && oAuthEmail !== draft.email) {
-        setEmailState(oAuthEmail);
-      }
-    }
+    if (draft.email) setEmailState(draft.email);
   }, []);
 
   const handleNext = (e: React.FormEvent) => {
@@ -318,20 +272,9 @@ export default function RegisterPetani() {
               </div>
             )}
 
-            {/* IF actor already selected, show form with OAuth buttons */}
+            {/* IF actor already selected, show registration form */}
             {selectedRole !== null && (
               <div>
-                {/* Show authenticated email if coming from OAuth */}
-                {isOAuthAuthenticated && oAuthEmail && (
-                  <div className="mb-4 right-anim-item flex items-center justify-center gap-3 py-2">
-                    <div className="h-px flex-1 bg-emerald-200" />
-                    <span className="text-[12px] text-emerald-700 font-medium">
-                      Email sudah terdaftar: {oAuthEmail}
-                    </span>
-                    <div className="h-px flex-1 bg-emerald-200" />
-                  </div>
-                )}
-
                 {/* Form Fields */}
                 <form onSubmit={handleNext} className="flex flex-col gap-3.5">
 
@@ -350,9 +293,7 @@ export default function RegisterPetani() {
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="Masukkan nama lengkap"
                         className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                        required
-                        disabled={isOAuthAuthenticated}
-                      />
+                        required                      />
                     </div>
                   </div>
 
@@ -371,9 +312,7 @@ export default function RegisterPetani() {
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Buat nama pengguna"
                         className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                        required
-                        disabled={isOAuthAuthenticated}
-                      />
+                        required                      />
                     </div>
                   </div>
 
@@ -392,13 +331,11 @@ export default function RegisterPetani() {
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="Contoh: 08123456789"
                         className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                        required
-                        disabled={isOAuthAuthenticated}
-                      />
+                        required                      />
                     </div>
                   </div>
 
-                  {/* Email field - read-only if authenticated via OAuth */}
+                  {/* Email field */}
                   <div className="right-anim-item flex flex-col gap-1.5">
                     <label htmlFor="email" className="text-[13px] font-bold text-neutral-700 ml-1">
                       Email
@@ -410,70 +347,13 @@ export default function RegisterPetani() {
                       <input
                         id="email"
                         type="email"
-                        value={email || oAuthEmail || ""}
+                        value={email}
                         onChange={(e) => setEmailState(e.target.value)}
                         placeholder="nama@email.com"
-                        className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"
-                        disabled={isOAuthAuthenticated}
-                        readOnly={isOAuthAuthenticated}
-                        autoComplete="off"
+                        className="w-full rounded-2xl border-2 border-neutral-200 bg-white py-3.5 pl-12 pr-4 text-sm font-medium text-neutral-900 outline-none transition-all duration-200 ease-out placeholder:text-neutral-400 placeholder:font-normal hover:border-neutral-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 shadow-sm"                        autoComplete="off"
                       />
                     </div>
                   </div>
-
-                  {/* OAuth Buttons - shown only when not yet authenticated */}
-                  {!isOAuthAuthenticated && (
-                    <div className="right-anim-item mt-6 flex items-center justify-center gap-1.5">
-                      <span className="text-[13.5px] text-neutral-500 text-sm">
-                        Atau lanjut dengan
-                      </span>
-                      <div className="flex gap-2">
-                        {/* Google OAuth Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleOAuthStart("google", "petani")}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-[#4285f4] px-4 py-2.5 text-[12px] font-bold text-white transition-all duration-200 hover:#357ae4 hover:shadow-lg hover:shadow-[#4285f4]/20"
-                        >
-                          <svg
-                            width={16}
-                            height={16}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M22 3.053a9 9 0 1 1-6.94 15.97L13 21l-2.52-1.23a9.13 9.13 0 0 1-5.04-4.07L3 10l9 5.07L3 7l5.57-1.05a9 9 0 1 1 7.38 11.6L22 3.053z" />
-                            <path d="M22 3.053a9 9 0 1 1-6.94 15.97L13 21l-2.52-1.23a9.13 9.13 0 0 1-5.04-4.07L3 10l9 5.07L3 7l5.57-1.05a9 9 0 1 1 7.38 11.6L22 3.053z" />
-                          </svg>
-                          <span>Google</span>
-                        </button>
-
-                        {/* GitHub OAuth Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleOAuthStart("github", "petani")}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-[#333333] px-4 py-2.5 text-[12px] font-bold text-white transition-all duration-200 hover:#555555 hover:shadow-lg hover:shadow-[#333333]/20"
-                        >
-                          <svg
-                            width={16}
-                            height={16}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                            <path d="M22 4l-4.262 1.899L20.26 12l-3.733 1.809L12 21.135L9.07 14.502L5.256 12l-3.76 1.899L1 4l4.23 1.919L7.74 12L3.256 5.035L7.73 1.23L22 4z" />
-                          </svg>
-                          <span>GitHub</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Divider between form and submit */}
                   <div className="right-anim-item mt-6 flex items-center justify-center gap-3 py-2">
@@ -504,17 +384,6 @@ export default function RegisterPetani() {
               </div>
             )}
 
-            {/* Source tracking div (hidden) */}
-            <input
-              type="hidden"
-              name="oAuthSource"
-              value={getOAuthSource() || ""}
-            />
-            <input
-              type="hidden"
-              name="oAuthActor"
-              value={selectedRole || ""}
-            />
           </div>
         </div>
       </main>
@@ -524,16 +393,4 @@ export default function RegisterPetani() {
       </footer>
     </div>
   );
-}
-
-/* ---- OAuth Handlers for Petani Register ---- */
-
-async function handleOAuthStart(provider: "google" | "github", actor: string) {
-  try {
-    // Save actor selection and that this came from register page
-    await startOAuth(provider, "register", actor);
-    // After browser redirects back, the useEffect will check session
-  } catch (err) {
-    console.error(`${provider} OAuth start error:`, err instanceof Error ? err.message : err);
-  }
 }

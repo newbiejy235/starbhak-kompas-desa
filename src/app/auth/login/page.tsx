@@ -8,8 +8,6 @@ import Image from "next/image";
 import { loginAction } from "@/actions/auth";
 import { saveSession, type ClientUser } from "@/lib/auth/client";
 import { initialState } from "@/lib/types/auth";
-import { neonAuthClient } from "@/lib/auth/neon-client";
-import { startOAuth, checkNeonSession, clearOAuthContext, getOAuthActor, getOAuthSource } from "@/lib/auth/oauth-flow";
 import type { LoginResult } from "@/lib/auth/auth.service";
 
 const slideshowImages = [
@@ -92,57 +90,6 @@ export default function Login() {
     };
   }, []);
 
-  // Handle OAuth completion after redirect from Google/GitHub
-  useEffect(() => {
-    // Check if session was established after OAuth flow
-    // This handles the redirect-back scenario after social sign-in
-    async function handleOAuthCallback() {
-      const user = await checkNeonSession();
-      if (user?.id) {
-        // OAuth login successful - checkNeonSession already persisted the session
-        // Redirect to appropriate dashboard based on role
-        router.push(getRoleRedirect(user.role));
-      }
-      // If no session, stay on login page (user can use email/password)
-    }
-    handleOAuthCallback();
-  }, []);
-
-  useEffect(() => {
-    // Clear OAuth context when leaving the page
-    return () => {
-      clearOAuthContext();
-    };
-  }, []);
-
-  // Google OAuth: open the Neon Auth sign-in flow
-  async function handleGoogleSignIn() {
-    try {
-      // Store that this came from login page, with no actor selection yet
-      await startOAuth("google", "login");
-      // After neonAuthClient.signIn.social() completes its redirect cycle,
-      // the user will be back in the app. The useEffect above will check session.
-    } catch (err: any) {
-      console.error("Google sign in error:", err instanceof Error ? err.message : err);
-    }
-  }
-
-  // GitHub OAuth: same approach as Google
-  async function handleGitHubSignIn() {
-    try {
-      await startOAuth("github", "login");
-    } catch (err: any) {
-      console.error("GitHub sign in error:", err instanceof Error ? err.message : err);
-    }
-  }
-
-  // Helper: get role-based redirect
-  function getRoleRedirect(role: string): string {
-    if (role === "admin") return "/admin";
-    if (role === "petani") return "/petani/dashboard";
-    return "/user/home";
-  }
-
   return (
     <div ref={containerRef} className="h-[100dvh] w-full relative bg-[#FAFAFA] font-sans overflow-hidden flex flex-col perspective-1000">
 
@@ -220,7 +167,7 @@ export default function Login() {
           </div>
         </div>
 
-        {/* RIGHT PANEL - Login Form + OAuth Buttons */}
+        {/* RIGHT PANEL - Login Form */}
         <div className="w-full lg:w-[50%] h-full flex flex-col justify-center items-center lg:items-start px-6 lg:pl-24 xl:pl-32 relative z-40 ml-auto">
           <div className="w-full max-w-[380px] xl:max-w-[420px]">
 
@@ -304,59 +251,6 @@ export default function Login() {
                   </button>
                 </div>
               </div>
-
-              {/* OAuth Divider */}
-              <div className="flex items-center gap-3 py-2">
-                <div className="h-px flex-1 bg-neutral-200" />
-                <span className="text-[12px] text-neutral-500">Atau masuk dengan</span>
-                <div className="h-px flex-1 bg-neutral-200" />
-              </div>
-
-              {/* Google OAuth Button */}
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#4285f4] px-4 py-3 text-[14px] font-bold text-white transition-all duration-200 hover:#357ae4 hover:shadow-lg hover:shadow-[#4285f4]/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
-                disabled={pending}
-              >
-                <svg
-                  width={20}
-                  height={20}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M22 3.053a9 9 0 1 1-6.94 15.97L13 21l-2.52-1.23a9.13 9.13 0 0 1-5.04-4.07L3 10l9 5.07L3 7l5.57-1.05a9 9 0 1 1 7.38 11.6L22 3.053z" />
-                  <path d="M22 3.053a9 9 0 1 1-6.94 15.97L13 21l-2.52-1.23a9.13 9.13 0 0 1-5.04-4.07L3 10l9 5.07L3 7l5.57-1.05a9 9 0 1 1 7.38 11.6L22 3.053z" />
-                </svg>
-                <span>Lanjut dengan Google</span>
-              </button>
-
-              {/* GitHub OAuth Button */}
-              <button
-                type="button"
-                onClick={handleGitHubSignIn}
-                className="w-full mt-3 flex items-center justify-center gap-3 rounded-xl bg-[#333333] px-4 py-3 text-[14px] font-bold text-white transition-all duration-200 hover:#555555 hover:shadow-lg hover:shadow-[#333333]/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
-                disabled={pending}
-              >
-                <svg
-                  width={20}
-                  height={20}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                  <path d="M22 4l-4.262 1.899L20.26 12l-3.733 1.809L12 21.135L9.07 14.502L5.256 12l-3.76 1.899L1 4l4.23 1.919L7.74 12L3.256 5.035L7.73 1.23L22 4z" />
-                </svg>
-                <span>Lanjut dengan GitHub</span>
-              </button>
 
               <button
                 type="submit"
