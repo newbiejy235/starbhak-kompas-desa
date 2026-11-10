@@ -80,6 +80,11 @@ export default function RegisterPetani() {
     };
   }, []);
 
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmailState] = useState("");
+
   // Initial draft restoration
   useEffect(() => {
     const draft = getRegisterDraft();
@@ -94,11 +99,6 @@ export default function RegisterPetani() {
       }
     }
   }, []);
-
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmailState] = useState("");
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
