@@ -3,6 +3,10 @@ import AdminSidebar from "@/components/adminpage/Sidebar";
 import DashboardShell from "@/components/shared/DashboardShell";
 import { verifyAuth, getAuthUser } from "@/lib/auth/auth.service";
 
+// Area admin selalu bergantung pada cookie dan data database, jadi dirender
+// saat request, bukan di-prerender saat build (build tidak punya akses data).
+export const dynamic = "force-dynamic";
+
 /**
  * Guard otorisasi admin SERVER-SIDE (PRD: authorization tidak boleh
  * hanya di frontend). Flow:
