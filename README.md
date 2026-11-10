@@ -72,3 +72,4 @@ starbhak-kompas-desa/
 ├── constants/      # (Data Tetap) Menyimpan data yang tidak berubah, contoh: Daftar Kota se-Indonesia.
 ├── lib/            # (Peralatan) Fungsi-fungsi pembantu, pengaturan animasi, tipe data.
 └── public/         # (Aset) Tempat menyimpan logo, gambar latar belakang, dan ilustrasi.
+# test-deploy
