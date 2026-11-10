@@ -25,7 +25,7 @@ export default function AdminVerificationCommodityPage() {
           Menampilkan detail komoditas ID: <strong>{id}</strong>
         </p>
         <p className="text-sm text-gray-400">
-          Gunakan menu "Kelola Komoditas" untuk mengelola komoditas lengkap.
+          Gunakan menu &quot;Kelola Komoditas&quot; untuk mengelola komoditas lengkap.
         </p>
         <div className="mt-4">
           <Link

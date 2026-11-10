@@ -25,7 +25,7 @@ export default function AdminVerificationFarmerPage() {
           Menampilkan detail petani ID: <strong>{id}</strong>
         </p>
         <p className="text-sm text-gray-400">
-          Gunakan menu "Kelola Petani" untuk mengelola petani lengkap.
+          Gunakan menu &quot;Kelola Petani&quot; untuk mengelola petani lengkap.
         </p>
         <div className="mt-4">
           <Link
