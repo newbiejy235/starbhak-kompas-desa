@@ -73,3 +73,4 @@ starbhak-kompas-desa/
 ├── lib/            # (Peralatan) Fungsi-fungsi pembantu, pengaturan animasi, tipe data.
 └── public/         # (Aset) Tempat menyimpan logo, gambar latar belakang, dan ilustrasi.
 # test-deploy
+# test-deploy
