@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sprout, ShoppingBasket, ArrowLeft, ArrowUpRight } from "lucide-react";
+import { Sprout, ShoppingBasket, ArrowLeft, ArrowUpRight, UserCircle, Phone, Mail, Loader2 } from "lucide-react";
+import type gsapType from "gsap";
 import Image from "next/image";
 import { saveRegisterDraft, getRegisterDraft } from "@/lib/register";
 import { neonAuthClient } from "@/lib/auth/neon-client";
@@ -86,10 +87,10 @@ export default function RegisterPetani() {
     if (draft.username) setUsername(draft.username);
     if (draft.noTelp) setPhone(draft.noTelp);
     if (draft.email) {
-      setEmail(draft.email);
+      setEmailState(draft.email);
       // If we have OAuth email, prefer that
       if (oAuthEmail && oAuthEmail !== draft.email) {
-        setEmail(oAuthEmail);
+        setEmailState(oAuthEmail);
       }
     }
   }, []);
@@ -116,7 +117,7 @@ export default function RegisterPetani() {
   }, []);
 
   useEffect(() => {
-    let ctx: ReturnType<typeof gsap.context> | null = null;
+    let ctx: ReturnType<typeof gsapType.context> | null = null;
     let cleanupMouseMove: ((e: MouseEvent) => void) | null = null;
 
     import("gsap").then(({ default: gsap }) => {
@@ -536,11 +537,3 @@ async function handleOAuthStart(provider: "google" | "github", actor: string) {
     console.error(`${provider} OAuth start error:`, err instanceof Error ? err.message : err);
   }
 }
-
-// Reset form fields when actor changes or page reloads
-useEffect(() => {
-  setFullName("");
-  setUsername("");
-  setPhone("");
-  setEmailState("");
-}, [selectedRole]);
