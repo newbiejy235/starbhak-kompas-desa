@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import Sonner from "@/components/shared/Sonner";
+import { Providers } from "@/app/providers";
 import "./globals.css";
 
 const jakartaSans = Plus_Jakarta_Sans({
@@ -58,7 +59,7 @@ export default function RootLayout({
       className={`${jakartaSans.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-jakarta selection:bg-[#025246] selection:text-white">
-        {children}
+        <Providers>{children}</Providers>
         <Sonner />
       </body>
     </html>
