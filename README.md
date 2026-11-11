@@ -239,16 +239,6 @@ Menemukan bug atau punya usul fitur? Buka *issue* di repositori ini.
 
 ---
 
-## 👥 Tim Pengembang
-
-<!-- TODO: isi nama, peran, dan akun GitHub anggota tim -->
-
-| Nama | Peran | GitHub |
-|---|---|---|
-| Nama Anggota | Frontend Developer | [@username](https://github.com/username) |
-| Nama Anggota | Backend Developer | [@username](https://github.com/username) |
-| Nama Anggota | UI/UX Designer | [@username](https://github.com/username) |
-
 ---
 
 ## 📄 Lisensi
