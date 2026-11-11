@@ -22,7 +22,6 @@
 - [Masalah dan Solusi](#-masalah-dan-solusi)
 - [Fitur-Fitur](#-fitur-fitur-di-kompasdesa)
 - [Alur Penggunaan](#-alur-penggunaan)
-- [Tangkapan Layar](#-tangkapan-layar)
 - [Teknologi di Balik Layar](#-teknologi-di-balik-layar)
 - [Struktur Folder Proyek](#-struktur-folder-proyek)
 - [Memulai (Instalasi)](#-memulai-instalasi)
@@ -97,14 +96,6 @@ Aplikasi ini dirancang agar mudah digunakan oleh siapa saja, termasuk mereka yan
 3. Hubungi petani, sepakati harga, lalu beli.
 
 ---
-
-## 📸 Tangkapan Layar
-
-<!-- TODO: simpan gambar di ./public/screenshots/ lalu ganti path di bawah -->
-
-| Beranda | Pencarian | Halaman Toko |
-|---|---|---|
-| ![Beranda](./public/screenshots/beranda.png) | ![Pencarian](./public/screenshots/pencarian.png) | ![Toko](./public/screenshots/toko.png) |
 
 ---
 
